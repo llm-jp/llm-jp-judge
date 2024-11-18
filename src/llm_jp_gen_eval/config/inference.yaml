@@ -1,0 +1,12 @@
+defaults:
+  - /client@client: azure
+
+input:
+  turn: single # Now only single-turn conversation is supported
+  path: ???
+
+output:
+  path: ???
+  overwrite: true
+
+system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。

@@ -1,0 +1,6 @@
+defaults:
+  - /client@client: azure 
+  - /aspect@aspect: safety
+
+input:
+  path: ???

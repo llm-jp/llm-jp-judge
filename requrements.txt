@@ -1,0 +1,4 @@
+hydra-core
+openai
+torch==2.3.1
+vllm

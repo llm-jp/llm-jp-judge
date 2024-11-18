@@ -1,0 +1,8 @@
+name: vllm
+
+model_name: ???
+
+batch_size: 1
+max_tokens: 4096
+
+download_dir: ./data/cache
