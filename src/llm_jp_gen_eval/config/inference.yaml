@@ -7,6 +7,6 @@ input:
 
 output:
   path: ???
-  overwrite: true
+  overwrite: false
 
 system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。

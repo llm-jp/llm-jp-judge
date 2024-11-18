@@ -17,5 +17,5 @@ def save_jsonl(path, data):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         for d in data:
-            f.write(json.dumps(d) + "\n")
+            f.write(json.dumps(d, ensure_ascii=False) + "\n")
     return
