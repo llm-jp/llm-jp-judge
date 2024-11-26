@@ -1,3 +1,4 @@
 hydra-core
 openai
 vllm==0.6.2
+anthropic
