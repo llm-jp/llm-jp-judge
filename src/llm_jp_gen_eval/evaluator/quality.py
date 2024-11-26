@@ -35,8 +35,9 @@ METRICS = sorted(METRIC_DEFINITIONS.keys())
 
 
 class QualityEvaluator:
-    def __init__(self, client):
+    def __init__(self, client, dashboard):
         self.client = client
+        self.dashboard = dashboard
 
     def __call__(self, responses):
         data = []
@@ -81,3 +82,9 @@ class QualityEvaluator:
             for metric, scores in scores.items()
         }
         logging.info(f"Scores: {ave_scores}")
+
+        self.dashboard.log(
+            "score_table",
+            columns=["metric", "score"],
+            data=[[metric, ave_scores[metric]] for metric in METRICS],
+        )

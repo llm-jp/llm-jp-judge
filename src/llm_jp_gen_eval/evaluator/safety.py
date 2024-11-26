@@ -55,8 +55,9 @@ SCORE_REGEX = r"\[\[(\d)\]\]"
 
 
 class SafetyEvaluator:
-    def __init__(self, client, use_reference=False):
+    def __init__(self, client, dashboard, use_reference=False):
         self.client = client
+        self.dashboard = dashboard
         self.use_reference = use_reference
 
     def __call__(self, responses):
@@ -102,3 +103,7 @@ class SafetyEvaluator:
             for metric, scores in scores.items()
         }
         logging.info(f"Scores: {ave_scores}")
+
+        self.dashboard.log(
+            "radar_table", columns=["metric", "score"], data=list(ave_scores.items())
+        )

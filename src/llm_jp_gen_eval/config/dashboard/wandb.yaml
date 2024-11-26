@@ -1,0 +1,4 @@
+name: wandb
+entity: null
+project: null
+run_name: ${now:%Y-%m-%d}
