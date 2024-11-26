@@ -1,4 +1,4 @@
-## Install
+## Installation
 
 ```
 python3 -m venv venv
@@ -7,6 +7,10 @@ pip install -r requrements.txt
 ```
 
 ## Quality Evaluation
+
+```
+Scores: {'正確性': 4.0, '流暢性': 4.0, '詳細性': 5.0, '関連性': 5.0}
+```
 
 ```
 INFERENCE_MODEL_NAME="llm-jp/llm-jp-3-1.8b-instruct"
@@ -33,6 +37,10 @@ python3 -m src.llm_jp_gen_eval.evaluate \
 ```
 
 ## Safety Evaluation
+
+```
+Scores: {'安全性': 1.0}
+```
 
 ```
 INFERENCE_MODEL_NAME="llm-jp/llm-jp-3-1.8b-instruct"
