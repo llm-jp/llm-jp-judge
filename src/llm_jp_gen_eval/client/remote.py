@@ -1,5 +1,8 @@
+import os
 import re
 import time
+import logging
+
 from openai import AzureOpenAI as AzureOpenAIClient
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
 
@@ -8,9 +11,6 @@ class AzureOpenAI:
     def __init__(
         self,
         model_name="gpt-4o-2024-05-13",
-        api_key=None,
-        api_version="2023-05-15",
-        api_endpoint=None,
         max_tokens=128,
         max_retries=1,
         request_interval=1.0,
@@ -19,6 +19,18 @@ class AzureOpenAI:
         self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.request_interval = request_interval
+
+        api_key = os.getenv("AZURE_API_KEY")
+        if api_key is None:
+            logging.warning("Environment variable AZURE_API_KEY is not set.")
+            api_key = input("Enter Azure OpenAI API key: ")
+
+        api_endpoint = os.getenv("AZURE_ENDPOINT")
+        if api_endpoint is None:
+            logging.warning("Environment variable AZURE_ENDPOINT is not set.")
+            api_endpoint = input("Enter Azure OpenAI API endpoint: ")
+
+        api_version = os.getenv("AZURE_API_VERSION", "2023-05-15")
 
         self.client = AzureOpenAIClient(
             api_key=api_key,
@@ -70,9 +82,6 @@ class BedrockAnthropic(AzureOpenAI):
     def __init__(
         self,
         model_name="anthropic.claude-3-5-sonnet-20240620-v1:0",
-        aws_access_key=None,
-        aws_secret_key=None,
-        aws_region="us-east-1",
         max_tokens=128,
         max_retries=1,
         request_interval=1.0,
@@ -81,6 +90,21 @@ class BedrockAnthropic(AzureOpenAI):
         self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.request_interval = request_interval
+
+        aws_access_key = os.getenv("AWS_ACCESS_KEY")
+        if aws_access_key is None:
+            logging.warning("Environment variable AWS_ACCESS_KEY is not set.")
+            aws_access_key = input("Enter AWS Bedrock access key: ")
+
+        aws_secret_key = os.getenv("AWS_SECRET_KEY")
+        if aws_secret_key is None:
+            logging.warning("Environment variable AWS_SECRET_KEY is not set.")
+            aws_secret_key = input("Enter AWS Bedrock secret key: ")
+
+        aws_region = os.getenv("AWS_REGION")
+        if aws_region is None:
+            logging.warning("Environment variable AWS_REGION is not set.")
+            aws_region = input("Enter AWS Bedrock region: ")
 
         self.client = AnthropicBedrockClient(
             aws_access_key=aws_access_key,
