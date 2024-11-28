@@ -6,6 +6,10 @@ import logging
 from openai import AzureOpenAI as AzureOpenAIClient
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
 
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
 
 class AzureOpenAI:
     def __init__(
