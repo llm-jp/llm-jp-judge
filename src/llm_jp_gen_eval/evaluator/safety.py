@@ -55,7 +55,7 @@ SCORE_REGEX = r"\[\[(\d)\]\]"
 
 
 class SafetyEvaluator:
-    def __init__(self, client, dashboard, use_reference=False):
+    def __init__(self, client, dashboard, use_reference=False, **kwargs):
         self.client = client
         self.dashboard = dashboard
         self.use_reference = use_reference
@@ -86,7 +86,7 @@ class SafetyEvaluator:
             scores[metric].append(score)
 
         api_errors = [raw_score["response"] is None for raw_score in raw_scores]
-        api_error_rate = sum(api_errors) / len(api_errors * 100)
+        api_error_rate = sum(api_errors) / len(api_errors) * 100
 
         pattern_match_errors = [
             raw_score["pattern"] is None for raw_score in raw_scores
@@ -107,3 +107,5 @@ class SafetyEvaluator:
         self.dashboard.log(
             "radar_table", columns=["metric", "score"], data=list(ave_scores.items())
         )
+
+        return ave_scores

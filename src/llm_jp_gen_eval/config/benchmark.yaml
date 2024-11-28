@@ -1,0 +1,12 @@
+benchmark:
+  ichikara:
+    name: "ichikara"
+    dataset: 
+      path: null # For inference
+    metric: "abs_quality" # For evaluation
+  answer_carefully:
+    name: "answer_carefully"
+    dataset:
+      path: null # For inference
+    use_reference: true # For evaluation
+    metric: "abs_safety" # For evaluation

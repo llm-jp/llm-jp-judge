@@ -1,7 +1,7 @@
 defaults:
   - /client@client: azure 
-  - /aspect@aspect: safety
   - /dashboard@dashboard: null
-
+  - benchmark
+  
 input:
-  path: ???
+  dir: ???
