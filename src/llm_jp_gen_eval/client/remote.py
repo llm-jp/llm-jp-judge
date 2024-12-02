@@ -95,6 +95,7 @@ class AzureOpenAI:
                     except (IndexError, AttributeError) as e:
                         d["error_messages"].append(str(e))
                         retry_count += 1
+                        await asyncio.sleep(self.async_request_interval)
                         continue
                 break
         return d
