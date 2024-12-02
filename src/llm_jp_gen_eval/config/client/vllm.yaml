@@ -4,5 +4,6 @@ model_name: ???
 
 batch_size: 1
 max_tokens: 4096
+disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
 
 download_dir: ./data/cache

@@ -17,11 +17,14 @@ class vLLMClient:
         max_tokens=128,
         download_dir="~/.cache/huggingface",
         max_retries=1,
+        disable_system_prompt=False,
     ):
         self.model_name = model_name
         self.batch_size = batch_size
         self.max_tokens = max_tokens
         self.max_retries = max_retries
+        self.disable_system_prompt = disable_system_prompt
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
         self.llm = LLM(
@@ -31,16 +34,25 @@ class vLLMClient:
         )
         self.sampling_params = SamplingParams(max_tokens=self.max_tokens)
 
+    def get_messages(self, prompt, system_prompt=None):
+        if self.disable_system_prompt and system_prompt is not None:
+            prompt = f"{system_prompt}\n\n{prompt}"
+            system_prompt = None
+
+        if system_prompt is None:
+            messages = [{"role": "user", "content": prompt}]
+        else:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ]
+
+        return messages
+
     def batch_request(self, prompts, system_prompt=None):
         messages_list = []
         for prompt in prompts:
-            if system_prompt is None:
-                messages = [{"role": "user", "content": prompt}]
-            else:
-                messages = [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt},
-                ]
+            messages = self.get_messages(prompt, system_prompt=system_prompt)
             messages_list.append(messages)
 
         outputs = self.llm.chat(messages_list, sampling_params=self.sampling_params)

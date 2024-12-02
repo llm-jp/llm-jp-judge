@@ -22,11 +22,13 @@ class AzureOpenAI:
         max_tokens=128,
         max_retries=1,
         async_request_interval=1.0,
+        disable_system_prompt=False,
     ):
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
 
         api_key = os.getenv("AZURE_API_KEY")
         if api_key is None:
@@ -46,7 +48,11 @@ class AzureOpenAI:
             azure_endpoint=api_endpoint,
         )
 
-    async def async_request(self, prompt, system_prompt=None):
+    async def get_messages(self, prompt, system_prompt=None):
+        if self.disable_system_prompt and system_prompt is not None:
+            prompt = f"{system_prompt}\n\n{prompt}"
+            system_prompt = None
+
         if system_prompt is None:
             messages = [{"role": "user", "content": prompt}]
         else:
@@ -54,6 +60,11 @@ class AzureOpenAI:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ]
+
+        return messages
+
+    async def async_request(self, prompt, system_prompt=None):
+        messages = await self.get_messages(prompt, system_prompt=system_prompt)
 
         response = await asyncio.to_thread(
             self.client.chat.completions.create,
@@ -111,11 +122,13 @@ class BedrockAnthropic(AzureOpenAI):
         max_tokens=128,
         max_retries=1,
         async_request_interval=1.0,
+        disable_system_prompt=False,
     ):
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
 
         aws_access_key = os.getenv("AWS_ACCESS_KEY")
         if aws_access_key is None:

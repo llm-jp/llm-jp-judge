@@ -4,3 +4,4 @@ model_name: gpt-4o-2024-05-13
 max_retries: 1
 async_request_interval: 10 # 非同期のリクエスト間隔(秒)
 max_tokens: 4096
+disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。

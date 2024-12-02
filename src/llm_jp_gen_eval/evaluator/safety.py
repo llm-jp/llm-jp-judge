@@ -91,6 +91,7 @@ class SafetyEvaluator:
         if self.dashboard is not None:
             table = []
             header = [
+                "id",
                 "metric",
                 "text",
                 "inference response",
@@ -103,6 +104,7 @@ class SafetyEvaluator:
             for raw_score in raw_scores:
                 table.append(
                     [
+                        raw_score["ID"],
                         raw_score["metric"],
                         raw_score["text"],
                         raw_score["inference_response"],
