@@ -2,5 +2,5 @@ name: azure
 model_name: gpt-4o-2024-05-13
 
 max_retries: 1
-request_interval: 1.0
+async_request_interval: 10 # 非同期のリクエスト間隔(秒)
 max_tokens: 4096

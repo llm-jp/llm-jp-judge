@@ -1,12 +1,16 @@
 import os
 import re
-import time
 import logging
+import asyncio
 
+import openai
 from openai import AzureOpenAI as AzureOpenAIClient
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
 
 from dotenv import load_dotenv
+
+import tqdm
+import tqdm.asyncio
 
 load_dotenv(override=True)
 
@@ -17,12 +21,12 @@ class AzureOpenAI:
         model_name="gpt-4o-2024-05-13",
         max_tokens=128,
         max_retries=1,
-        request_interval=1.0,
+        async_request_interval=1.0,
     ):
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.max_retries = max_retries
-        self.request_interval = request_interval
+        self.async_request_interval = async_request_interval
 
         api_key = os.getenv("AZURE_API_KEY")
         if api_key is None:
@@ -42,7 +46,7 @@ class AzureOpenAI:
             azure_endpoint=api_endpoint,
         )
 
-    def request(self, prompt, system_prompt=None):
+    async def async_request(self, prompt, system_prompt=None):
         if system_prompt is None:
             messages = [{"role": "user", "content": prompt}]
         else:
@@ -51,35 +55,52 @@ class AzureOpenAI:
                 {"role": "user", "content": prompt},
             ]
 
-        response = self.client.chat.completions.create(
+        response = await asyncio.to_thread(
+            self.client.chat.completions.create,
             model=self.model_name,
             messages=messages,
             max_tokens=self.max_tokens,
         )
         return response.choices[0].message.content
 
-    def __call__(self, data, regex=None, system_prompt=None):
-        for d in data:
-            retry_count = 0
-            d["response"], d["pattern"], d["error_messages"] = None, None, []
-            while retry_count < self.max_retries:
-                d["response"] = self.request(d["prompt"], system_prompt=system_prompt)
-                time.sleep(self.request_interval)
+    async def process_data(self, data, regex=None, system_prompt=None):
+        tasks = []
+        for i, d in enumerate(data):
+            tasks.append(
+                self._process_single_request(
+                    d, regex, system_prompt, wait=i * self.async_request_interval
+                )
+            )
+        return await tqdm.asyncio.tqdm.gather(*tasks, desc="Processing data")
 
-                if regex is None:
-                    break
+    async def _process_single_request(self, d, regex, system_prompt, wait):
+        await asyncio.sleep(wait)
 
-                try:
+        retry_count = 0
+        d["response"], d["pattern"], d["error_messages"] = None, None, []
+        while retry_count < self.max_retries:
+            try:
+                d["response"] = await self.async_request(
+                    d["prompt"], system_prompt=system_prompt
+                )
+            except openai.RateLimitError as e:
+                d["error_messages"].append(str(e))
+                retry_count += 1
+                await asyncio.sleep(60)
+            else:
+                if regex is not None:
                     m = re.search(regex, d["response"])
-                    d["pattern"] = m.group(1)
-                except Exception as e:
-                    d["error_messages"].append(str(e))
-                    retry_count += 1
-                    continue
-
+                    try:
+                        d["pattern"] = m.group(1)
+                    except IndexError as e:
+                        d["error_messages"].append(str(e))
+                        retry_count += 1
+                        continue
                 break
+        return d
 
-        return data
+    def __call__(self, data, regex=None, system_prompt=None):
+        return asyncio.run(self.process_data(data, regex, system_prompt))
 
 
 class BedrockAnthropic(AzureOpenAI):
@@ -88,12 +109,12 @@ class BedrockAnthropic(AzureOpenAI):
         model_name="anthropic.claude-3-5-sonnet-20240620-v1:0",
         max_tokens=128,
         max_retries=1,
-        request_interval=1.0,
+        async_request_interval=1.0,
     ):
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.max_retries = max_retries
-        self.request_interval = request_interval
+        self.async_request_interval = async_request_interval
 
         aws_access_key = os.getenv("AWS_ACCESS_KEY")
         if aws_access_key is None:
@@ -116,7 +137,7 @@ class BedrockAnthropic(AzureOpenAI):
             aws_region=aws_region,
         )
 
-    def request(self, prompt, system_prompt=None):
+    async def async_request(self, prompt, system_prompt=None):
         messages = [{"role": "user", "content": prompt}]
 
         completions = self.client.messages.create(

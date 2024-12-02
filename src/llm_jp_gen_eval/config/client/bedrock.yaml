@@ -2,5 +2,5 @@ name: bedrock
 model_name: anthropic.claude-3-5-sonnet-20240620-v1:0
 
 max_retries: 1
-request_interval: 1.0
+async_request_interval: 10 # 非同期のリクエスト間隔(秒)
 max_tokens: 4096
