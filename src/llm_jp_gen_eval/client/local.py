@@ -1,7 +1,12 @@
 import re
 
+import hydra
+
+import torch
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
+
+NUM_GPUS = torch.cuda.device_count()
 
 
 class vLLMClient:
@@ -19,7 +24,11 @@ class vLLMClient:
         self.max_retries = max_retries
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
-        self.llm = LLM(model=self.model_name, download_dir=download_dir)
+        self.llm = LLM(
+            model=self.model_name,
+            download_dir=hydra.utils.to_absolute_path(download_dir),
+            tensor_parallel_size=NUM_GPUS,
+        )
         self.sampling_params = SamplingParams(max_tokens=self.max_tokens)
 
     def batch_request(self, prompts, system_prompt=None):
