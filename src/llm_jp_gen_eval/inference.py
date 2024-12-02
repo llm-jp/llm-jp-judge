@@ -18,7 +18,9 @@ def inference(cfg, client, benchmark_cfg):
         return
 
     logging.info(f"Loading dataset: {benchmark_cfg.name}")
-    data = load_dataset(benchmark_cfg.name, benchmark_cfg.dataset.path)
+    data = load_dataset(
+        benchmark_cfg.name, benchmark_cfg.dataset.path, benchmark_cfg.dataset.size
+    )
 
     logging.info(f"Running inference on {len(data)} samples")
     responses = client(data, system_prompt=cfg.system_prompt)
