@@ -3,12 +3,12 @@ benchmark:
     name: "ichikara"
     dataset: 
       path: null # For inference
+      size: null # Use the first 'size' number of data entries
     metric: "abs_quality" # For evaluation
-    size: null # Use the first 'size' number of data entries
   answer_carefully:
     name: "answer_carefully"
     dataset:
       path: null # For inference
+      size: null # Use the first 'size' number of data entries
     use_reference: true # For evaluation
     metric: "abs_safety" # For evaluation
-    size: null # Use the first 'size' number of data entries

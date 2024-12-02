@@ -71,7 +71,7 @@ class AzureOpenAI:
                     d, regex, system_prompt, wait=i * self.async_request_interval
                 )
             )
-        return await tqdm.asyncio.tqdm.gather(*tasks, desc="Processing data")
+        return await tqdm.asyncio.tqdm.gather(*tasks, desc=self.model_name)
 
     async def _process_single_request(self, d, regex, system_prompt, wait):
         await asyncio.sleep(wait)
