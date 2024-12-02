@@ -45,6 +45,8 @@ class QualityEvaluator:
             for metric in METRICS:
                 d = deepcopy(res)
                 d["metric"] = metric
+                d["inference_response"] = d["response"]
+                d["inference_errors"] = d["error_messages"]
                 d["prompt"] = PROMPT_TEMPLATE.format(
                     metric=metric,
                     metric_definition=METRIC_DEFINITIONS[metric],
@@ -63,6 +65,31 @@ class QualityEvaluator:
                 continue
             score = int(raw_score["pattern"])
             scores[metric].append(score)
+
+        if self.dashboard is not None:
+            table = []
+            header = [
+                "metric",
+                "text",
+                "inference response",
+                "inference errors",
+                "score",
+                "evaluation response",
+                "evaluation errors",
+            ]
+            for raw_score in raw_scores:
+                table.append(
+                    [
+                        raw_score["metric"],
+                        raw_score["text"],
+                        raw_score["inference_response"],
+                        ", ".join(raw_score["inference_errors"]),
+                        raw_score["pattern"],
+                        raw_score["response"],
+                        ", ".join(raw_score["error_messages"]),
+                    ]
+                )
+            self.dashboard.log("abs_quality_table", columns=header, data=table)
 
         api_errors = [raw_score["response"] is None for raw_score in raw_scores]
         api_error_rate = sum(api_errors) / len(api_errors * 100)

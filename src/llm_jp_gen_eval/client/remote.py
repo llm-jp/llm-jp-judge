@@ -92,7 +92,7 @@ class AzureOpenAI:
                     m = re.search(regex, d["response"])
                     try:
                         d["pattern"] = m.group(1)
-                    except IndexError as e:
+                    except (IndexError, AttributeError) as e:
                         d["error_messages"].append(str(e))
                         retry_count += 1
                         continue
