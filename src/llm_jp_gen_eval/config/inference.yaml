@@ -1,6 +1,5 @@
 defaults:
   - /client@client: azure
-  - /dashboard@dashboard: null
   - benchmark
 
 output:
