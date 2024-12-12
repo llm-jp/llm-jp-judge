@@ -112,6 +112,10 @@ class AzureOpenAI:
                 d["error_messages"].append(str(e))
                 retry_count += 1
                 await asyncio.sleep(60)
+            except openai.BadRequestError as e:
+                d["error_messages"].append(str(e))
+                retry_count += 1
+                await asyncio.sleep(self.async_request_interval)
             else:
                 if regex is not None:
                     m = re.search(regex, d["response"])
