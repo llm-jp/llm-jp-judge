@@ -144,8 +144,4 @@ class SafetyEvaluator:
         }
         logging.info(f"Scores: {ave_scores}")
 
-        self.dashboard.log(
-            "radar_table", columns=["metric", "score"], data=list(ave_scores.items())
-        )
-
         return ave_scores
