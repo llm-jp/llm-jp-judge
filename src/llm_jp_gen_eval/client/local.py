@@ -14,14 +14,12 @@ class vLLMClient:
         self,
         model_name="llm-jp/llm-jp-3-13b-instruct",
         batch_size=1,
-        max_tokens=128,
         download_dir="~/.cache/huggingface",
         max_retries=1,
         disable_system_prompt=False,
     ):
         self.model_name = model_name
         self.batch_size = batch_size
-        self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.disable_system_prompt = disable_system_prompt
 
@@ -32,7 +30,6 @@ class vLLMClient:
             download_dir=hydra.utils.to_absolute_path(download_dir),
             tensor_parallel_size=NUM_GPUS,
         )
-        self.sampling_params = SamplingParams(max_tokens=self.max_tokens)
 
     def get_messages(self, prompt, system_prompt=None):
         if self.disable_system_prompt and system_prompt is not None:
@@ -49,17 +46,24 @@ class vLLMClient:
 
         return messages
 
-    def batch_request(self, prompts, system_prompt=None):
+    def batch_request(
+        self,
+        prompts,
+        system_prompt=None,
+        sampling_params={},
+    ):
+        sampling_params = SamplingParams(**sampling_params)
+
         messages_list = []
         for prompt in prompts:
             messages = self.get_messages(prompt, system_prompt=system_prompt)
             messages_list.append(messages)
 
-        outputs = self.llm.chat(messages_list, sampling_params=self.sampling_params)
+        outputs = self.llm.chat(messages_list, sampling_params=sampling_params)
         responses = [output.outputs[0].text for output in outputs]
         return responses
 
-    def __call__(self, data, regex=None, system_prompt=None):
+    def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
         prompts = [d["prompt"] for d in data]
         pending_indices = list(range(len(prompts)))
 
@@ -70,7 +74,9 @@ class vLLMClient:
         done_indices = set()
         while retry_count < self.max_retries and len(pending_indices) > 0:
             responses = self.batch_request(
-                [prompts[i] for i in pending_indices], system_prompt=system_prompt
+                [prompts[i] for i in pending_indices],
+                system_prompt=system_prompt,
+                sampling_params=sampling_params,
             )
 
             for idx, response in zip(pending_indices, responses):

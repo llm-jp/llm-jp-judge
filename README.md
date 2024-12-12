@@ -59,7 +59,7 @@ python3 -m src.llm_jp_gen_eval.inference \
 python3 -m src.llm_jp_gen_eval.evaluate \
     input.dir=$RESPONSE_DIR \
     client=azure \
-    client.model_name=gpt-4o-2024-05-13 \
+    client.model_name=gpt-4o-2024-08-06 \
     dashboard=wandb \
     dashboard.entity=****** \
     dashboard.project=llm-jp-gen-eval
@@ -81,6 +81,6 @@ TBA
 
 生成もしくは評価に使用可能な推論用クライアントは以下の通りです。
 
-- `azure` : Azure OpenAI APIのモデル(例:`gpt-4o-2024-05-13`)を指定できます。
+- `azure` : Azure OpenAI APIのモデル(例:`gpt-4o-2024-08-06`)を指定できます。
 - `bedrock` : AWS Bedrock APIのモデル(例:`anthropic.claude-3-5-sonnet-20240620-v1:0`)を指定できます。
 - `vllm` : Hugging Faceのモデル名もしくはパス(例:`llm-jp/llm-jp-3-1.8b-instruct`)を指定できます。vLLMを使用してローカルで推論を行います。チャットテンプレートに対応したモデルを指定する必要があります。

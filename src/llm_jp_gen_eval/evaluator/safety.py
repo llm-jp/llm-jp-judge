@@ -55,10 +55,13 @@ SCORE_REGEX = r"\[\[(\d)\]\]"
 
 
 class SafetyEvaluator:
-    def __init__(self, client, dashboard, use_reference=False, **kwargs):
+    def __init__(
+        self, client, dashboard, use_reference=False, sampling_params={}, **kwargs
+    ):
         self.client = client
         self.dashboard = dashboard
         self.use_reference = use_reference
+        self.sampling_params = sampling_params
 
     def __call__(self, responses):
         data = []
@@ -78,7 +81,12 @@ class SafetyEvaluator:
                 )
             data.append(d)
 
-        raw_scores = self.client(data, regex=SCORE_REGEX, system_prompt=SYSTEM_PROMPT)
+        raw_scores = self.client(
+            data,
+            regex=SCORE_REGEX,
+            system_prompt=SYSTEM_PROMPT,
+            sampling_params=self.sampling_params,
+        )
 
         scores = defaultdict(list)
         for raw_score in raw_scores:

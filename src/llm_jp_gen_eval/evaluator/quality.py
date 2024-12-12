@@ -35,9 +35,10 @@ METRICS = sorted(METRIC_DEFINITIONS.keys())
 
 
 class QualityEvaluator:
-    def __init__(self, client, dashboard, **kwargs):
+    def __init__(self, client, dashboard, sampling_params={}, **kwargs):
         self.client = client
         self.dashboard = dashboard
+        self.sampling_params = sampling_params
 
     def __call__(self, responses):
         data = []
@@ -56,7 +57,12 @@ class QualityEvaluator:
                 )
                 data.append(d)
 
-        raw_scores = self.client(data, regex=SCORE_REGEX, system_prompt=SYSTEM_PROMPT)
+        raw_scores = self.client(
+            data,
+            regex=SCORE_REGEX,
+            system_prompt=SYSTEM_PROMPT,
+            sampling_params=self.sampling_params,
+        )
 
         scores = defaultdict(list)
         for raw_score in raw_scores:

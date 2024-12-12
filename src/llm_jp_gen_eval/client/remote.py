@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+import warnings
 import asyncio
 
 import openai
@@ -18,14 +19,12 @@ load_dotenv(override=True)
 class AzureOpenAI:
     def __init__(
         self,
-        model_name="gpt-4o-2024-05-13",
-        max_tokens=128,
+        model_name="gpt-4o-2024-08-06",
         max_retries=1,
         async_request_interval=1.0,
         disable_system_prompt=False,
     ):
         self.model_name = model_name
-        self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
         self.disable_system_prompt = disable_system_prompt
@@ -63,28 +62,41 @@ class AzureOpenAI:
 
         return messages
 
-    async def async_request(self, prompt, system_prompt=None):
+    async def async_request(
+        self,
+        prompt,
+        system_prompt=None,
+        sampling_params={},
+    ):
         messages = await self.get_messages(prompt, system_prompt=system_prompt)
 
         response = await asyncio.to_thread(
             self.client.chat.completions.create,
             model=self.model_name,
             messages=messages,
-            max_tokens=self.max_tokens,
+            **sampling_params,
         )
         return response.choices[0].message.content
 
-    async def process_data(self, data, regex=None, system_prompt=None):
+    async def process_data(
+        self, data, regex=None, system_prompt=None, sampling_params={}
+    ):
         tasks = []
         for i, d in enumerate(data):
             tasks.append(
                 self._process_single_request(
-                    d, regex, system_prompt, wait=i * self.async_request_interval
+                    d,
+                    regex,
+                    system_prompt,
+                    wait=i * self.async_request_interval,
+                    sampling_params=sampling_params,
                 )
             )
         return await tqdm.asyncio.tqdm.gather(*tasks, desc=self.model_name)
 
-    async def _process_single_request(self, d, regex, system_prompt, wait):
+    async def _process_single_request(
+        self, d, regex, system_prompt, wait, sampling_params={}
+    ):
         await asyncio.sleep(wait)
 
         retry_count = 0
@@ -92,7 +104,9 @@ class AzureOpenAI:
         while retry_count < self.max_retries:
             try:
                 d["response"] = await self.async_request(
-                    d["prompt"], system_prompt=system_prompt
+                    d["prompt"],
+                    system_prompt=system_prompt,
+                    sampling_params=sampling_params,
                 )
             except openai.RateLimitError as e:
                 d["error_messages"].append(str(e))
@@ -111,21 +125,23 @@ class AzureOpenAI:
                 break
         return d
 
-    def __call__(self, data, regex=None, system_prompt=None):
-        return asyncio.run(self.process_data(data, regex, system_prompt))
+    def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
+        return asyncio.run(
+            self.process_data(
+                data, regex, system_prompt, sampling_params=sampling_params
+            )
+        )
 
 
 class BedrockAnthropic(AzureOpenAI):
     def __init__(
         self,
         model_name="anthropic.claude-3-5-sonnet-20240620-v1:0",
-        max_tokens=128,
         max_retries=1,
         async_request_interval=1.0,
         disable_system_prompt=False,
     ):
         self.model_name = model_name
-        self.max_tokens = max_tokens
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
         self.disable_system_prompt = disable_system_prompt
@@ -151,14 +167,28 @@ class BedrockAnthropic(AzureOpenAI):
             aws_region=aws_region,
         )
 
-    async def async_request(self, prompt, system_prompt=None):
+    async def async_request(
+        self,
+        prompt,
+        system_prompt=None,
+        sampling_params={},
+    ):
         messages = [{"role": "user", "content": prompt}]
+
+        sampling_params = dict(sampling_params)
+        # Ignore unsupported parameters
+        for key in ["seed", "frequency_penalty"]:
+            if key in sampling_params:
+                warnings.warn(
+                    f"BedrockAnthropic does not support {key} parameter. Ignoring."
+                )
+                sampling_params.pop(key)
 
         completions = self.client.messages.create(
             model=self.model_name,
             messages=messages,
-            max_tokens=self.max_tokens,
             system=system_prompt,
+            **sampling_params,
         )
 
         return completions.content[0].text
