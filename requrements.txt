@@ -4,3 +4,5 @@ vllm==0.6.2
 anthropic
 python-dotenv
 wandb
+awscli
+boto3
