@@ -8,13 +8,13 @@ from .dataset import load_dataset
 import logging
 
 
-def inference(cfg, client, benchmark_cfg):
+def generate(cfg, client, benchmark_cfg):
     output_dir = hydra.utils.to_absolute_path(cfg.output.dir)
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"{benchmark_cfg.name}.jsonl")
 
-    if cfg.output.overwrite and os.path.exists(output_path):
-        logging.info(f"Skipping inference for {benchmark_cfg.name} as output exists")
+    if not cfg.output.overwrite and os.path.exists(output_path):
+        logging.info(f"Skipping generate for {benchmark_cfg.name} as output exists")
         return
 
     logging.info(f"Loading dataset: {benchmark_cfg.name}")
@@ -22,8 +22,12 @@ def inference(cfg, client, benchmark_cfg):
         benchmark_cfg.name, benchmark_cfg.dataset.path, benchmark_cfg.dataset.size
     )
 
-    logging.info(f"Running inference on {len(data)} samples")
-    responses = client(data, system_prompt=cfg.system_prompt)
+    logging.info(f"Running generate on {len(data)} samples")
+    responses = client(
+        data,
+        system_prompt=benchmark_cfg.system_prompt,
+        sampling_params=benchmark_cfg.sampling_params,
+    )
 
     success = [res["response"] is not None for res in responses]
     success_rate = sum(success) / len(success) * 100
@@ -45,7 +49,7 @@ def save_metadata(cfg):
     save_json(output_path, metadata)
 
 
-@hydra.main(config_path="./config", config_name="inference")
+@hydra.main(config_path="./config", config_name="generate")
 def main(cfg):
     any_specified = any(
         benchmark_cfg.dataset.path for benchmark_cfg in cfg.benchmark.values()
@@ -61,8 +65,8 @@ def main(cfg):
         if not benchmark_cfg.dataset.path:
             continue
 
-        logging.info(f"Running inference on benchmark: {benchmark_cfg.name}")
-        inference(cfg, client, benchmark_cfg)
+        logging.info(f"Running generate on benchmark: {benchmark_cfg.name}")
+        generate(cfg, client, benchmark_cfg)
 
     save_metadata(cfg)
 

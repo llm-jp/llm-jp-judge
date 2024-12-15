@@ -1,7 +1,7 @@
 defaults:
   - /client@client: azure 
   - /dashboard@dashboard: null
-  - benchmark
+  - /benchmark@benchmark: evaluate
   
 input:
   dir: ???

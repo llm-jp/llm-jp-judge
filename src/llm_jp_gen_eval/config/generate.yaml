@@ -1,0 +1,7 @@
+defaults:
+  - /client@client: azure
+  - /benchmark@benchmark: generate
+
+output:
+  dir: ./output/${client.model_name}
+  overwrite: false

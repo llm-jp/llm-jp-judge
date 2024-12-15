@@ -33,14 +33,14 @@ AWS_REGION="us-west-2"
 
 ## How to Use
 
-### Inference
+### Generate
 
 評価用データセットに対する生成を行います。  
 以下は、`llm-jp/llm-jp-3-1.8b-instruct`を対象にしています。
 
 ```
 RESPONSE_DIR=./output/llm-jp/llm-jp-3-1.8b-instruct
-python3 -m src.llm_jp_gen_eval.inference \
+python3 -m src.llm_jp_gen_eval.generate \
     output.dir=$RESPONSE_DIR \
     client=vllm \
     client.model_name=llm-jp/llm-jp-3-1.8b-instruct \

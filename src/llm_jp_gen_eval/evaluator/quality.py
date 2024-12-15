@@ -3,9 +3,6 @@ import logging
 from copy import deepcopy
 from collections import defaultdict
 
-SYSTEM_PROMPT = (
-    "あなたはAIアシスタントの応答評価において助けになる正確なアシスタントです。"
-)
 PROMPT_TEMPLATE = """[指示]
 質問に対するAIアシスタントの回答を以下の指標に基づいて評価してください。
 {metric} (1-5) : {metric_definition}
@@ -35,9 +32,12 @@ METRICS = sorted(METRIC_DEFINITIONS.keys())
 
 
 class QualityEvaluator:
-    def __init__(self, client, dashboard, sampling_params={}, **kwargs):
+    def __init__(
+        self, client, dashboard, system_prompt=None, sampling_params={}, **kwargs
+    ):
         self.client = client
         self.dashboard = dashboard
+        self.system_prompt = system_prompt
         self.sampling_params = sampling_params
 
     def __call__(self, responses):
@@ -46,8 +46,8 @@ class QualityEvaluator:
             for metric in METRICS:
                 d = deepcopy(res)
                 d["metric"] = metric
-                d["inference_response"] = d["response"]
-                d["inference_errors"] = d["error_messages"]
+                d["generate_response"] = d["response"]
+                d["generate_errors"] = d["error_messages"]
                 d["prompt"] = PROMPT_TEMPLATE.format(
                     metric=metric,
                     metric_definition=METRIC_DEFINITIONS[metric],
@@ -60,7 +60,7 @@ class QualityEvaluator:
         raw_scores = self.client(
             data,
             regex=SCORE_REGEX,
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=self.system_prompt,
             sampling_params=self.sampling_params,
         )
 
@@ -78,8 +78,8 @@ class QualityEvaluator:
                 "id",
                 "metric",
                 "text",
-                "inference response",
-                "inference errors",
+                "generate response",
+                "generate errors",
                 "score",
                 "evaluation response",
                 "evaluation errors",
@@ -90,8 +90,8 @@ class QualityEvaluator:
                         raw_score["ID"],
                         raw_score["metric"],
                         raw_score["text"],
-                        raw_score["inference_response"],
-                        ", ".join(raw_score["inference_errors"]),
+                        raw_score["generate_response"],
+                        ", ".join(raw_score["generate_errors"]),
                         raw_score["pattern"],
                         raw_score["response"],
                         ", ".join(raw_score["error_messages"]),

@@ -1,0 +1,24 @@
+ichikara:
+  name: "ichikara"
+  dataset: 
+    path: null
+    size: null # Use the first 'size' number of data entries
+  system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+answer_carefully:
+  name: "answer_carefully"
+  dataset:
+    path: null
+    size: null
+  system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0

@@ -1,12 +1,12 @@
 import hydra
 
 
-from . import inference
+from . import generate
 
 
 @hydra.main(config_path="./config", config_name="config")
 def main(cfg):
-    inference.main(cfg)
+    generate.main(cfg)
 
 
 if __name__ == "__main__":
