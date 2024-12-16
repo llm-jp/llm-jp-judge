@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 
 import hydra
 
@@ -31,66 +32,73 @@ class vLLMClient:
             tensor_parallel_size=NUM_GPUS,
         )
 
-    def get_messages(self, prompt, system_prompt=None):
+    def get_messages(self, prompt, response, system_prompt=None):
         if self.disable_system_prompt and system_prompt is not None:
-            prompt = f"{system_prompt}\n\n{prompt}"
+            prompt = deepcopy(prompt)
+            prompt[0] = f"{system_prompt}\n\n{prompt[0]}"
             system_prompt = None
 
-        if system_prompt is None:
-            messages = [{"role": "user", "content": prompt}]
-        else:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ]
+        messages = []
+        for i in range(len(prompt)):
+            messages.append({"role": "user", "content": prompt[i]})
+            if i > 0:
+                messages.append({"role": "assistant", "content": response[i - 1]})
+
+        if system_prompt is not None:
+            messages.insert(0, {"role": "system", "content": system_prompt})
 
         return messages
 
     def batch_request(
         self,
         prompts,
+        responses,
         system_prompt=None,
         sampling_params={},
     ):
         sampling_params = SamplingParams(**sampling_params)
 
         messages_list = []
-        for prompt in prompts:
-            messages = self.get_messages(prompt, system_prompt=system_prompt)
+        for prompt, response in zip(prompts, responses):
+            messages = self.get_messages(prompt, response, system_prompt=system_prompt)
             messages_list.append(messages)
 
         outputs = self.llm.chat(messages_list, sampling_params=sampling_params)
         responses = [output.outputs[0].text for output in outputs]
         return responses
 
-    def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
-        prompts = [d["prompt"] for d in data]
-        pending_indices = list(range(len(prompts)))
+    def _process_turn_requests(
+        self, data, turn, regex=None, system_prompt=None, sampling_params={}
+    ):
+        pending_indices = [i for i, d in enumerate(data) if len(d["prompt"]) > turn]
 
-        for d in data:
-            d["response"], d["pattern"], d["error_messages"] = None, None, []
+        tmp_data = [
+            {"response": None, "pattern": None, "error_messages": []} for _ in data
+        ]
 
         retry_count = 0
         done_indices = set()
         while retry_count < self.max_retries and len(pending_indices) > 0:
             responses = self.batch_request(
-                [prompts[i] for i in pending_indices],
+                [data[i]["prompt"][: turn + 1] for i in pending_indices],
+                [data[i]["response"] for i in pending_indices],
                 system_prompt=system_prompt,
                 sampling_params=sampling_params,
             )
 
             for idx, response in zip(pending_indices, responses):
-                data[idx]["response"] = response
-                if regex is None:
-                    done_indices.add(idx)
-                    continue
+                tmp_data[idx]["response"] = response
+                if regex is not None:
+                    try:
+                        m = re.search(regex, response)
+                        tmp_data[idx]["pattern"] = m.group(1)
+                    except Exception as e:
+                        tmp_data[idx]["error_messages"].append(str(e))
+                        continue
 
-                try:
-                    m = re.search(regex, response)
-                    data[idx]["pattern"] = m.group(1)
-                except Exception as e:
-                    data[idx]["error_messages"].append(str(e))
-                    continue
+                data[idx]["response"].append(tmp_data[idx]["response"])
+                data[idx]["pattern"].append(tmp_data[idx]["pattern"])
+                data[idx]["error_messages"].append(tmp_data[idx]["error_messages"])
 
                 done_indices.add(idx)
                 continue
@@ -99,3 +107,34 @@ class vLLMClient:
             retry_count += 1
 
         return data
+
+    def process_data(self, data, regex=None, system_prompt=None, sampling_params={}):
+        max_turn = 0
+        for d in data:
+            if type(d["prompt"]) == str:  # Single turn
+                d["is_single_turn"] = True
+                d["prompt"] = [d["prompt"]]
+            elif type(d["prompt"]) == list:  # Multi turn
+                d["is_single_turn"] = False
+            max_turn = max(max_turn, len(d["prompt"]))
+            d["response"], d["pattern"], d["error_messages"] = [], [], []
+
+        for turn in range(max_turn):
+            data = self._process_turn_requests(
+                data, turn, regex, system_prompt, sampling_params
+            )
+
+        for d in data:
+            is_single_turn = d.pop("is_single_turn")
+            if is_single_turn:
+                d["prompt"] = d["prompt"][0]
+                d["response"] = d["response"][0]
+                d["pattern"] = d["pattern"][0]
+                d["error_messages"] = d["error_messages"][0]
+
+        return data
+
+    def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
+        return self.process_data(
+            data, regex, system_prompt, sampling_params=sampling_params
+        )
