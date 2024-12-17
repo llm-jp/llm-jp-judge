@@ -1,6 +1,10 @@
 import os
 import hydra
 
+from collections import defaultdict
+
+from omegaconf import OmegaConf
+
 from .client import load_client
 from .utils.data import save_jsonl, save_json
 from .dataset import load_dataset
@@ -22,12 +26,44 @@ def generate(cfg, client, benchmark_cfg):
         benchmark_cfg.name, benchmark_cfg.dataset.path, benchmark_cfg.dataset.size
     )
 
-    logging.info(f"Running generate on {len(data)} samples")
-    responses = client(
-        data,
-        system_prompt=benchmark_cfg.system_prompt,
-        sampling_params=benchmark_cfg.sampling_params,
-    )
+    if (
+        "category_sampling_params" in benchmark_cfg
+    ):  # データカテゴリー毎にサンプリングパラメータを設定する場合: MT-Bench用
+        category_sampling_params = OmegaConf.to_container(
+            benchmark_cfg.category_sampling_params, resolve=True
+        )
+
+        categorized_data = defaultdict(list)
+        for i, d in enumerate(data):
+            d["original_index"] = i
+            categorized_data[d["category"]].append(d)
+
+        responses = []
+        for category, category_data in categorized_data.items():
+            sampling_params = OmegaConf.to_container(
+                benchmark_cfg.sampling_params, resolve=True
+            )
+            sampling_params.update(category_sampling_params.get(category, {}))
+
+            logging.info(
+                f"Running generate on {len(category_data)} samples in category: {category}"
+            )
+            responses += client(
+                category_data,
+                system_prompt=benchmark_cfg.system_prompt,
+                sampling_params=sampling_params,
+            )
+        responses = sorted(responses, key=lambda x: x["original_index"])
+        for res in responses:
+            del res["original_index"]
+
+    else:
+        logging.info(f"Running generate on {len(data)} samples")
+        responses = client(
+            data,
+            system_prompt=benchmark_cfg.system_prompt,
+            sampling_params=benchmark_cfg.sampling_params,
+        )
 
     success = [res["response"] is not None for res in responses]
     success_rate = sum(success) / len(success) * 100
