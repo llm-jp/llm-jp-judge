@@ -1,5 +1,6 @@
 defaults:
-  - /benchmark/prompt/evaluate@mt_bench.prompt: mtbench_ja_prompt_v1
+  - /benchmark/prompt/evaluate@mt_bench.prompt: mtbench_en_prompt_v0
+  - /benchmark/prompt/evaluate@ja_mt_bench.prompt: mtbench_ja_prompt_v1
 
 ichikara:
   metric: "abs_quality"
@@ -22,6 +23,14 @@ answer_carefully:
     frequency_penalty: 0.0
 mt_bench:
   metric: "mt_bench"
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+ja_mt_bench:
+  metric: "ja_mt_bench"
   sampling_params:
     max_tokens: 1024
     seed: 1234
