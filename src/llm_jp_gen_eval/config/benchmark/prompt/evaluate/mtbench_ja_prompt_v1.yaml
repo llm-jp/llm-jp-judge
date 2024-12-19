@@ -1,0 +1,309 @@
+# Japanese prompt Stability-AI/FastChat (5d4f13a) (latest) : 'wandb-japan/llm-leaderboard/mtbench_ja_prompt:v1'
+# https://github.com/wandb/llm-leaderboard/tree/g-leaderboard?tab=readme-ov-file#preparation-for-mtbench
+pair-math-v1:
+  category: math
+  description: Prompt for math questions
+  name: pair-math-v1
+  output_format: '[[A]]'
+  prompt_template: |-
+    [User Question]
+    {question}
+
+    [The Start of Reference Answer]
+    {ref_answer_1}
+    [The End of Reference Answer]
+
+    [The Start of Assistant A's Answer]
+    {answer_a}
+    [The End of Assistant A's Answer]
+
+    [The Start of Assistant B's Answer]
+    {answer_b}
+    [The End of Assistant B's Answer]
+  system_prompt: 'Please act as an impartial judge and evaluate the quality of the
+    responses provided by two AI assistants to the user question displayed below.
+    Your evaluation should consider correctness and helpfulness. You will be given
+    a reference answer, assistant A''s answer, and assistant B''s answer. Your job
+    is to evaluate which assistant''s answer is better. Begin your evaluation by comparing
+    both assistants'' answers with the reference answer. Identify and correct any
+    mistakes. Avoid any position biases and ensure that the order in which the responses
+    were presented does not influence your decision. Do not allow the length of the
+    responses to influence your evaluation. Do not favor certain names of the assistants.
+    Be as objective as possible. The expected language is Japanese. Responses in languages
+    other than Japanese will incur score deductions unless specifically required.
+    Failure to use Japanese at all will result in the lowest evaluation. However,
+    using Japanese is not mandatory when providing only Python scripts or calculation
+    results, where Japanese is not essential. Additionally, your explanation of judgement
+    should be in Japanese. After providing your explanation, output your final verdict
+    by strictly following this format: "[[A]]" if assistant A is better, "[[B]]" if
+    assistant B is better, and "[[C]]" for a tie.'
+  type: pairwise
+pair-math-v1-multi-turn:
+  category: general
+  description: Prompt for multi-turn general questions
+  name: pair-math-v1-multi-turn
+  output_format: '[[A]]'
+  prompt_template: |-
+    <|The Start of Reference Answer|>
+
+    ### User:
+    {question_1}
+
+    ### Reference answer:
+    {ref_answer_1}
+
+    ### User:
+    {question_2}
+
+    ### Reference answer:
+    {ref_answer_2}
+
+    <|The End of Reference Answer|>
+
+
+    <|The Start of Assistant A's Conversation with User|>
+
+    ### User:
+    {question_1}
+
+    ### Assistant A:
+    {answer_a_1}
+
+    ### User:
+    {question_2}
+
+    ### Assistant A:
+    {answer_a_2}
+
+    <|The End of Assistant A's Conversation with User|>
+
+
+    <|The Start of Assistant B's Conversation with User|>
+
+    ### User:
+    {question_1}
+
+    ### Assistant B:
+    {answer_b_1}
+
+    ### User:
+    {question_2}
+
+    ### Assistant B:
+    {answer_b_2}
+
+    <|The End of Assistant B's Conversation with User|>
+  system_prompt: 'Please act as an impartial judge and evaluate the quality of the
+    responses provided by two AI assistants to the user questions. Your evaluation
+    should consider correctness and helpfulness. You will be given reference answers,
+    the assistant A''s answers, the assistant B''s answers. Your job is to determine
+    which assistant provides correct and helpful answers to the second user question.
+    Begin your evaluation by comparing both assistants'' answers with the reference
+    answers. Identify and correct any mistakes. Avoid any position biases and ensure
+    that the order in which the responses were presented does not influence your decision.
+    Do not allow the length of the responses to influence your evaluation. Do not
+    favor certain names of the assistants. Be as objective as possible. The expected
+    language is Japanese. Responses in languages other than Japanese will incur score
+    deductions unless specifically required. Failure to use Japanese at all will result
+    in the lowest evaluation. However, using Japanese is not mandatory when providing
+    only Python scripts or calculation results, where Japanese is not essential. Additionally,
+    your explanation of judgement should be in Japanese. After providing your explanation,
+    output your final verdict by strictly following this format: "[[A]]" if assistant
+    A is better, "[[B]]" if assistant B is better, and "[[C]]" for a tie.'
+  type: pairwise
+pair-v2:
+  category: general
+  description: Prompt for general questions
+  name: pair-v2
+  output_format: '[[A]]'
+  prompt_template: |-
+    [User Question]
+    {question}
+
+    [The Start of Assistant A's Answer]
+    {answer_a}
+    [The End of Assistant A's Answer]
+
+    [The Start of Assistant B's Answer]
+    {answer_b}
+    [The End of Assistant B's Answer]
+  system_prompt: 'Please act as an impartial judge and evaluate the quality of the
+    responses provided by two AI assistants to the user question displayed below.
+    You should choose the assistant that follows the user''s instructions and answers
+    the user''s question better. Your evaluation should consider factors such as the
+    helpfulness, relevance, accuracy, depth, creativity, and level of detail of their
+    responses. Begin your evaluation by comparing the two responses and provide a
+    short explanation. Avoid any position biases and ensure that the order in which
+    the responses were presented does not influence your decision. Do not allow the
+    length of the responses to influence your evaluation. Do not favor certain names
+    of the assistants. Be as objective as possible. The expected language is Japanese.
+    Responses in languages other than Japanese will incur score deductions unless
+    specifically required. Failure to use Japanese at all will result in the lowest
+    evaluation. However, using Japanese is not mandatory when providing only Python
+    scripts or calculation results, where Japanese is not essential. Additionally,
+    your explanation of judgement should be in Japanese. After providing your explanation,
+    output your final verdict by strictly following this format: "[[A]]" if assistant
+    A is better, "[[B]]" if assistant B is better, and "[[C]]" for a tie.'
+  type: pairwise
+pair-v2-multi-turn:
+  category: general
+  description: Prompt for multi-turn general questions
+  name: pair-v2-multi-turn
+  output_format: '[[A]]'
+  prompt_template: |-
+    <|The Start of Assistant A's Conversation with User|>
+
+    ### User:
+    {question_1}
+
+    ### Assistant A:
+    {answer_a_1}
+
+    ### User:
+    {question_2}
+
+    ### Assistant A:
+    {answer_a_2}
+
+    <|The End of Assistant A's Conversation with User|>
+
+
+    <|The Start of Assistant B's Conversation with User|>
+
+    ### User:
+    {question_1}
+
+    ### Assistant B:
+    {answer_b_1}
+
+    ### User:
+    {question_2}
+
+    ### Assistant B:
+    {answer_b_2}
+
+    <|The End of Assistant B's Conversation with User|>
+  system_prompt: 'Please act as an impartial judge and evaluate the quality of the
+    responses provided by two AI assistants to the user questions. You should choose
+    the assistant that follows the user''s instructions and answers the user''s questions
+    better. Your evaluation should consider factors such as the helpfulness, relevance,
+    accuracy, depth, creativity, and level of detail of their responses. You should
+    focus on who provides a better answer to the second user question. Begin your
+    evaluation by comparing the responses of the two assistants and provide a short
+    explanation. Avoid any position biases and ensure that the order in which the
+    responses were presented does not influence your decision. Do not allow the length
+    of the responses to influence your evaluation. Do not favor certain names of the
+    assistants. Be as objective as possible. The expected language is Japanese. Responses
+    in languages other than Japanese will incur score deductions unless specifically
+    required. Failure to use Japanese at all will result in the lowest evaluation.
+    However, using Japanese is not mandatory when providing only Python scripts or
+    calculation results, where Japanese is not essential. Additionally, your explanation
+    of judgement should be in Japanese. After providing your explanation, output your
+    final verdict by strictly following this format: "[[A]]" if assistant A is better,
+    "[[B]]" if assistant B is better, and "[[C]]" for a tie.'
+  type: pairwise
+single-math-v1:
+  category: math
+  description: Prompt for general questions
+  name: single-math-v1
+  output_format: '[[rating]]'
+  prompt_template: |-
+    [Instruction]
+    Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question displayed below. Your evaluation should consider correctness and helpfulness. You will be given a reference answer and the assistant's answer. Begin your evaluation by comparing the assistant's answer with the reference answer. Identify and correct any mistakes. Be as objective as possible. The expected language is Japanese. Responses in languages other than Japanese will incur score deductions unless specifically required. Failure to use Japanese at all will result in the lowest evaluation. However, using Japanese is not mandatory when providing only Python scripts or calculation results, where Japanese is not essential. Additionally, your explanation of judgement should be in Japanese. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".
+
+    [Question]
+    {question}
+
+    [The Start of Reference Answer]
+    {ref_answer_1}
+    [The End of Reference Answer]
+
+    [The Start of Assistant's Answer]
+    {answer}
+    [The End of Assistant's Answer]
+  system_prompt: You are a helpful assistant.
+  type: single
+single-math-v1-multi-turn:
+  category: math
+  description: Prompt for general questions
+  name: single-math-v1-multi-turn
+  output_format: '[[rating]]'
+  prompt_template: |-
+    <|The Start of Reference Answer|>
+
+    ### User:
+    {question_1}
+
+    ### Reference answer:
+    {ref_answer_1}
+
+    ### User:
+    {question_2}
+
+    ### Reference answer:
+    {ref_answer_2}
+
+    <|The End of Reference Answer|>
+
+
+    <|The Start of Assistant A's Conversation with User|>
+
+    ### User:
+    {question_1}
+
+    ### Assistant A:
+    {answer_1}
+
+    ### User:
+    {question_2}
+
+    ### Assistant A:
+    {answer_2}
+
+    <|The End of Assistant A's Conversation with User|>
+  system_prompt: |+
+    Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question. Your evaluation should consider correctness and helpfulness. You will be given a reference answer and the assistant's answer. You evaluation should focus on the assistant's answer to the second question. Begin your evaluation by comparing the assistant's answer with the reference answer. Identify and correct any mistakes. Be as objective as possible. The expected language is Japanese. Responses in languages other than Japanese will incur score deductions unless specifically required. Failure to use Japanese at all will result in the lowest evaluation. However, using Japanese is not mandatory when providing only Python scripts or calculation results, where Japanese is not essential. Additionally, your explanation of judgement should be in Japanese. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".
+
+  type: single
+single-v1:
+  category: general
+  description: Prompt for general questions
+  name: single-v1
+  output_format: '[[rating]]'
+  prompt_template: |-
+    [Instruction]
+    Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question displayed below. Your evaluation should consider factors such as the helpfulness, relevance, accuracy, depth, creativity, and level of detail of the response. Begin your evaluation by providing a short explanation. Be as objective as possible. The expected language is Japanese. Responses in languages other than Japanese will incur score deductions unless specifically required. Failure to use Japanese at all will result in the lowest evaluation. However, using Japanese is not mandatory when providing only Python scripts or calculation results, where Japanese is not essential. Additionally, your explanation of judgement should be in Japanese. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".
+
+    [Question]
+    {question}
+
+    [The Start of Assistant's Answer]
+    {answer}
+    [The End of Assistant's Answer]
+  system_prompt: You are a helpful assistant.
+  type: single
+single-v1-multi-turn:
+  category: general
+  description: Prompt for general questions
+  name: single-v1-multi-turn
+  output_format: '[[rating]]'
+  prompt_template: |-
+    <|The Start of Assistant A's Conversation with User|>
+
+    ### User:
+    {question_1}
+
+    ### Assistant A:
+    {answer_1}
+
+    ### User:
+    {question_2}
+
+    ### Assistant A:
+    {answer_2}
+
+    <|The End of Assistant A's Conversation with User|>
+  system_prompt: |+
+    Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question displayed below. Your evaluation should consider factors such as the helpfulness, relevance, accuracy, depth, creativity, and level of detail of the response. You evaluation should focus on the assistant's answer to the second user question. Begin your evaluation by providing a short explanation. Be as objective as possible. The expected language is Japanese. Responses in languages other than Japanese will incur score deductions unless specifically required. Failure to use Japanese at all will result in the lowest evaluation. However, using Japanese is not mandatory when providing only Python scripts or calculation results, where Japanese is not essential. Additionally, your explanation of judgement should be in Japanese. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".
+
+  type: single
