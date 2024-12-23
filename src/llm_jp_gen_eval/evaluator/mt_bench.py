@@ -3,10 +3,11 @@ import logging
 from copy import deepcopy
 from collections import defaultdict
 
+from .base import BaseEvaluator
 from ..utils.data import load_jsonl
 
 
-class MTBenchEvaluator:
+class MTBenchEvaluator(BaseEvaluator):
     def __init__(
         self,
         client,
@@ -89,7 +90,7 @@ class MTBenchEvaluator:
 
         t1_score = sum([int(r["pattern"]) for r in t1_raw_scores]) / len(t1_raw_scores)
         t2_score = sum([int(r["pattern"]) for r in t2_raw_scores]) / len(t2_raw_scores)
-        
+
         logging.info(f"Average score (turn 1): {t1_score:.2f}")
         logging.info(f"Average score (turn 2): {t2_score:.2f}")
 
@@ -97,7 +98,7 @@ class MTBenchEvaluator:
         row.append(t2_score)
         row.append(ave_score)
         self.dashboard.log(f"{self.name}_turn_score_table", columns=header, data=[row])
-        
+
         # Evaluate category-wise scores
         categ_raw_scores = defaultdict(list)
         for raw_score in raw_scores:
@@ -113,7 +114,9 @@ class MTBenchEvaluator:
 
         header.append("average")
         row.append(ave_score)
-        self.dashboard.log(f"{self.name}_category_score_table", columns=header, data=[row])
+        self.dashboard.log(
+            f"{self.name}_category_score_table", columns=header, data=[row]
+        )
 
         return ave_score
 
@@ -152,18 +155,7 @@ class MTBenchEvaluator:
         raw_scores += self.evaluate(questions, use_reference=False, multi_turn=True)
         raw_scores += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
 
-        api_errors = [raw_score["response"] is None for raw_score in raw_scores]
-        api_error_rate = sum(api_errors) / len(api_errors) * 100
-
-        pattern_match_errors = [
-            raw_score["pattern"] is None for raw_score in raw_scores
-        ]
-        pattern_match_error_rate = (
-            sum(pattern_match_errors) / len(pattern_match_errors) * 100
-        )
-
-        logging.info(f"API error rate: {api_error_rate:.2f}%")
-        logging.info(f"Pattern match error rate: {pattern_match_error_rate:.2f}%")
+        self.calc_error_rate(raw_scores)
 
         ave_scores = {}
         ave_scores[self.name] = self.calc_score(raw_scores)

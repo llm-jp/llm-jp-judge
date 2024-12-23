@@ -3,6 +3,8 @@ import logging
 from copy import deepcopy
 from collections import defaultdict
 
+from .base import BaseEvaluator
+
 PROMPT_TEMPLATE = """[指示]
 質問に対するAIアシスタントの回答を以下の指標に基づいて評価してください。
 {metric} (1-5) : {metric_definition}
@@ -31,7 +33,7 @@ METRIC_DEFINITIONS = {
 METRICS = sorted(METRIC_DEFINITIONS.keys())
 
 
-class QualityEvaluator:
+class QualityEvaluator(BaseEvaluator):
     def __init__(
         self,
         client,
@@ -107,18 +109,7 @@ class QualityEvaluator:
                 )
             self.dashboard.log("abs_quality_table", columns=header, data=table)
 
-        api_errors = [raw_score["response"] is None for raw_score in raw_scores]
-        api_error_rate = sum(api_errors) / len(api_errors * 100)
-
-        pattern_match_errors = [
-            raw_score["pattern"] is None for raw_score in raw_scores
-        ]
-        pattern_match_error_rate = (
-            sum(pattern_match_errors) / len(pattern_match_errors) * 100
-        )
-
-        logging.info(f"API error rate: {api_error_rate:.2f}%")
-        logging.info(f"Pattern match error rate: {pattern_match_error_rate:.2f}%")
+        self.calc_error_rate(raw_scores)
 
         ave_scores = {
             metric: sum(scores) / len(scores) if len(scores) else None
