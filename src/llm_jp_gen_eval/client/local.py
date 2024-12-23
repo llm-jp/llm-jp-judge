@@ -5,8 +5,7 @@ import hydra
 
 import torch
 from vllm import LLM, SamplingParams
-from transformers import AutoTokenizer
-from huggingface_hub.errors import HFValidationError
+from huggingface_hub import repo_exists
 
 NUM_GPUS = torch.cuda.device_count()
 
@@ -49,7 +48,15 @@ class vLLMClient(BaseClient):
         disable_system_prompt=False,
     ):
         self.model_name = model_name
+        if model_name.startswith((".", "/")) or not repo_exists(model_name):
+            self.model_name = hydra.utils.to_absolute_path(model_name)
+
         self.tokenizer_name = tokenizer_name
+        if tokenizer_name is not None and (
+            tokenizer_name.startswith((".", "/")) or not repo_exists(tokenizer_name)
+        ):
+            self.tokenizer_name = hydra.utils.to_absolute_path(tokenizer_name)
+
         self.batch_size = batch_size
         self.max_retries = max_retries
         self.disable_system_prompt = disable_system_prompt

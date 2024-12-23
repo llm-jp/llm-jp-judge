@@ -1,7 +1,3 @@
-hydra:
-  run:
-    dir: .
-
 defaults:
   - /client@client: azure 
   - /dashboard@dashboard: null
