@@ -75,21 +75,25 @@ class MTBenchEvaluator(BaseEvaluator):
         query["prompt"] = prompt_template.format(**kwargs)
         return query
 
-    def calc_score(self, raw_scores):
-        raw_scores = [r for r in raw_scores if r.get("pattern") is not None]
-        t1_raw_scores = [r for r in raw_scores if r["turn"] == 1]
-        t2_raw_scores = [r for r in raw_scores if r["turn"] == 2]
+    def calc_score(self, raw_outputs):
+        raw_outputs = [r for r in raw_outputs if r.get("pattern") is not None]
+        t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
+        t2_raw_outputs = [r for r in raw_outputs if r["turn"] == 2]
 
         # Evaluate average score
-        ave_score = sum([int(r["pattern"]) for r in raw_scores]) / len(raw_scores)
+        ave_score = sum([int(r["pattern"]) for r in raw_outputs]) / len(raw_outputs)
         logging.info(f"Average score: {ave_score:.2f}")
 
         # Evaluate turn-wise scores
         header = ["generate model", "evaluation model", "turn 1", "turn 2", "average"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
 
-        t1_score = sum([int(r["pattern"]) for r in t1_raw_scores]) / len(t1_raw_scores)
-        t2_score = sum([int(r["pattern"]) for r in t2_raw_scores]) / len(t2_raw_scores)
+        t1_score = sum([int(r["pattern"]) for r in t1_raw_outputs]) / len(
+            t1_raw_outputs
+        )
+        t2_score = sum([int(r["pattern"]) for r in t2_raw_outputs]) / len(
+            t2_raw_outputs
+        )
 
         logging.info(f"Average score (turn 1): {t1_score:.2f}")
         logging.info(f"Average score (turn 2): {t2_score:.2f}")
@@ -102,17 +106,17 @@ class MTBenchEvaluator(BaseEvaluator):
         )
 
         # Evaluate category-wise scores
-        categ_raw_scores = defaultdict(list)
-        for raw_score in raw_scores:
-            categ_raw_scores[raw_score["category"]].append(int(raw_score["pattern"]))
+        categ_raw_outputs = defaultdict(list)
+        for raw_output in raw_outputs:
+            categ_raw_outputs[raw_output["category"]].append(int(raw_output["pattern"]))
 
         header = ["generate model", "evaluation model"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
-        for categ in sorted(categ_raw_scores.keys()):
-            categ_score = sum(categ_raw_scores[categ]) / len(categ_raw_scores[categ])
+        for categ in sorted(categ_raw_outputs.keys()):
+            categ_score = sum(categ_raw_outputs[categ]) / len(categ_raw_outputs[categ])
             header.append(categ)
             row.append(categ_score)
-            logging.info(f"Average score (caetegory {categ}): {categ_score:.2f}")
+            logging.info(f"Average score (category {categ}): {categ_score:.2f}")
 
         header.append("average")
         row.append(ave_score)
@@ -148,18 +152,20 @@ class MTBenchEvaluator(BaseEvaluator):
             r for r in responses if r["category"] not in self.reference_categories
         ]
 
-        raw_scores = []
+        raw_outputs = []
         # Single-turn evaluation
-        raw_scores += self.evaluate(questions, use_reference=False, multi_turn=False)
-        raw_scores += self.evaluate(questions_ref, use_reference=True, multi_turn=False)
+        raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=False)
+        raw_outputs += self.evaluate(
+            questions_ref, use_reference=True, multi_turn=False
+        )
 
         # Multi-turn evaluation
-        raw_scores += self.evaluate(questions, use_reference=False, multi_turn=True)
-        raw_scores += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
+        raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=True)
+        raw_outputs += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
 
-        self.calc_error_rate(raw_scores)
+        self.calc_error_rate(raw_outputs)
 
         ave_scores = {}
-        ave_scores[self.name] = self.calc_score(raw_scores)
+        ave_scores[self.name] = self.calc_score(raw_outputs)
 
         return ave_scores

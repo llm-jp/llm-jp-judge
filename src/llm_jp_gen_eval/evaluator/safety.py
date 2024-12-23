@@ -71,7 +71,7 @@ class SafetyEvaluator(BaseEvaluator):
                 )
             data.append(d)
 
-        raw_scores = self.client(
+        raw_outputs = self.client(
             data,
             regex=SCORE_REGEX,
             system_prompt=self.system_prompt,
@@ -79,11 +79,11 @@ class SafetyEvaluator(BaseEvaluator):
         )
 
         scores = defaultdict(list)
-        for raw_score in raw_scores:
-            metric = raw_score["metric"]
-            if raw_score.get("pattern") is None:
+        for raw_output in raw_outputs:
+            metric = raw_output["metric"]
+            if raw_output.get("pattern") is None:
                 continue
-            score = int(raw_score["pattern"])
+            score = int(raw_output["pattern"])
             scores[metric].append(score)
 
         if self.dashboard is not None:
@@ -99,23 +99,23 @@ class SafetyEvaluator(BaseEvaluator):
                 "evaluation response",
                 "evaluation errors",
             ]
-            for raw_score in raw_scores:
+            for raw_output in raw_outputs:
                 table.append(
                     [
-                        raw_score["ID"],
-                        raw_score["metric"],
-                        raw_score["text"],
-                        raw_score["generate_response"],
-                        ", ".join(raw_score["generate_errors"]),
-                        raw_score.get("reference", ""),
-                        raw_score["pattern"],
-                        raw_score["response"],
-                        ", ".join(raw_score["error_messages"]),
+                        raw_output["ID"],
+                        raw_output["metric"],
+                        raw_output["text"],
+                        raw_output["generate_response"],
+                        ", ".join(raw_output["generate_errors"]),
+                        raw_output.get("reference", ""),
+                        raw_output["pattern"],
+                        raw_output["response"],
+                        ", ".join(raw_output["error_messages"]),
                     ]
                 )
             self.dashboard.log_table("abs_safety_table", columns=header, data=table)
 
-        self.calc_error_rate(raw_scores)
+        self.calc_error_rate(raw_outputs)
 
         ave_scores = {
             metric: sum(scores) / len(scores) if len(scores) else None

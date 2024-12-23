@@ -20,12 +20,12 @@ class BaseEvaluator:
         self.system_prompt = system_prompt
         self.sampling_params = sampling_params
 
-    def calc_error_rate(self, raw_scores):
-        api_errors = [raw_score["response"] is None for raw_score in raw_scores]
+    def calc_error_rate(self, raw_outputs):
+        api_errors = [raw_output["response"] is None for raw_output in raw_outputs]
         api_error_rate = sum(api_errors) / len(api_errors) * 100
 
         regex_mismatch_errors = [
-            raw_score["pattern"] is None for raw_score in raw_scores
+            raw_output["pattern"] is None for raw_output in raw_outputs
         ]
         regex_mismatch_rate = (
             sum(regex_mismatch_errors) / len(regex_mismatch_errors) * 100
