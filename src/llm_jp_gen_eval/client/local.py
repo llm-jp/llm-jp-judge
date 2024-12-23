@@ -6,6 +6,7 @@ import hydra
 import torch
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
+from huggingface_hub.errors import HFValidationError
 
 NUM_GPUS = torch.cuda.device_count()
 
@@ -24,13 +25,26 @@ class vLLMClient:
         self.max_retries = max_retries
         self.disable_system_prompt = disable_system_prompt
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        download_dir = hydra.utils.to_absolute_path(download_dir)
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        except OSError:
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                hydra.utils.to_absolute_path(self.model_name)
+            )
 
-        self.llm = LLM(
-            model=self.model_name,
-            download_dir=hydra.utils.to_absolute_path(download_dir),
-            tensor_parallel_size=NUM_GPUS,
-        )
+        try:
+            self.llm = LLM(
+                model=self.model_name,
+                download_dir=download_dir,
+                tensor_parallel_size=NUM_GPUS,
+            )
+        except (OSError, HFValidationError):
+            self.llm = LLM(
+                model=hydra.utils.to_absolute_path(self.model_name),
+                download_dir=download_dir,
+                tensor_parallel_size=NUM_GPUS,
+            )
 
     def get_messages(self, prompt, response, system_prompt=None):
         if self.disable_system_prompt and system_prompt is not None:

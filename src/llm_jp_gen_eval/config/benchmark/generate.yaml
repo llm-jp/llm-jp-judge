@@ -3,7 +3,7 @@ ichikara:
   dataset: 
     path: null
     size: null # Use the first 'size' number of data entries
-  system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
+  system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
     max_tokens: 1024
     seed: 1234
@@ -15,10 +15,69 @@ answer_carefully:
   dataset:
     path: null
     size: null
-  system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
+  system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
     max_tokens: 1024
     seed: 1234
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+mt_bench:
+  name: "mt_bench"
+  dataset:
+    path: null
+    size: null
+  system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 1.0
+    temperature: 1.0
+    frequency_penalty: 0.0
+  category_sampling_params: # Override the default sampling parameters for each category
+    writing:
+      temperature: 0.7
+    roleplay:
+      temperature: 0.7
+    extraction:
+      temperature: 0.0
+    math:
+      temperature: 0.0
+    coding:
+      temperature: 0.0
+    reasoning:
+      temperature: 0.0
+    stem:
+      temperature: 0.1
+    humanities:
+      temperature: 0.1
+ja_mt_bench:
+  name: "ja_mt_bench"
+  dataset:
+    path: null
+    size: null
+  system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 1.0
+    temperature: 1.0
+    frequency_penalty: 0.0
+  category_sampling_params: # Override the default sampling parameters for each category
+    writing:
+      temperature: 0.7
+    roleplay:
+      temperature: 0.7
+    extraction:
+      temperature: 0.0
+    math:
+      temperature: 0.0
+    coding:
+      temperature: 0.0
+    reasoning:
+      temperature: 0.0
+    stem:
+      temperature: 0.1
+    humanities:
+      temperature: 0.1
+    
