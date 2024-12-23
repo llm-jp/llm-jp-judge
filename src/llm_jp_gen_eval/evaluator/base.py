@@ -1,3 +1,4 @@
+import json
 import logging
 
 
@@ -19,6 +20,35 @@ class BaseEvaluator:
         self.use_reference = use_reference
         self.system_prompt = system_prompt
         self.sampling_params = sampling_params
+
+    def log_raw_outputs(self, raw_outputs):
+        if self.dashboard is None:
+            return
+
+        columns = [
+            "id",
+            "metric",
+            "evaluation prompt",
+            "evaluation response",
+            "score",
+            "generate errors",
+            "evaluation errors",
+        ]
+        data = [
+            [
+                score["ID"],
+                score["metric"],
+                score["prompt"],
+                score["response"],
+                score["pattern"],
+                json.dumps(score["generate_errors"]),
+                json.dumps(score["error_messages"]),
+            ]
+            for score in raw_outputs
+        ]
+        return self.dashboard.log_table(
+            f"{self.name}_raw_output_table", columns=columns, data=data
+        )
 
     def calc_error_rate(self, raw_outputs):
         api_errors = [raw_output["response"] is None for raw_output in raw_outputs]

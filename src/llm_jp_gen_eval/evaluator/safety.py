@@ -86,35 +86,7 @@ class SafetyEvaluator(BaseEvaluator):
             score = int(raw_output["pattern"])
             scores[metric].append(score)
 
-        if self.dashboard is not None:
-            table = []
-            header = [
-                "id",
-                "metric",
-                "text",
-                "generate response",
-                "generate errors",
-                "reference response",
-                "score",
-                "evaluation response",
-                "evaluation errors",
-            ]
-            for raw_output in raw_outputs:
-                table.append(
-                    [
-                        raw_output["ID"],
-                        raw_output["metric"],
-                        raw_output["text"],
-                        raw_output["generate_response"],
-                        ", ".join(raw_output["generate_errors"]),
-                        raw_output.get("reference", ""),
-                        raw_output["pattern"],
-                        raw_output["response"],
-                        ", ".join(raw_output["error_messages"]),
-                    ]
-                )
-            self.dashboard.log_table("abs_safety_table", columns=header, data=table)
-
+        self.log_raw_outputs(raw_outputs)
         self.calc_error_rate(raw_outputs)
 
         ave_scores = {

@@ -1,5 +1,6 @@
 import logging
 
+import json
 from copy import deepcopy
 from collections import defaultdict
 
@@ -55,9 +56,11 @@ class MTBenchEvaluator(BaseEvaluator):
             }
             if use_reference:
                 query["metric"] = "single-math-v1-multi-turn"
+                query["use_reference"] = True
                 kwargs["ref_answer_1"] = self.references[response["ID"]][0]
                 kwargs["ref_answer_2"] = self.references[response["ID"]][1]
             else:
+                query["use_reference"] = False
                 query["metric"] = "single-v1-multi-turn"
         else:
             query["turn"] = 1
@@ -66,27 +69,28 @@ class MTBenchEvaluator(BaseEvaluator):
                 "answer": response["response"][0],
             }
             if use_reference:
+                query["use_reference"] = True
                 query["metric"] = "single-math-v1"
                 kwargs["ref_answer_1"] = self.references[response["ID"]][0]
             else:
+                query["use_reference"] = False
                 query["metric"] = "single-v1"
 
         prompt_template = self.prompt_template[query["metric"]]["prompt_template"]
         query["prompt"] = prompt_template.format(**kwargs)
+        query["system_prompt"] = self.prompt_template[query["metric"]]["system_prompt"]
         return query
 
     def calc_score(self, raw_outputs):
         raw_outputs = [r for r in raw_outputs if r.get("pattern") is not None]
-        t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
-        t2_raw_outputs = [r for r in raw_outputs if r["turn"] == 2]
 
         # Evaluate average score
         ave_score = sum([int(r["pattern"]) for r in raw_outputs]) / len(raw_outputs)
         logging.info(f"Average score: {ave_score:.2f}")
 
         # Evaluate turn-wise scores
-        header = ["generate model", "evaluation model", "turn 1", "turn 2", "average"]
-        row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
+        t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
+        t2_raw_outputs = [r for r in raw_outputs if r["turn"] == 2]
 
         t1_score = sum([int(r["pattern"]) for r in t1_raw_outputs]) / len(
             t1_raw_outputs
@@ -97,6 +101,9 @@ class MTBenchEvaluator(BaseEvaluator):
 
         logging.info(f"Average score (turn 1): {t1_score:.2f}")
         logging.info(f"Average score (turn 2): {t2_score:.2f}")
+
+        header = ["generate model", "evaluation model", "turn 1", "turn 2", "average"]
+        row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
 
         row.append(t1_score)
         row.append(t2_score)
@@ -125,6 +132,41 @@ class MTBenchEvaluator(BaseEvaluator):
         )
 
         return ave_score
+
+    def log_raw_outputs(self, raw_outputs):
+        if self.dashboard is None:
+            return
+
+        columns = [
+            "id",
+            "metric",
+            "turn",
+            "use reference",
+            "system prompt",
+            "prompt",
+            "response",
+            "score",
+            "generate errors",
+            "evaluation errors",
+        ]
+        data = [
+            [
+                score["ID"],
+                score["metric"],
+                score["turn"],
+                score["use_reference"],
+                score["system_prompt"],
+                score["prompt"],
+                score["response"],
+                score["pattern"],
+                json.dumps(score["generate_errors"]),
+                json.dumps(score["error_messages"]),
+            ]
+            for score in raw_outputs
+        ]
+        return self.dashboard.log_table(
+            f"{self.name}_raw_output_table", columns=columns, data=data
+        )
 
     def evaluate(self, responses, use_reference=False, multi_turn=False):
         if len(responses) == 0:
@@ -163,6 +205,7 @@ class MTBenchEvaluator(BaseEvaluator):
         raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=True)
         raw_outputs += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
 
+        self.log_raw_outputs(raw_outputs)
         self.calc_error_rate(raw_outputs)
 
         ave_scores = {}
