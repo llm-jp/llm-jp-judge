@@ -97,7 +97,9 @@ class MTBenchEvaluator(BaseEvaluator):
         row.append(t1_score)
         row.append(t2_score)
         row.append(ave_score)
-        self.dashboard.log(f"{self.name}_turn_score_table", columns=header, data=[row])
+        self.dashboard.log_table(
+            f"{self.name}_turn_score_table", columns=header, data=[row]
+        )
 
         # Evaluate category-wise scores
         categ_raw_scores = defaultdict(list)
@@ -114,7 +116,7 @@ class MTBenchEvaluator(BaseEvaluator):
 
         header.append("average")
         row.append(ave_score)
-        self.dashboard.log(
+        self.dashboard.log_table(
             f"{self.name}_category_score_table", columns=header, data=[row]
         )
 

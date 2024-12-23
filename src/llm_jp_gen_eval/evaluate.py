@@ -51,7 +51,9 @@ def main(cfg):
     for benchmark_name, data in raw_outputs.items():
         logging.info(f"Evaluating benchmark: {benchmark_name}")
         benchmark_cfg = cfg.benchmark[benchmark_name]
-        evaluator = load_evaluator(client, dashboard, metadata=metadata, **benchmark_cfg)
+        evaluator = load_evaluator(
+            client, dashboard, metadata=metadata, **benchmark_cfg
+        )
         scores = evaluator(data)
         all_scores.update(scores)
 
@@ -60,7 +62,7 @@ def main(cfg):
     row = [metadata["model_name"], cfg.client.model_name] + [
         all_scores[metric] for metric in metrics
     ]
-    dashboard.log("score_table", columns=columns, data=[row])
+    dashboard.log_table("score_table", columns=columns, data=[row])
 
     dashboard.close()
 

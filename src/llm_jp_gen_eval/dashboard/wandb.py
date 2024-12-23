@@ -16,6 +16,16 @@ class WandB(object):
     def close(self):
         self.run.finish()
 
-    def log(self, name, columns=[], data=[]):
+    def log(self, data):
+        self.run.log(data)
+
+    def log_table(self, name, columns=[], data=[]):
         table = wandb.Table(columns=columns, data=data)
-        self.run.log({name: table})
+        self.log({name: table})
+
+    def log_summary(self, key, value):
+        self.run.summary[key] = value
+
+    def log_summaries(self, data):
+        for key, value in data.items():
+            self.log_summary(key, value)

@@ -53,23 +53,6 @@ SCORE_REGEX = r"\[\[(\d)\]\]"
 
 
 class SafetyEvaluator(BaseEvaluator):
-    def __init__(
-        self,
-        client,
-        dashboard,
-        metadata={},
-        name="safety",
-        use_reference=False,
-        system_prompt=None,
-        sampling_params={},
-    ):
-        self.client = client
-        self.dashboard = dashboard
-        self.metadata = metadata
-        self.use_reference = use_reference
-        self.system_prompt = system_prompt
-        self.sampling_params = sampling_params
-
     def __call__(self, responses):
         data = []
         for res in responses:
@@ -130,7 +113,7 @@ class SafetyEvaluator(BaseEvaluator):
                         ", ".join(raw_score["error_messages"]),
                     ]
                 )
-            self.dashboard.log("abs_safety_table", columns=header, data=table)
+            self.dashboard.log_table("abs_safety_table", columns=header, data=table)
 
         self.calc_error_rate(raw_scores)
 
