@@ -140,10 +140,17 @@ class AzureOpenAI:
                     )
                 except openai.RateLimitError as e:
                     error_messages.append(str(e))
-                    retry_count += 1
+                    logging.warning(f"Rate limit exceeded. Retrying in 60 seconds.")
+
                     await asyncio.sleep(60)
                 except openai.BadRequestError as e:
                     error_messages.append(str(e))
+
+                    if retry_count >= self.max_retries:
+                        logging.error(f"Bad request. Exiting.")
+                    else:
+                        logging.warning(f"Bad request. Retrying.")
+
                     retry_count += 1
                     await asyncio.sleep(self.async_request_interval)
                 else:

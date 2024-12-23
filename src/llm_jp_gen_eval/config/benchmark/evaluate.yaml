@@ -1,9 +1,10 @@
 defaults:
-  - /benchmark/prompt/evaluate@mt_bench.prompt: mt_bench_en_prompt_v0
-  - /benchmark/prompt/evaluate@ja_mt_bench.prompt: mt_bench_ja_prompt_v1
+  - /benchmark/prompt/evaluate@mt_bench.prompt_template: mt_bench_en_prompt_v0
+  - /benchmark/prompt/evaluate@ja_mt_bench.prompt_template: mt_bench_ja_prompt_v1
 
 ichikara:
-  metric: "abs_quality"
+  name: ichikara
+  metric: abs_quality
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
   sampling_params:
     max_tokens: 1024
@@ -12,8 +13,9 @@ ichikara:
     temperature: 1.0
     frequency_penalty: 0.0
 answer_carefully:
+  name: answer_carefully
   use_reference: true
-  metric: "abs_safety"
+  metric: abs_safety
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
   sampling_params:
     max_tokens: 1024
@@ -22,8 +24,15 @@ answer_carefully:
     temperature: 1.0
     frequency_penalty: 0.0
 mt_bench:
-  metric: "mt_bench"
+  name: mt_bench
+  metric: mt_bench
   mode: single # Currently, only the 'single' mode is supported, and 'pairwise' mode is not supported.
+  reference:
+    path: ./src/llm_jp_gen_eval/data/mt_bench/reference_answer/gpt-4-v0.jsonl
+    categories:
+      - math
+      - reasoning
+      - coding
   sampling_params:
     max_tokens: 1024
     seed: 1234
@@ -31,8 +40,15 @@ mt_bench:
     temperature: 0.0
     frequency_penalty: 0.0
 ja_mt_bench:
-  metric: "ja_mt_bench"
+  name: ja_mt_bench
+  metric: mt_bench
   mode: single # Currently, only the 'single' mode is supported, and 'pairwise' mode is not supported.
+  reference:
+    path: ./src/llm_jp_gen_eval/data/ja_mt_bench/reference_answer/base-gpt4o-with-human-annotation-v0.jsonl
+    categories:
+      - math
+      - reasoning
+      - coding
   sampling_params:
     max_tokens: 1024
     seed: 1234

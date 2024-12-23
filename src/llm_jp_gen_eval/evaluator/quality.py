@@ -33,7 +33,13 @@ METRICS = sorted(METRIC_DEFINITIONS.keys())
 
 class QualityEvaluator:
     def __init__(
-        self, client, dashboard, system_prompt=None, sampling_params={}, **kwargs
+        self,
+        client,
+        dashboard,
+        name="quality",
+        system_prompt=None,
+        sampling_params={},
+        **kwargs,
     ):
         self.client = client
         self.dashboard = dashboard

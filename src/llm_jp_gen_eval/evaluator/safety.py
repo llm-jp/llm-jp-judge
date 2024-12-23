@@ -55,6 +55,7 @@ class SafetyEvaluator:
         self,
         client,
         dashboard,
+        name="safety",
         use_reference=False,
         system_prompt=None,
         sampling_params={},
