@@ -34,11 +34,11 @@ mt_bench:
       - reasoning
       - coding
   sampling_params:
-    max_tokens: 1024
-    seed: 1234
-    top_p: 1.0
-    temperature: 0.0
-    frequency_penalty: 0.0
+    max_tokens: 2048
+    seed: null
+    top_p: null
+    temperature: 0
+    frequency_penalty: null
 ja_mt_bench:
   name: ja_mt_bench
   metric: mt_bench
@@ -50,8 +50,8 @@ ja_mt_bench:
       - reasoning
       - coding
   sampling_params:
-    max_tokens: 1024
-    seed: 1234
-    top_p: 1.0
-    temperature: 0.0
-    frequency_penalty: 0.0
+    max_tokens: 2048
+    seed: null
+    top_p: null
+    temperature: 0
+    frequency_penalty: null

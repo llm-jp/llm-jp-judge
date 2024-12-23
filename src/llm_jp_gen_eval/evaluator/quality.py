@@ -36,6 +36,7 @@ class QualityEvaluator:
         self,
         client,
         dashboard,
+        metadata={},
         name="quality",
         system_prompt=None,
         sampling_params={},
@@ -43,6 +44,7 @@ class QualityEvaluator:
     ):
         self.client = client
         self.dashboard = dashboard
+        self.metadata = metadata
         self.system_prompt = system_prompt
         self.sampling_params = sampling_params
 

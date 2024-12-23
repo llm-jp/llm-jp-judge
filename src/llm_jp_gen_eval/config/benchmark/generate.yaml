@@ -32,7 +32,7 @@ mt_bench:
     max_tokens: 1024
     seed: 1234
     top_p: 1.0
-    temperature: 1.0
+    temperature: 0.7
     frequency_penalty: 0.0
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
@@ -61,7 +61,7 @@ ja_mt_bench:
     max_tokens: 1024
     seed: 1234
     top_p: 1.0
-    temperature: 1.0
+    temperature: 0.7
     frequency_penalty: 0.0
   category_sampling_params: # Override the default sampling parameters for each category
     writing:

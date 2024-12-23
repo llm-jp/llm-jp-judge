@@ -11,41 +11,14 @@ from huggingface_hub.errors import HFValidationError
 NUM_GPUS = torch.cuda.device_count()
 
 
-class vLLMClient:
-    def __init__(
-        self,
-        model_name="llm-jp/llm-jp-3-13b-instruct",
-        batch_size=1,
-        download_dir="~/.cache/huggingface",
-        max_retries=1,
-        disable_system_prompt=False,
-    ):
-        self.model_name = model_name
-        self.batch_size = batch_size
-        self.max_retries = max_retries
-        self.disable_system_prompt = disable_system_prompt
+def load_chat_template(file_path):
+    file_path = hydra.utils.to_absolute_path(file_path)
+    with open(file_path, "r") as f:
+        chat_template = f.read()
+    return chat_template
 
-        download_dir = hydra.utils.to_absolute_path(download_dir)
-        try:
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        except OSError:
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                hydra.utils.to_absolute_path(self.model_name)
-            )
 
-        try:
-            self.llm = LLM(
-                model=self.model_name,
-                download_dir=download_dir,
-                tensor_parallel_size=NUM_GPUS,
-            )
-        except (OSError, HFValidationError):
-            self.llm = LLM(
-                model=hydra.utils.to_absolute_path(self.model_name),
-                download_dir=download_dir,
-                tensor_parallel_size=NUM_GPUS,
-            )
-
+class BaseClient:
     def get_messages(self, prompt, response, system_prompt=None):
         if self.disable_system_prompt and system_prompt is not None:
             prompt = deepcopy(prompt)
@@ -53,15 +26,46 @@ class vLLMClient:
             system_prompt = None
 
         messages = []
-        for i in range(len(prompt)):
-            messages.append({"role": "user", "content": prompt[i]})
-            if i > 0:
-                messages.append({"role": "assistant", "content": response[i - 1]})
+        for turn in range(len(prompt)):
+            messages.append({"role": "user", "content": prompt[turn]})
+            if turn < len(response):
+                messages.append({"role": "assistant", "content": response[turn]})
 
         if system_prompt is not None:
             messages.insert(0, {"role": "system", "content": system_prompt})
 
         return messages
+
+
+class vLLMClient(BaseClient):
+    def __init__(
+        self,
+        model_name="llm-jp/llm-jp-3-13b-instruct",
+        tokenizer_name=None,
+        batch_size=1,
+        download_dir="~/.cache/huggingface",
+        max_retries=1,
+        chat_template={"path": None},
+        disable_system_prompt=False,
+    ):
+        self.model_name = model_name
+        self.tokenizer_name = tokenizer_name
+        self.batch_size = batch_size
+        self.max_retries = max_retries
+        self.disable_system_prompt = disable_system_prompt
+
+        self.chat_template = None
+        if chat_template.get("path") is not None:
+            self.chat_template = load_chat_template(chat_template["path"])
+
+        download_dir = hydra.utils.to_absolute_path(download_dir)
+
+        self.llm = LLM(
+            model=self.model_name,
+            tokenizer=self.tokenizer_name,
+            download_dir=download_dir,
+            tensor_parallel_size=NUM_GPUS,
+        )
 
     def batch_request(
         self,
@@ -77,7 +81,17 @@ class vLLMClient:
             messages = self.get_messages(prompt, response, system_prompt=system_prompt)
             messages_list.append(messages)
 
-        outputs = self.llm.chat(messages_list, sampling_params=sampling_params)
+        try:
+            outputs = self.llm.chat(
+                messages_list,
+                sampling_params=sampling_params,
+                chat_template=self.chat_template,
+            )
+        except ValueError:
+            raise ValueError(
+                f"No chat template found for {self.model_name}. Please provide a jinja style template with the argument client.chat_template.path=/path/to/chat_template.jinja."
+            )
+
         responses = [output.outputs[0].text for output in outputs]
         return responses
 

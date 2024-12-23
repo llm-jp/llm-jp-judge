@@ -55,6 +55,7 @@ class SafetyEvaluator:
         self,
         client,
         dashboard,
+        metadata={},
         name="safety",
         use_reference=False,
         system_prompt=None,
@@ -62,6 +63,7 @@ class SafetyEvaluator:
     ):
         self.client = client
         self.dashboard = dashboard
+        self.metadata = metadata
         self.use_reference = use_reference
         self.system_prompt = system_prompt
         self.sampling_params = sampling_params

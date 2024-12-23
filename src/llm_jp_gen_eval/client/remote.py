@@ -15,10 +15,12 @@ from dotenv import load_dotenv
 import tqdm
 import tqdm.asyncio
 
+from .local import BaseClient
+
 load_dotenv(override=True)
 
 
-class AzureOpenAI:
+class AzureOpenAI(BaseClient):
     def __init__(
         self,
         model_name="gpt-4o-2024-08-06",
@@ -49,23 +51,6 @@ class AzureOpenAI:
             azure_endpoint=api_endpoint,
         )
 
-    async def get_messages(self, prompt, response, system_prompt=None):
-        if self.disable_system_prompt and system_prompt is not None:
-            prompt = deepcopy(prompt)
-            prompt[0] = f"{system_prompt}\n\n{prompt[0]}"
-            system_prompt = None
-
-        messages = []
-        for i in range(len(prompt)):
-            messages.append({"role": "user", "content": prompt[i]})
-            if i > 0:
-                messages.append({"role": "assistant", "content": response[i - 1]})
-
-        if system_prompt is not None:
-            messages.insert(0, {"role": "system", "content": system_prompt})
-
-        return messages
-
     async def async_request(
         self,
         prompt,
@@ -73,8 +58,8 @@ class AzureOpenAI:
         system_prompt=None,
         sampling_params={},
     ):
-        messages = await self.get_messages(
-            prompt, response, system_prompt=system_prompt
+        messages = await asyncio.to_thread(
+            self.get_messages, prompt, response, system_prompt=system_prompt
         )
 
         response = await asyncio.to_thread(
@@ -126,32 +111,32 @@ class AzureOpenAI:
         await asyncio.sleep(wait)
 
         d["response"], d["pattern"], d["error_messages"] = [], [], []
-        for i in range(len(d["prompt"])):
+        for turn in range(len(d["prompt"])):
             retry_count = 0
-            # d["response"], d["pattern"], d["error_messages"] = None, None, []
+            sleep = 0
             response, pattern, error_messages = None, None, []
             while retry_count < self.max_retries:
+                if len(error_messages) > 0:
+                    logging.warning(
+                        f"{error_messages[-1]}. Retrying in {sleep} seconds."
+                    )
+                await asyncio.sleep(sleep)
+
                 try:
                     response = await self.async_request(
-                        d["prompt"][: i + 1],
+                        d["prompt"][: turn + 1],
                         d["response"],
                         system_prompt=system_prompt,
                         sampling_params=sampling_params,
                     )
                 except openai.RateLimitError as e:
                     error_messages.append(str(e))
-                    logging.warning(f"Rate limit exceeded. Retrying in 60 seconds.")
-
-                    await asyncio.sleep(60)
+                    sleep = 60
                 except openai.BadRequestError as e:
                     error_messages.append(str(e))
 
-                    if retry_count >= self.max_retries:
-                        logging.error(f"Bad request. Exiting.")
-                    else:
-                        logging.warning(f"Bad request. Retrying.")
-
                     retry_count += 1
+                    sleep = self.async_request_interval
                     await asyncio.sleep(self.async_request_interval)
                 else:
                     if regex is not None:
@@ -161,14 +146,14 @@ class AzureOpenAI:
                         except (IndexError, AttributeError) as e:
                             error_messages.append(str(e))
                             retry_count += 1
-                            await asyncio.sleep(self.async_request_interval)
+                            sleep = self.async_request_interval
                             continue
                     break
 
             d["response"].append(response)
             d["pattern"].append(pattern)
             d["error_messages"].append(error_messages)
-            if i < len(d["prompt"]) - 1:
+            if turn < len(d["prompt"]) - 1:
                 await asyncio.sleep(self.async_request_interval)
 
         return d
@@ -222,7 +207,9 @@ class BedrockAnthropic(AzureOpenAI):
         system_prompt=None,
         sampling_params={},
     ):
-        messages = await self.get_messages(prompt, response)
+        messages = await asyncio.to_thread(
+            self.get_messages, prompt, response, system_prompt=system_prompt
+        )
 
         sampling_params = dict(sampling_params)
         # Ignore unsupported parameters

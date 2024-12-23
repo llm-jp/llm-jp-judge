@@ -1,6 +1,7 @@
 import logging
 
 from copy import deepcopy
+from collections import defaultdict
 
 from ..utils.data import load_jsonl
 
@@ -10,6 +11,7 @@ class MTBenchEvaluator:
         self,
         client,
         dashboard,
+        metadata={},
         name="mt_bench",
         mode="single",
         prompt_template=None,
@@ -19,6 +21,7 @@ class MTBenchEvaluator:
     ):
         self.client = client
         self.dashboard = dashboard
+        self.metadata = metadata
         self.name = name
 
         if mode not in ["single"]:
@@ -71,22 +74,46 @@ class MTBenchEvaluator:
         query["prompt"] = prompt_template.format(**kwargs)
         return query
 
-    def calc_score(self, responses):
-        responses = [r for r in responses if r.get("pattern") is not None]
-        t1_responses = [r for r in responses if r["turn"] == 1]
-        t2_responses = [r for r in responses if r["turn"] == 2]
+    def calc_score(self, raw_scores):
+        raw_scores = [r for r in raw_scores if r.get("pattern") is not None]
+        t1_raw_scores = [r for r in raw_scores if r["turn"] == 1]
+        t2_raw_scores = [r for r in raw_scores if r["turn"] == 2]
 
-        ave_t1_score = sum([int(r["pattern"]) for r in t1_responses]) / len(
-            t1_responses
-        )
-        ave_t2_score = sum([int(r["pattern"]) for r in t2_responses]) / len(
-            t2_responses
-        )
-        ave_score = sum([int(r["pattern"]) for r in responses]) / len(responses)
-
-        logging.info(f"Average score (turn 1): {ave_t1_score:.2f}")
-        logging.info(f"Average score (turn 2): {ave_t2_score:.2f}")
+        # Evaluate average score
+        ave_score = sum([int(r["pattern"]) for r in raw_scores]) / len(raw_scores)
         logging.info(f"Average score: {ave_score:.2f}")
+
+        # Evaluate turn-wise scores
+        header = ["generate model", "evaluation model", "turn 1", "turn 2", "average"]
+        row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
+
+        t1_score = sum([int(r["pattern"]) for r in t1_raw_scores]) / len(t1_raw_scores)
+        t2_score = sum([int(r["pattern"]) for r in t2_raw_scores]) / len(t2_raw_scores)
+        
+        logging.info(f"Average score (turn 1): {t1_score:.2f}")
+        logging.info(f"Average score (turn 2): {t2_score:.2f}")
+
+        row.append(t1_score)
+        row.append(t2_score)
+        row.append(ave_score)
+        self.dashboard.log(f"{self.name}_turn_score_table", columns=header, data=[row])
+        
+        # Evaluate category-wise scores
+        categ_raw_scores = defaultdict(list)
+        for raw_score in raw_scores:
+            categ_raw_scores[raw_score["category"]].append(int(raw_score["pattern"]))
+
+        header = ["generate model", "evaluation model"]
+        row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
+        for categ in sorted(categ_raw_scores.keys()):
+            categ_score = sum(categ_raw_scores[categ]) / len(categ_raw_scores[categ])
+            header.append(categ)
+            row.append(categ_score)
+            logging.info(f"Average score (caetegory {categ}): {categ_score:.2f}")
+
+        header.append("average")
+        row.append(ave_score)
+        self.dashboard.log(f"{self.name}_category_score_table", columns=header, data=[row])
 
         return ave_score
 
@@ -116,16 +143,29 @@ class MTBenchEvaluator:
             r for r in responses if r["category"] not in self.reference_categories
         ]
 
-        responses = []
+        raw_scores = []
         # Single-turn evaluation
-        responses += self.evaluate(questions, use_reference=False, multi_turn=False)
-        responses += self.evaluate(questions_ref, use_reference=True, multi_turn=False)
+        raw_scores += self.evaluate(questions, use_reference=False, multi_turn=False)
+        raw_scores += self.evaluate(questions_ref, use_reference=True, multi_turn=False)
 
         # Multi-turn evaluation
-        responses += self.evaluate(questions, use_reference=False, multi_turn=True)
-        responses += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
+        raw_scores += self.evaluate(questions, use_reference=False, multi_turn=True)
+        raw_scores += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
+
+        api_errors = [raw_score["response"] is None for raw_score in raw_scores]
+        api_error_rate = sum(api_errors) / len(api_errors) * 100
+
+        pattern_match_errors = [
+            raw_score["pattern"] is None for raw_score in raw_scores
+        ]
+        pattern_match_error_rate = (
+            sum(pattern_match_errors) / len(pattern_match_errors) * 100
+        )
+
+        logging.info(f"API error rate: {api_error_rate:.2f}%")
+        logging.info(f"Pattern match error rate: {pattern_match_error_rate:.2f}%")
 
         ave_scores = {}
-        ave_scores[self.name] = self.calc_score(responses)
+        ave_scores[self.name] = self.calc_score(raw_scores)
 
         return ave_scores

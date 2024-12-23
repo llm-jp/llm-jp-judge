@@ -1,6 +1,9 @@
 name: vllm
 
 model_name: ???
+tokenizer_name: null # tokenizer_nameがnullの場合は、model_nameが使用されます。
+chat_template:
+  path: null
 
 batch_size: 1
 disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。

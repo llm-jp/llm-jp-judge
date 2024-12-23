@@ -51,7 +51,7 @@ def main(cfg):
     for benchmark_name, data in raw_outputs.items():
         logging.info(f"Evaluating benchmark: {benchmark_name}")
         benchmark_cfg = cfg.benchmark[benchmark_name]
-        evaluator = load_evaluator(client, dashboard, **benchmark_cfg)
+        evaluator = load_evaluator(client, dashboard, metadata=metadata, **benchmark_cfg)
         scores = evaluator(data)
         all_scores.update(scores)
 

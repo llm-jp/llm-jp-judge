@@ -1,3 +1,7 @@
+hydra:
+  run:
+    dir: .
+
 defaults:
   - /client@client: azure
   - /benchmark@benchmark: generate
