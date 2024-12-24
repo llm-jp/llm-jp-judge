@@ -30,10 +30,10 @@ mt_bench:
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
     max_tokens: 1024
-    seed: 1234
-    top_p: 1.0
+    seed: null
+    top_p: null
     temperature: 0.7
-    frequency_penalty: 0.0
+    frequency_penalty: null
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
       temperature: 0.7
@@ -59,10 +59,10 @@ ja_mt_bench:
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
     max_tokens: 1024
-    seed: 1234
-    top_p: 1.0
+    seed: null
+    top_p: null
     temperature: 0.7
-    frequency_penalty: 0.0
+    frequency_penalty: null
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
       temperature: 0.7

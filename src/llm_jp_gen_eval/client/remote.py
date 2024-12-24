@@ -159,6 +159,8 @@ class AzureOpenAI(BaseClient):
         return d
 
     def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
+        sampling_params = self.fill_sampling_params(sampling_params)
+        
         return asyncio.run(
             self.process_data(
                 data, regex, system_prompt, sampling_params=sampling_params

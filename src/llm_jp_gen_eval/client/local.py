@@ -35,6 +35,9 @@ class BaseClient:
 
         return messages
 
+    def fill_sampling_params(self, sampling_params):
+        return {k: v for k, v in sampling_params.items() if v is not None}
+
 
 class vLLMClient(BaseClient):
     def __init__(
@@ -170,6 +173,8 @@ class vLLMClient(BaseClient):
         return data
 
     def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
+        sampling_params = self.fill_sampling_params(sampling_params)
+
         return self.process_data(
             data, regex, system_prompt, sampling_params=sampling_params
         )
