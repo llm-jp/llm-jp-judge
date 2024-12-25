@@ -139,6 +139,7 @@ class MTBenchEvaluator(BaseEvaluator):
 
         columns = [
             "id",
+            "category",
             "metric",
             "turn",
             "use reference",
@@ -152,6 +153,7 @@ class MTBenchEvaluator(BaseEvaluator):
         data = [
             [
                 score["ID"],
+                score["category"],
                 score["metric"],
                 score["turn"],
                 score["use_reference"],
