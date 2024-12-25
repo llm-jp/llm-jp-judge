@@ -126,7 +126,10 @@ class vLLMClient(BaseClient):
             )
 
             for idx, response in zip(pending_indices, responses):
+                assert response is not None, "Response is None"
+
                 data[idx]["response"][-1] = response
+
                 if regex is not None:
                     try:
                         m = re.search(regex, response)

@@ -132,7 +132,7 @@ class AzureOpenAI(BaseClient):
                         system_prompt=system_prompt,
                         sampling_params=sampling_params,
                     )
-                except openai.RateLimitError as e:
+                except (openai.RateLimitError, openai.APITimeoutError) as e:
                     d["error_messages"][-1].append(str(e))
                     sleep = 60
                 except openai.BadRequestError as e:
