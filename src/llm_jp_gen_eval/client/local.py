@@ -110,33 +110,30 @@ class vLLMClient(BaseClient):
     ):
         pending_indices = [i for i, d in enumerate(data) if len(d["prompt"]) > turn]
 
-        tmp_data = [
-            {"response": None, "pattern": None, "error_messages": []} for _ in data
-        ]
+        for d in data:
+            d["response"].append(None)
+            d["pattern"].append(None)
+            d["error_messages"].append([])
 
         retry_count = 0
         done_indices = set()
         while retry_count < self.max_retries and len(pending_indices) > 0:
             responses = self.batch_request(
                 [data[i]["prompt"][: turn + 1] for i in pending_indices],
-                [data[i]["response"] for i in pending_indices],
+                [data[i]["response"][:turn] for i in pending_indices],
                 system_prompt=system_prompt,
                 sampling_params=sampling_params,
             )
 
             for idx, response in zip(pending_indices, responses):
-                tmp_data[idx]["response"] = response
+                data[idx]["response"][-1] = response
                 if regex is not None:
                     try:
                         m = re.search(regex, response)
-                        tmp_data[idx]["pattern"] = m.group(1)
+                        data[idx]["pattern"][-1] = m.group(1)
                     except Exception as e:
-                        tmp_data[idx]["error_messages"].append(str(e))
+                        data[idx]["error_messages"][-1].append(str(e))
                         continue
-
-                data[idx]["response"].append(tmp_data[idx]["response"])
-                data[idx]["pattern"].append(tmp_data[idx]["pattern"])
-                data[idx]["error_messages"].append(tmp_data[idx]["error_messages"])
 
                 done_indices.add(idx)
                 continue

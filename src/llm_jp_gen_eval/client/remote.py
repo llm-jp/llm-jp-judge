@@ -114,45 +114,45 @@ class AzureOpenAI(BaseClient):
         for turn in range(len(d["prompt"])):
             retry_count = 0
             sleep = 0
-            response, pattern, error_messages = None, None, []
+
+            d["response"].append(None)
+            d["pattern"].append(None)
+            d["error_messages"].append([])
             while retry_count < self.max_retries:
-                if len(error_messages) > 0:
+                if len(d["error_messages"][-1]) > 0:
                     logging.warning(
-                        f"{error_messages[-1]}. Retrying in {sleep} seconds."
+                        f"{d['error_messages'][-1][-1]}. Retrying in {sleep} seconds."
                     )
                 await asyncio.sleep(sleep)
 
                 try:
-                    response = await self.async_request(
+                    d["response"][-1] = await self.async_request(
                         d["prompt"][: turn + 1],
-                        d["response"],
+                        d["response"][:turn],
                         system_prompt=system_prompt,
                         sampling_params=sampling_params,
                     )
                 except openai.RateLimitError as e:
-                    error_messages.append(str(e))
+                    d["error_messages"][-1].append(str(e))
                     sleep = 60
                 except openai.BadRequestError as e:
-                    error_messages.append(str(e))
+                    d["error_messages"][-1].append(str(e))
 
                     retry_count += 1
                     sleep = self.async_request_interval
                     await asyncio.sleep(self.async_request_interval)
                 else:
                     if regex is not None:
-                        m = re.search(regex, response)
+                        m = re.search(regex, d["response"][-1])
                         try:
-                            pattern = m.group(1)
+                            d["pattern"][-1] = m.group(1)
                         except (IndexError, AttributeError) as e:
-                            error_messages.append(str(e))
+                            d["error_messages"][-1].append(str(e))
                             retry_count += 1
                             sleep = self.async_request_interval
                             continue
                     break
 
-            d["response"].append(response)
-            d["pattern"].append(pattern)
-            d["error_messages"].append(error_messages)
             if turn < len(d["prompt"]) - 1:
                 await asyncio.sleep(self.async_request_interval)
 
@@ -160,7 +160,7 @@ class AzureOpenAI(BaseClient):
 
     def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
         sampling_params = self.fill_sampling_params(sampling_params)
-        
+
         return asyncio.run(
             self.process_data(
                 data, regex, system_prompt, sampling_params=sampling_params
