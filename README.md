@@ -21,7 +21,7 @@ pip install -r requrements.txt
 llm-jp-gen-evalでは生成と評価を分けて行います。  
 以下は、`llm-jp/llm-jp-3-1.8b-instruct`により生成を行い、gpt-4oにより評価する例です。  
 
-### Generate
+### Generation
 
 ```bash
 MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
@@ -35,7 +35,7 @@ python3 -m src.llm_jp_gen_eval.generate \
     benchmark.answer_carefully.dataset.path=/Path/to/AnswerCarefullyVersion001_Test.json
 ```
 
-### Evaluate
+### Evaluation
 
 ```bash
 python3 -m src.llm_jp_gen_eval.evaluate \
@@ -66,14 +66,14 @@ python3 -m src.llm_jp_gen_eval.evaluate \
 参照: [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685)
 
 データセットパスの指定は必要ありません。  
-評価を非アクティブにしたい場合は、`benchmark.mt_bench.dataset.path=null`を指定してください。
+非アクティブにしたい場合は、生成時に`benchmark.mt_bench.dataset.path=null`を指定してください。
 
 #### Japanese MT-Bench: `benchmark.ja_mt_bench`
 
 参照: [Japanese MT-Bench](https://github.com/Stability-AI/FastChat)
 
 データセットパスの指定は必要ありません。  
-評価を非アクティブにしたい場合は、`benchmark.ja_mt_bench.dataset.path=null`を指定してください。
+非アクティブにしたい場合は、生成時に`benchmark.ja_mt_bench.dataset.path=null`を指定してください。
 
 ### Client
 
