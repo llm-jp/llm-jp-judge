@@ -1,11 +1,36 @@
 name: vllm
 
+# Initialize the model with the following parameters (null means use the default value of vLLM)
 model_name: ???
 tokenizer_name: null # tokenizer_nameがnullの場合は、model_nameが使用されます。
+tokenizer_mode: "auto"
+skip_tokenizer_init: null
+trust_remote_code: null
+allowed_local_media_path: null
+tensor_parallel_size: null # nullの場合、gpu数が使用されます。
+dtype: null
+quantization: null
+revision: null
+tokenizer_revision: null
+seed: 1234
+gpu_memory_utilization: null
+swap_space: null
+cpu_offload_gb: null
+enforce_eager: null
+max_seq_len_to_capture: null
+disable_custom_all_reduce: null
+disable_async_output_proc: null
+hf_overrides: null
+mm_processor_kwargs: null
+task: null
+override_pooler_config: null
+compilation_config: null
+download_dir: ./data/cache
+
+# Generate text using the following parameters
 chat_template:
   path: null
 
 batch_size: 1
 disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
 
-download_dir: ./data/cache

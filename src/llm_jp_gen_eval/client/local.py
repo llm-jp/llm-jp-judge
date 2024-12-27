@@ -49,6 +49,7 @@ class vLLMClient(BaseClient):
         max_retries=1,
         chat_template={"path": None},
         disable_system_prompt=False,
+        **init_kwargs,
     ):
         self.model_name = model_name
         if model_name.startswith((".", "/")) or not repo_exists(model_name):
@@ -70,11 +71,14 @@ class vLLMClient(BaseClient):
 
         download_dir = hydra.utils.to_absolute_path(download_dir)
 
+        init_kwargs = {k: v for k, v in init_kwargs.items() if v is not None}
+        if init_kwargs.get("tensor_parallel_size") is None:
+            init_kwargs["tensor_parallel_size"] = NUM_GPUS
         self.llm = LLM(
             model=self.model_name,
             tokenizer=self.tokenizer_name,
             download_dir=download_dir,
-            tensor_parallel_size=NUM_GPUS,
+            **init_kwargs,
         )
 
     def batch_request(
