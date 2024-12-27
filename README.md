@@ -35,35 +35,7 @@ AWS_REGION="us-west-2"
 
 ### Generate
 
-評価用データセットに対する生成を行います。  
-以下は、`llm-jp/llm-jp-3-1.8b-instruct`を対象にしています。
-
-```
-RESPONSE_DIR=./output/llm-jp/llm-jp-3-1.8b-instruct
-python3 -m src.llm_jp_gen_eval.generate \
-    output.dir=$RESPONSE_DIR \
-    client=vllm \
-    client.model_name=llm-jp/llm-jp-3-1.8b-instruct \
-    benchmark.ichikara.dataset.path=./data/ichikara-instruction-eval-001-001-007.json \
-    benchmark.answer_carefully.dataset.path=./data/AnswerCarefullyVersion001_Test.json
-```
-
-### Evaluation
-
-生成されたデータに対する評価を行います。  
-以下は、Azure OpenAI APIを用いて評価しています。  
-
-評価結果のアップロードは`wandb`のみ対応しています。  
-
-```
-python3 -m src.llm_jp_gen_eval.evaluate \
-    input.dir=$RESPONSE_DIR \
-    client=azure \
-    client.model_name=gpt-4o-2024-08-06 \
-    dashboard=wandb \
-    dashboard.entity=****** \
-    dashboard.project=llm-jp-gen-eval
-```
+TBA
 
 ## 仕様
 
