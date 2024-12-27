@@ -5,7 +5,7 @@
 
 ## Installation
 
-```
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requrements.txt
@@ -18,14 +18,14 @@ pip install -r requrements.txt
 
 ### Azure OpenAI API
 
-```bash
+```bash:.env
 AZURE_ENDPOINT="https://********.openai.azure.com/"
 AZURE_API_KEY="********"
 ```
 
 ### AWS Bedrock API
 
-```bash
+```bash:.env
 AWS_ACCESS_KEY="********"
 AWS_SECRET_KEY="****************"
 AWS_REGION="us-west-2"
