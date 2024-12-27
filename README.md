@@ -61,15 +61,25 @@ python3 -m src.llm_jp_gen_eval.evaluate \
 
 **TBA**
 
-#### MT-Bench
+#### MT-Bench: `benchmark.mt_bench`
 
-**TBA***
+参照: [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685)
+
+データセットパスの指定は必要ありません。  
+評価を非アクティブにしたい場合は、`benchmark.mt_bench.dataset.path=null`を指定してください。
+
+#### Japanese MT-Bench: `benchmark.ja_mt_bench`
+
+参照: [Japanese MT-Bench](https://github.com/Stability-AI/FastChat)
+
+データセットパスの指定は必要ありません。  
+評価を非アクティブにしたい場合は、`benchmark.ja_mt_bench.dataset.path=null`を指定してください。
 
 ### Client
 
 生成もしくは評価に使用可能な推論用クライアントは以下の通りです。
 
-#### Azure(`client=azure`)
+#### Azure: `client=azure`
 
 Azure OpenAI APIのモデル(例:`gpt-4o-2024-08-06`)を指定できます。  
 `.env`ファイルを作成し、以下の環境変数を追記してください。
@@ -78,7 +88,7 @@ AZURE_ENDPOINT="https://********.openai.azure.com/"
 AZURE_API_KEY="********"
 ```
 
-#### Bedrock(`client=bedrock`)
+#### Bedrock: `client=bedrock`
 
 AWS Bedrock APIのモデル(例:`anthropic.claude-3-5-sonnet-20240620-v1:0`)を指定できます。  
 `.env`ファイルを作成し、以下の環境変数を追記してください。
@@ -89,7 +99,7 @@ AWS_REGION="us-west-2"
 ```
 
 
-#### vLLM(`client=vllm`)
+#### vLLM: `client=vllm`
 
 Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパスを指定できます。  
 vLLMを使用してローカルで推論を行います。
