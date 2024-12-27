@@ -19,6 +19,7 @@ pip install -r requrements.txt
 ## How to Use
 
 llm-jp-gen-evalでは生成と評価を分けて行います。  
+以下は、`llm-jp/llm-jp-3-1.8b-instruct`により生成を行い、gpt-4oにより評価する例です。  
 
 ### Generate
 
@@ -90,4 +91,8 @@ AWS_REGION="us-west-2"
 
 #### vLLM(`client=vllm`)
 
-- `vllm` : Hugging Faceのモデル名もしくはパス(例:`llm-jp/llm-jp-3-1.8b-instruct`)を指定できます。vLLMを使用してローカルで推論を行います。チャットテンプレートに対応したモデルを指定する必要があります。
+Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパスを指定できます。  
+vLLMを使用してローカルで推論を行います。
+> [!NOTE]
+> モデルが仕様するトークナイザーがチャットテンプレートに対応している必要があります。  
+> 対応していない場合、チャットテンプレートに対応したトークナイザーを`client.tokenizer_name`として指定するか、jinja形式のチャットテンプレートを`client.chat_template.path`として与えてください。
