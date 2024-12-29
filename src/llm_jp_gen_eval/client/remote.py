@@ -146,7 +146,7 @@ class AzureOpenAI(BaseClient):
                         m = re.search(regex, d["response"][-1])
                         try:
                             d["pattern"][-1] = m.group(1)
-                        except (IndexError, AttributeError) as e:
+                        except (IndexError, AttributeError, TypeError) as e:
                             d["error_messages"][-1].append(str(e))
                             retry_count += 1
                             sleep = self.async_request_interval
