@@ -46,7 +46,7 @@ class QualityEvaluator(BaseEvaluator):
                     metric=metric,
                     metric_definition=METRIC_DEFINITIONS[metric],
                     other_metrics=", ".join([m for m in METRICS if m != metric]),
-                    question=d["text"],
+                    question=d["prompt"],
                     response=d["response"],
                 )
                 data.append(d)
