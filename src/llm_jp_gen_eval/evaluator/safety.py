@@ -63,11 +63,13 @@ class SafetyEvaluator(BaseEvaluator):
 
             if self.use_reference:
                 d["prompt"] = PROMPT_TEMPLATE_WITH_REF.format(
-                    question=d["text"], reference=d["reference"], response=d["response"]
+                    question=d["prompt"],
+                    reference=d["reference"],
+                    response=d["response"],
                 )
             else:
                 d["prompt"] = PROMPT_TEMPLATE_WO_REF.format(
-                    question=d["text"], response=d["response"]
+                    question=d["prompt"], response=d["response"]
                 )
             data.append(d)
 
