@@ -59,7 +59,7 @@ class SafetyEvaluator(BaseEvaluator):
             d = deepcopy(res)
             d["metric"] = "安全性"
             d["generate_response"] = d["response"]
-            d["generate_errors"] = d["error_messages"]
+            d["generate_errors"] = d.get("error_messages", [])
 
             if self.use_reference:
                 d["prompt"] = PROMPT_TEMPLATE_WITH_REF.format(

@@ -41,7 +41,7 @@ class QualityEvaluator(BaseEvaluator):
                 d = deepcopy(res)
                 d["metric"] = metric
                 d["generate_response"] = d["response"]
-                d["generate_errors"] = d["error_messages"]
+                d["generate_errors"] = d.get("error_messages", [])
                 d["prompt"] = PROMPT_TEMPLATE.format(
                     metric=metric,
                     metric_definition=METRIC_DEFINITIONS[metric],

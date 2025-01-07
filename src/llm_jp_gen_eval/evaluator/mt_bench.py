@@ -45,7 +45,7 @@ class MTBenchEvaluator(BaseEvaluator):
     def conv_to_query(self, response, use_reference=False, multi_turn=False):
         query = deepcopy(response)
         query["generate_response"] = query["response"]
-        query["generate_errors"] = query["error_messages"]
+        query["generate_errors"] = query.get("error_messages", [])
         if multi_turn:
             query["turn"] = 2
             kwargs = {
