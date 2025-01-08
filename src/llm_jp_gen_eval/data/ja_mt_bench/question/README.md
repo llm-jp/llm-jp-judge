@@ -1,6 +1,6 @@
 ## Credits
 
-- `question_full-v3.jsonl`
+- `question_full-v3.jsonl` **(default)**
     - From: [Stability-AI/FastChat(commit:9f220b6)](https://github.com/Stability-AI/FastChat/commit/9f220b6019eef85853237952fd2f504ac3419b72)
     - Comparable: 
         - [llm-leaderboard(g-leaderboard)](https://github.com/wandb/llm-leaderboard/tree/g-leaderboard): 'wandb-japan/llm-leaderboard/mtbench_ja_question:v3'
