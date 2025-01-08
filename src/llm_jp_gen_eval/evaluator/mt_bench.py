@@ -4,7 +4,7 @@ import json
 from copy import deepcopy
 from collections import defaultdict
 
-from .base import BaseEvaluator
+from .base import BaseEvaluator, BaseScoreExtractor
 from ..utils.data import load_jsonl
 
 
@@ -180,11 +180,14 @@ class MTBenchEvaluator(BaseEvaluator):
             queries.append(query)
 
         metric = queries[-1]["metric"]
+        score_extractor = BaseScoreExtractor(
+            regex=self.prompt_template[metric]["regex"]
+        )
         responses = self.client(
             queries,
+            score_extractor=score_extractor,
             system_prompt=self.prompt_template[metric]["system_prompt"],
             sampling_params=self.sampling_params,
-            regex=self.prompt_template[metric]["regex"],
         )
         return responses
 

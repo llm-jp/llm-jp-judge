@@ -1,5 +1,15 @@
+import re
 import json
 import logging
+
+
+class BaseScoreExtractor(object):
+    def __init__(self, regex):
+        self.regex = regex
+
+    def __call__(self, text):
+        m = re.search(self.regex, text)
+        return m.group(1) if m else None
 
 
 class BaseEvaluator:

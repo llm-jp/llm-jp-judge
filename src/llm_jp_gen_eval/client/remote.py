@@ -71,7 +71,7 @@ class AzureOpenAI(BaseClient):
         return response.choices[0].message.content
 
     async def process_data(
-        self, data, regex=None, system_prompt=None, sampling_params={}
+        self, data, score_extractor=None, system_prompt=None, sampling_params={}
     ):
         tasks = []
         wait = 0
@@ -85,7 +85,7 @@ class AzureOpenAI(BaseClient):
             tasks.append(
                 self._process_single_request(
                     d,
-                    regex,
+                    score_extractor,
                     system_prompt,
                     wait=wait,
                     sampling_params=sampling_params,
@@ -106,7 +106,7 @@ class AzureOpenAI(BaseClient):
         return data
 
     async def _process_single_request(
-        self, d, regex, system_prompt, wait, sampling_params={}
+        self, d, score_extractor, system_prompt, wait, sampling_params={}
     ):
         await asyncio.sleep(wait)
 
@@ -142,11 +142,10 @@ class AzureOpenAI(BaseClient):
                     sleep = self.async_request_interval
                     await asyncio.sleep(self.async_request_interval)
                 else:
-                    if regex is not None:
-                        m = re.search(regex, d["response"][-1])
+                    if score_extractor is not None:
                         try:
-                            d["pattern"][-1] = m.group(1)
-                        except (IndexError, AttributeError, TypeError) as e:
+                            d["pattern"][-1] = score_extractor(d["response"][-1])
+                        except Exception as e:
                             d["error_messages"][-1].append(str(e))
                             retry_count += 1
                             sleep = self.async_request_interval
@@ -158,12 +157,14 @@ class AzureOpenAI(BaseClient):
 
         return d
 
-    def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
+    def __call__(
+        self, data, score_extractor=None, system_prompt=None, sampling_params={}
+    ):
         sampling_params = self.fill_sampling_params(sampling_params)
 
         return asyncio.run(
             self.process_data(
-                data, regex, system_prompt, sampling_params=sampling_params
+                data, score_extractor, system_prompt, sampling_params=sampling_params
             )
         )
 
