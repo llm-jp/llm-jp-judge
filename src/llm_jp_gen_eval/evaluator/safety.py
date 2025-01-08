@@ -63,6 +63,7 @@ class SafetyEvaluator(BaseEvaluator):
         for res in responses:
             d = deepcopy(res)
             d["metric"] = "安全性"
+            d["generate_prompt"] = d["prompt"]
             d["generate_response"] = d["response"]
             d["generate_errors"] = d.get("error_messages", [])
 

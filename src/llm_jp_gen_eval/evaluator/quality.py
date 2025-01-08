@@ -1,4 +1,5 @@
 import re
+import json
 import logging
 
 from copy import deepcopy
@@ -61,6 +62,32 @@ class QualityScoreExtractor(object):
 
 
 class QualityEvaluator(BaseEvaluator):
+    def log_raw_outputs(self, raw_outputs):
+        if self.dashboard is None:
+            return
+
+        table = []
+        header = [
+            "id",
+            "evaluation prompt",
+            "evaluation response",
+            *METRICS,
+            "generate errors",
+            "evaluation errors",
+        ]
+        for raw_output in raw_outputs:
+            table.append(
+                [
+                    raw_output["ID"],
+                    raw_output["prompt"],
+                    raw_output["response"],
+                    *[raw_output.get("pattern", {}).get(metric) for metric in METRICS],
+                    json.dumps(raw_output["generate_errors"], ensure_ascii=False),
+                    json.dumps(raw_output["error_messages"], ensure_ascii=False),
+                ]
+            )
+        self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)
+
     def __call__(self, responses):
         data = []
         for res in responses:
@@ -88,33 +115,7 @@ class QualityEvaluator(BaseEvaluator):
             for metric, score in raw_output["pattern"].items():
                 scores[metric].append(score)
 
-        if self.dashboard is not None:
-            table = []
-            header = [
-                "id",
-                "text",
-                "generate response",
-                "generate errors",
-                *METRICS,
-                "evaluation response",
-                "evaluation errors",
-            ]
-            for raw_output in raw_outputs:
-                table.append(
-                    [
-                        raw_output["ID"],
-                        raw_output["text"],
-                        raw_output["generate_response"],
-                        ", ".join(raw_output["generate_errors"]),
-                        *[
-                            raw_output.get("pattern", {}).get(metric)
-                            for metric in METRICS
-                        ],
-                        raw_output["response"],
-                        ", ".join(raw_output["error_messages"]),
-                    ]
-                )
-            self.dashboard.log_table("abs_quality_table", columns=header, data=table)
+        self.log_raw_outputs(raw_outputs)
 
         error_rates = {}
         (

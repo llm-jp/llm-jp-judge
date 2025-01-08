@@ -161,8 +161,8 @@ class MTBenchEvaluator(BaseEvaluator):
                 score["prompt"],
                 score["response"],
                 score["pattern"],
-                json.dumps(score["generate_errors"]),
-                json.dumps(score["error_messages"]),
+                json.dumps(score["generate_errors"], ensure_ascii=False),
+                json.dumps(score["error_messages"], ensure_ascii=False),
             ]
             for score in raw_outputs
         ]
