@@ -210,9 +210,7 @@ class BedrockAnthropic(AzureOpenAI):
         system_prompt=None,
         sampling_params={},
     ):
-        messages = await asyncio.to_thread(
-            self.get_messages, prompt, response, system_prompt=system_prompt
-        )
+        messages = await asyncio.to_thread(self.get_messages, prompt, response)
 
         sampling_params = dict(sampling_params)
         # Ignore unsupported parameters
