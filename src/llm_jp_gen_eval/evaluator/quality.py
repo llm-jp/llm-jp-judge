@@ -1,3 +1,4 @@
+import re
 import logging
 
 from copy import deepcopy
@@ -16,7 +17,7 @@ PROMPT_TEMPLATE = """[指示]
 
 評価値は1から5の間です。1は非常に悪く、5は非常に良いことを意味します。
 評価の理由を述べ、その後に評価値を記入してください。
-評価は以下の形式で記入してください。
+評価値は角括弧で囲み(例: [[3]])、以下の形式で記入してください。
 
 正確性: [[評価値]]
 流暢性: [[評価値]]
@@ -26,7 +27,7 @@ PROMPT_TEMPLATE = """[指示]
 次に、各指標の評価結果をもとに総合評価を行ってください。
 評価値は1から5の間です。1は非常に悪く、5は非常に良いことを意味します。
 評価の理由を述べ、その後に評価値を記入してください。
-評価は以下の形式で記入してください。
+評価値は角括弧で囲み(例: [[3]])、以下の形式で記入してください。
 
 総合評価: [[評価値]]
 
@@ -37,7 +38,26 @@ PROMPT_TEMPLATE = """[指示]
 {response}
 [AIアシスタント回答終了]"""
 
-SCORE_REGEX = r"((正確性|流暢性|詳細性|関連性|総合評価): \[\[[1-9]\]\])"
+METRICS = ["正確性", "流暢性", "詳細性", "関連性", "総合評価"]
+
+SCORE_REGEX = f"({'|'.join(METRICS)}): \[\[([1-5])\]\]"
+
+
+class QualityScoreExtractor(object):
+    def __init__(self, regex):
+        self.regex = regex
+
+    def __call__(self, text):
+        scores = {}
+        for metric, score in re.findall(self.regex, text):
+            if metric in scores:
+                raise ValueError("Duplicate metric")
+            scores[metric] = int(score)
+
+        if set(scores.keys()) != set(METRICS):
+            raise ValueError("Invalid score format")
+
+        return scores
 
 
 class QualityEvaluator(BaseEvaluator):
@@ -53,30 +73,29 @@ class QualityEvaluator(BaseEvaluator):
             )
             data.append(d)
 
+        score_extractor = QualityScoreExtractor(SCORE_REGEX)
         raw_outputs = self.client(
             data,
-            regex=SCORE_REGEX,
+            score_extractor=score_extractor,
             system_prompt=self.system_prompt,
             sampling_params=self.sampling_params,
         )
 
         scores = defaultdict(list)
         for raw_output in raw_outputs:
-            metric = raw_output["metric"]
             if raw_output.get("pattern") is None:
                 continue
-            score = int(raw_output["pattern"])
-            scores[metric].append(score)
+            for metric, score in raw_output["pattern"].items():
+                scores[metric].append(score)
 
         if self.dashboard is not None:
             table = []
             header = [
                 "id",
-                "metric",
                 "text",
                 "generate response",
                 "generate errors",
-                "score",
+                *METRICS,
                 "evaluation response",
                 "evaluation errors",
             ]
@@ -84,11 +103,13 @@ class QualityEvaluator(BaseEvaluator):
                 table.append(
                     [
                         raw_output["ID"],
-                        raw_output["metric"],
                         raw_output["text"],
                         raw_output["generate_response"],
                         ", ".join(raw_output["generate_errors"]),
-                        raw_output["pattern"],
+                        *[
+                            raw_output.get("pattern", {}).get(metric)
+                            for metric in METRICS
+                        ],
                         raw_output["response"],
                         ", ".join(raw_output["error_messages"]),
                     ]
@@ -98,7 +119,7 @@ class QualityEvaluator(BaseEvaluator):
         self.calc_error_rate(raw_outputs)
 
         ave_scores = {
-            metric: sum(scores) / len(scores) if len(scores) else None
+            f"quality:{metric}": sum(scores) / len(scores) if len(scores) else None
             for metric, scores in scores.items()
         }
         logging.info(f"Scores: {ave_scores}")

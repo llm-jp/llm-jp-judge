@@ -110,7 +110,7 @@ class vLLMClient(BaseClient):
         return responses
 
     def _process_turn_requests(
-        self, data, turn, regex=None, system_prompt=None, sampling_params={}
+        self, data, turn, score_extractor=None, system_prompt=None, sampling_params={}
     ):
         pending_indices = [i for i, d in enumerate(data) if len(d["prompt"]) > turn]
 
@@ -134,10 +134,9 @@ class vLLMClient(BaseClient):
 
                 data[idx]["response"][-1] = response
 
-                if regex is not None:
+                if score_extractor is not None:
                     try:
-                        m = re.search(regex, response)
-                        data[idx]["pattern"][-1] = m.group(1)
+                        data[idx]["pattern"][-1] = score_extractor(response)
                     except Exception as e:
                         data[idx]["error_messages"][-1].append(str(e))
                         continue
@@ -150,7 +149,9 @@ class vLLMClient(BaseClient):
 
         return data
 
-    def process_data(self, data, regex=None, system_prompt=None, sampling_params={}):
+    def process_data(
+        self, data, score_extractor=None, system_prompt=None, sampling_params={}
+    ):
         max_turn = 0
         for d in data:
             if type(d["prompt"]) == str:  # Single turn
@@ -163,7 +164,7 @@ class vLLMClient(BaseClient):
 
         for turn in range(max_turn):
             data = self._process_turn_requests(
-                data, turn, regex, system_prompt, sampling_params
+                data, turn, score_extractor, system_prompt, sampling_params
             )
 
         for d in data:
@@ -176,9 +177,11 @@ class vLLMClient(BaseClient):
 
         return data
 
-    def __call__(self, data, regex=None, system_prompt=None, sampling_params={}):
+    def __call__(
+        self, data, score_extractor=None, system_prompt=None, sampling_params={}
+    ):
         sampling_params = self.fill_sampling_params(sampling_params)
 
         return self.process_data(
-            data, regex, system_prompt, sampling_params=sampling_params
+            data, score_extractor, system_prompt, sampling_params=sampling_params
         )
