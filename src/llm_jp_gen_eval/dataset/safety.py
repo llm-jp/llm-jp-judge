@@ -2,7 +2,7 @@ import json
 import hydra
 
 
-def load_answer_carefully(path):
+def load_safety(path):
     path = hydra.utils.to_absolute_path(path)
     data = []
     with open(path, "r", encoding="utf-8") as f:

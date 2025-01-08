@@ -1,13 +1,13 @@
-from .answer_carefully import load_answer_carefully
-from .ichikara import load_ichikara
+from .safety import load_safety
+from .quality import load_quality
 from .mt_bench import load_mt_bench
 
 
 def load_dataset(name, path, size=None):
-    if name == "ichikara":
-        dataset = load_ichikara(path)
-    elif name == "answer_carefully":
-        dataset = load_answer_carefully(path)
+    if name == "quality":
+        dataset = load_quality(path)
+    elif name == "safety":
+        dataset = load_safety(path)
     elif name in ["mt_bench", "ja_mt_bench"]:
         dataset = load_mt_bench(path)
     else:

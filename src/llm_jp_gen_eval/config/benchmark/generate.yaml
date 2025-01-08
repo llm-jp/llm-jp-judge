@@ -1,5 +1,5 @@
-ichikara:
-  name: "ichikara"
+quality:
+  name: "quality"
   dataset: 
     path: null
     size: null # Use the first 'size' number of data entries
@@ -10,8 +10,8 @@ ichikara:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-answer_carefully:
-  name: "answer_carefully"
+safety:
+  name: "safety"
   dataset:
     path: null
     size: null

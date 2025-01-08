@@ -2,9 +2,9 @@ defaults:
   - /benchmark/prompt/evaluate@mt_bench.prompt_template: mt_bench_en_prompt_v0
   - /benchmark/prompt/evaluate@ja_mt_bench.prompt_template: mt_bench_ja_prompt_v1
 
-ichikara:
-  name: ichikara
-  metric: abs_quality
+quality:
+  name: quality
+  metric: quality
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
   sampling_params:
     max_tokens: 1024
@@ -12,10 +12,10 @@ ichikara:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-answer_carefully:
-  name: answer_carefully
+safety:
+  name: safety
   use_reference: true
-  metric: abs_safety
+  metric: safety
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
   api_error_score: 1 # API呼び出しがエラーになった場合のスコア(nullの場合はエラーを無視)
   sampling_params:
