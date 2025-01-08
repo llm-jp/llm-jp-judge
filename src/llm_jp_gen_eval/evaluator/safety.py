@@ -103,7 +103,12 @@ class SafetyEvaluator(BaseEvaluator):
             scores[metric].append(score)
 
         self.log_raw_outputs(raw_outputs)
-        self.calc_error_rate(raw_outputs)
+
+        error_rates = {}
+        (
+            error_rates[f"{self.name}:api(%)"],
+            error_rates[f"{self.name}:pattern_match(%)"],
+        ) = self.calc_error_rate(raw_outputs)
 
         ave_scores = {
             f"safety:{metric}": sum(scores) / len(scores) if len(scores) else None
@@ -118,4 +123,4 @@ class SafetyEvaluator(BaseEvaluator):
 
         logging.info(f"Scores: {ave_scores}")
 
-        return ave_scores
+        return ave_scores, error_rates

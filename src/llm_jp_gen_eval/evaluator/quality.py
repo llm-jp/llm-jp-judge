@@ -116,7 +116,11 @@ class QualityEvaluator(BaseEvaluator):
                 )
             self.dashboard.log_table("abs_quality_table", columns=header, data=table)
 
-        self.calc_error_rate(raw_outputs)
+        error_rates = {}
+        (
+            error_rates[f"{self.name}:api(%)"],
+            error_rates[f"{self.name}:pattern_match(%)"],
+        ) = self.calc_error_rate(raw_outputs)
 
         ave_scores = {
             f"quality:{metric}": sum(scores) / len(scores) if len(scores) else None
@@ -124,4 +128,4 @@ class QualityEvaluator(BaseEvaluator):
         }
         logging.info(f"Scores: {ave_scores}")
 
-        return ave_scores
+        return ave_scores, error_rates

@@ -64,19 +64,12 @@ class BaseEvaluator:
         api_errors = [raw_output["response"] is None for raw_output in raw_outputs]
         api_error_rate = sum(api_errors) / len(api_errors) * 100
 
-        regex_mismatch_errors = [
+        regex_match_errors = [
             raw_output["pattern"] is None for raw_output in raw_outputs
         ]
-        regex_mismatch_rate = (
-            sum(regex_mismatch_errors) / len(regex_mismatch_errors) * 100
-        )
+        regex_match_error_rate = sum(regex_match_errors) / len(regex_match_errors) * 100
 
         logging.info(f"API error rate: {api_error_rate:.2f}%")
-        logging.info(f"Pattern mismatch rate: {regex_mismatch_rate:.2f}%")
+        logging.info(f"Pattern match error rate: {regex_match_error_rate:.2f}%")
 
-        self.dashboard.log_summaries(
-            {
-                f"{self.name}:api error rate(%)": api_error_rate,
-                f"{self.name}:regex mismatch rate(%)": regex_mismatch_rate,
-            }
-        )
+        return api_error_rate, regex_match_error_rate

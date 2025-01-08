@@ -47,15 +47,16 @@ def main(cfg):
     logging.info(f"Loading client: {cfg.client.model_name}")
     client = load_client(**cfg.client)
 
-    all_scores = {}
+    all_scores, all_error_rates = {}, {}
     for benchmark_name, data in raw_outputs.items():
         logging.info(f"Evaluating benchmark: {benchmark_name}")
         benchmark_cfg = cfg.benchmark[benchmark_name]
         evaluator = load_evaluator(
             client, dashboard, metadata=metadata, **benchmark_cfg
         )
-        scores = evaluator(data)
+        scores, error_rates = evaluator(data)
         all_scores.update(scores)
+        all_error_rates.update(error_rates)
 
     metrics = list(all_scores.keys())
     columns = ["generate model", "evaluation model"] + metrics
@@ -63,6 +64,13 @@ def main(cfg):
         all_scores[metric] for metric in metrics
     ]
     dashboard.log_table("score_table", columns=columns, data=[row])
+
+    header = list(all_error_rates.keys())
+    columns = ["generate model", "evaluation model"] + header
+    row = [metadata["model_name"], cfg.client.model_name] + [
+        all_error_rates[key] for key in header
+    ]
+    dashboard.log_table("evaluate_error_rate_table", columns=columns, data=[row])
 
     dashboard.close()
 
