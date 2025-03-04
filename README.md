@@ -16,16 +16,16 @@ pip install -r requrements.txt
 以下のデータセットをダウンロードします。  
 (既にローカルに保存されたデータを用いる場合は必要ありません。)
 
-- [AnswerCarefully v2.0](https://huggingface.co/datasets/llm-jp/AnswerCarefully)
+- [AnswerCarefully v2.0](https://huggingface.co/datasets/llm-jp/AnswerCarefully) (安全性評価用データセット)
   1. huggingface-cliへのログイン
-    ```bash
-    huggingface-cli login
-    ```
+      ```bash
+      huggingface-cli login
+      ```
   2. データセットへの[アクセス申請](https://huggingface.co/datasets/llm-jp/AnswerCarefully)
   3. ダウンロード
-    ```bash
-    bash scripts/download_ac_v2.0.sh
-    ```
+      ```bash
+      bash scripts/download_ac_v2.0.sh
+      ```
 
 ## Setup
 
