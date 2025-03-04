@@ -11,6 +11,22 @@ source venv/bin/activate
 pip install -r requrements.txt
 ```
 
+## Download Dataset
+
+以下のデータセットをダウンロードします。  
+(既にローカルに保存されたデータを用いる場合は必要ありません。)
+
+- [AnswerCarefully v2.0](https://huggingface.co/datasets/llm-jp/AnswerCarefully)
+  1. huggingface-cliへのログイン
+    ```bash
+    huggingface-cli login
+    ```
+  2. データセットへの[アクセス申請](https://huggingface.co/datasets/llm-jp/AnswerCarefully)
+  3. ダウンロード
+    ```bash
+    bash scripts/download_ac_v2.0.sh
+    ```
+
 ## Setup
 
 生成もしくは評価に使用するAPIの情報を`.env`ファイルに入力して下さい。  
@@ -32,7 +48,7 @@ python3 -m src.llm_jp_gen_eval.generate \
     client=vllm \
     client.model_name=$MODEL_NAME \
     benchmark.ichikara.dataset.path=/Path/to/ichikara-eval-test.json \
-    benchmark.answer_carefully.dataset.path=/Path/to/AnswerCarefullyVersion001_Test.json
+    benchmark.answer_carefully.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 ```
 
 ### Evaluation
