@@ -34,7 +34,7 @@ pip install -r requrements.txt
 
 ## 環境変数
 
-生成もしくは評価に使用するAPIの情報を`.env`ファイルに入力して下さい。  
+必要に応じて生成もしくは評価に使用するAPIの情報を`.env`ファイルに入力して下さい。  
 
 ```bash:.env
 # Microsoft Azure OpenAI Service
