@@ -1,7 +1,10 @@
-# llm-jp-judge
+<div align="center">
 
-生成自動評価を行うパッケージです。  
-開発中のアルファ版です。  
+llm-jp-judge
+===========================
+<h4>日本語LLM-as-a-Judgeを統合的に扱えるようにするツール</h4>
+
+<div align="left">  
 
 # インストール
 
