@@ -58,7 +58,7 @@ MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
 OUTPUT_DIR=./output/llm-jp-3-1.8b-instruct
 
 # 生成
-python3 -m src.llm_jp_gen_eval.generate \
+python3 -m src.llm_jp_judge.generate \
     output.dir=$OUTPUT_DIR/generation \
     client=vllm \
     client.model_name=$MODEL_NAME \
@@ -66,7 +66,7 @@ python3 -m src.llm_jp_gen_eval.generate \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
 # 評価
-python3 -m src.llm_jp_gen_eval.evaluate \
+python3 -m src.llm_jp_judge.evaluate \
     input.dir=$OUTPUT_DIR/generation \
     output.dir=$OUTPUT_DIR/evaluation \
     client=azure \
