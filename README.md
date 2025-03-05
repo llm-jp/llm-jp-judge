@@ -1,10 +1,6 @@
-<div align="center">
+# llm-jp-judge
 
-llm-jp-judge
-===========================
-<h4>日本語LLM-as-a-Judgeを統合的に扱えるようにするツール</h4>
-
-<div align="left">  
+日本語LLM-as-a-Judgeを統合的に扱うためのツール
 
 # インストール
 
@@ -148,7 +144,6 @@ python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
 
 vLLMを使用してローカルで推論を行います。  
 Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパスを指定できます。  
-
 > [!NOTE]
 > モデルが使用するトークナイザーがチャットテンプレートに対応している必要があります。  
 > 対応していない場合、チャットテンプレートに対応したトークナイザーを`client.tokenizer_name`として指定するか、jinja形式のチャットテンプレートを`client.chat_template.path`として与えてください。
