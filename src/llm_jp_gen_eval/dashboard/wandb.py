@@ -22,16 +22,22 @@ class WandB(BaseDashboard):
 
     def log(self, data):
         super().log(data)
+
         self.run.log(data)
 
     def log_table(self, name, columns=[], data=[]):
+        super().log_table(name, columns, data)
+
         table = wandb.Table(columns=columns, data=data)
-        self.log({name: table})
+        self.run.log({name: table})
 
     def log_summary(self, key, value):
         super().log_summary(key, value)
+
         self.run.summary[key] = value
 
     def log_summaries(self, data):
+        super().log_summaries(data)
+
         for key, value in data.items():
-            self.log_summary(key, value)
+            self.run.summary[key] = value
