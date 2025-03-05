@@ -52,7 +52,7 @@ llm-jp-gen-evalでは生成と評価を分けて行います。
 ## Generation
 
 データセットに対して指定したモデルで生成を行います。  
-各設定に関しては[Benchmark](#Benchmark)や[Inference Client](#inrefence-client)を参照ください。
+各設定に関しては[Benchmark](#Benchmark)や[Inference Client](#inference-client)を参照ください。
 
 ```bash
 MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
