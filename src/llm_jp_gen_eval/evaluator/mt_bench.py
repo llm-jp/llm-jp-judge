@@ -102,7 +102,7 @@ class MTBenchEvaluator(BaseEvaluator):
         logging.info(f"Average score (turn 1): {t1_score:.2f}")
         logging.info(f"Average score (turn 2): {t2_score:.2f}")
 
-        header = ["generate model", "evaluation model", "turn 1", "turn 2", "average"]
+        header = ["generation_model", "evaluation_model", "turn 1", "turn 2", "average"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
 
         row.append(t1_score)
@@ -117,7 +117,7 @@ class MTBenchEvaluator(BaseEvaluator):
         for raw_output in raw_outputs:
             categ_raw_outputs[raw_output["category"]].append(int(raw_output["pattern"]))
 
-        header = ["generate model", "evaluation model"]
+        header = ["generation_model", "evaluation_model"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
         for categ in sorted(categ_raw_outputs.keys()):
             categ_score = sum(categ_raw_outputs[categ]) / len(categ_raw_outputs[categ])

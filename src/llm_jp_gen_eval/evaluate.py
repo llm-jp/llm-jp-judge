@@ -59,14 +59,14 @@ def main(cfg):
         all_error_rates.update(error_rates)
 
     metrics = list(all_scores.keys())
-    columns = ["generate model", "evaluation model"] + metrics
+    columns = ["generation_model", "evaluation_model"] + metrics
     row = [metadata["model_name"], cfg.client.model_name] + [
         all_scores[metric] for metric in metrics
     ]
     dashboard.log_table("score_table", columns=columns, data=[row])
 
     header = list(all_error_rates.keys())
-    columns = ["generate model", "evaluation model"] + header
+    columns = ["generation_model", "evaluation_model"] + header
     row = [metadata["model_name"], cfg.client.model_name] + [
         all_error_rates[key] for key in header
     ]
