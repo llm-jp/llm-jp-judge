@@ -3,9 +3,9 @@
 生成自動評価を行うパッケージです。  
 開発中のアルファ版です。  
 
-# Installation
+# インストール
 
-## Virtual Environment
+## 仮想環境
 
 ```bash
 python3 -m venv venv
@@ -13,7 +13,7 @@ source venv/bin/activate
 pip install -r requrements.txt
 ```
 
-## Download Dataset
+## データセットダウンロード
 
 以下のデータセットをダウンロードします。  
 (既にローカルに保存されたデータを用いる場合は必要ありません。)
@@ -29,7 +29,7 @@ pip install -r requrements.txt
       bash scripts/download_ac_v2.0.sh
       ```
 
-## Environment Variable
+## 環境変数
 
 生成もしくは評価に使用するAPIの情報を`.env`ファイルに入力して下さい。  
 
@@ -44,15 +44,15 @@ AWS_SECRET_KEY="****************"
 AWS_REGION="**-****-*" # e.g. us-west-2
 ```
 
-# How to Use
+# 使い方
 
 llm-jp-gen-evalでは生成と評価を分けて行います。  
-以下は、`llm-jp/llm-jp-3-1.8b-instruct`により生成を行い、gpt-4oにより評価する例です。  
+以下は、Hugging Face Hubの[llm-jp/llm-jp-3-1.8b-instruct](https://huggingface.co/llm-jp/llm-jp-3-1.8b-instruct)により生成を行い、gpt-4oにより評価する例です。  
 
-## Generation
+## 生成
 
 データセットに対して指定したモデルで生成を行います。  
-各設定に関しては[Benchmark](#Benchmark)や[Inference Client](#inference-client)を参照ください。
+各設定に関しては[ベンチマーク](#ベンチマーク)や[推論用クライアント](#推論用クライアント)を参照ください。
 
 ```bash
 MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
@@ -66,7 +66,7 @@ python3 -m src.llm_jp_gen_eval.generate \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 ```
 
-## Evaluation
+## 評価 (LLM-as-a-Judge)
 
 生成された結果に対して評価を行います。  
 
@@ -82,17 +82,17 @@ python3 -m src.llm_jp_gen_eval.evaluate \
     dashboard.run_name={run_name}
 ```
 
-# Benchmark
+# ベンチマーク
 
-## Quality
-
-**TBA**
-
-## Safety
+## 品質評価 (日本語)
 
 **TBA**
 
-## MT-Bench (En)
+## 安全性評価 (日本語)
+
+**TBA**
+
+## MT-Bench (英語)
 参照: [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685)
 
 データセットを内包しているため、データセットパスの指定は必要ありません。  
@@ -103,7 +103,7 @@ python3 -m src.llm_jp_gen_eval.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
-## MT-Bench (Ja)
+## MT-Bench (日本語)
 
 参照: [Japanese MT-Bench](https://github.com/Stability-AI/FastChat)
 
@@ -115,11 +115,11 @@ python3 -m src.llm_jp_gen_eval.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
-# Inference Client
+# 推論用クライアント
 
 生成もしくは評価に使用可能な推論用クライアントは以下の通りです。
 
-## Azure
+## Microsoft Azure OpenAI Service
 
 Azure OpenAI APIのデプロイ名(例:`gpt-4o-2024-08-06`)を指定できます。
 
@@ -130,7 +130,7 @@ python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
     client.async_request_interval=0.5  # APIリクエストの間隔(秒)
 ```
 
-## Bedrock
+## Amazon Bedrock API (Anthropic)
 
 AWS Bedrock APIのデプロイ名(例:`anthropic.claude-3-5-sonnet-20240620-v1:0`)を指定できます。  
 
@@ -154,4 +154,19 @@ Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパ�
 python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
     client=vllm \
     client.model_name=$INFERENCE_MODEL_NAME # Huggin Faceのモデル名 or パス
+```
+
+# ダッシュボード
+
+評価結果を表示するためのダッシュボードを指定できます。  
+現在はWandBのみサポートしています。
+
+## WandB
+
+```
+python3 -m src.llm_jp_gen_eval.evaluate \
+    dashboard=wandb \
+    dashboard.entity={entity_name} \
+    dashboard.project={project_name} \
+    dashboard.run_name={run_name}
 ```
