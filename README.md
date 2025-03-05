@@ -17,7 +17,12 @@ pip install -r requrements.txt
 以下のデータセットをダウンロードします。  
 (既にローカルに保存されたデータを用いる場合は必要ありません。)
 
-- [AnswerCarefully v2.0](https://huggingface.co/datasets/llm-jp/AnswerCarefully) (安全性評価用データセット)
+- [llm-jp-instructions v1.0](./data/cache/llm-jp/llm-jp-instructions/v1.0) (品質評価用データセット)
+  1. ダウンロード
+      ```bash
+      scripts/download_llm_jp_instructions_v1.0.sh
+      ```
+- [AnswerCarefully v2.0](https://huggingface.co/datasets/llm-jp/llm-jp-instructions) (安全性評価用データセット)
   1. huggingface-cliへのログイン
       ```bash
       huggingface-cli login
@@ -57,7 +62,7 @@ python3 -m src.llm_jp_gen_eval.generate \
     output.dir=$OUTPUT_DIR/generation \
     client=vllm \
     client.model_name=$MODEL_NAME \
-    benchmark.quality.dataset.path=/Path/to/ichikara-eval-test.json \
+    benchmark.quality.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
 # 評価
