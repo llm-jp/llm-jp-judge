@@ -72,6 +72,11 @@ def main(cfg):
     ]
     dashboard.log_table("evaluate_error_rate_table", columns=columns, data=[row])
 
+    if cfg.output.dir is not None:
+        logging.info(f"Saving evaluation results to {cfg.output.dir}")
+        output_dir = hydra.utils.to_absolute_path(cfg.output.dir)
+        dashboard.save_json(output_dir)
+
     dashboard.close()
 
 

@@ -5,3 +5,6 @@ defaults:
   
 input:
   dir: ???
+
+output:
+  dir: null

@@ -48,30 +48,20 @@ AWS_REGION="**-****-*" # e.g. us-west-2
 llm-jp-gen-evalでは生成と評価を分けて行います。  
 以下は、Hugging Face Hubの[llm-jp/llm-jp-3-1.8b-instruct](https://huggingface.co/llm-jp/llm-jp-3-1.8b-instruct)により生成を行い、gpt-4oにより評価する例です。  
 
-## 生成
-
-データセットに対して指定したモデルで生成を行います。  
-各設定に関しては[ベンチマーク](#ベンチマーク)や[推論用クライアント](#推論用クライアント)を参照ください。
-
 ```bash
 MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
-CACHE_DIR=./output/llm-jp-3-1.8b-instruct
+OUTPUT_DIR=./output/llm-jp-3-1.8b-instruct
+
 python3 -m src.llm_jp_gen_eval.generate \
-    output.dir=$CACHE_DIR \
-    output.overwrite=true \
+    output.dir=$OUTPUT_DIR/generation \
     client=vllm \
     client.model_name=$MODEL_NAME \
     benchmark.quality.dataset.path=/Path/to/ichikara-eval-test.json \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
-```
 
-## 評価 (LLM-as-a-Judge)
-
-生成された結果に対して評価を行います。  
-
-```bash
 python3 -m src.llm_jp_gen_eval.evaluate \
-    input.dir=$CACHE_DIR \
+    input.dir=$OUTPUT_DIR/generation \
+    output.dir=$OUTPUT_DIR/evaluation \
     client=azure \
     client.model_name=gpt-4o-2024-08-06 \
     client.async_request_interval=0.5 \
@@ -80,6 +70,8 @@ python3 -m src.llm_jp_gen_eval.evaluate \
     dashboard.project={project_name} \
     dashboard.run_name={run_name}
 ```
+
+各設定に関しては[ベンチマーク](#ベンチマーク)や[推論用クライアント](#推論用クライアント)を参照ください。
 
 # ベンチマーク
 
