@@ -52,6 +52,7 @@ llm-jp-gen-evalでは生成と評価を分けて行います。
 MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
 OUTPUT_DIR=./output/llm-jp-3-1.8b-instruct
 
+# 生成
 python3 -m src.llm_jp_gen_eval.generate \
     output.dir=$OUTPUT_DIR/generation \
     client=vllm \
@@ -59,16 +60,13 @@ python3 -m src.llm_jp_gen_eval.generate \
     benchmark.quality.dataset.path=/Path/to/ichikara-eval-test.json \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
+# 評価
 python3 -m src.llm_jp_gen_eval.evaluate \
     input.dir=$OUTPUT_DIR/generation \
     output.dir=$OUTPUT_DIR/evaluation \
     client=azure \
     client.model_name=gpt-4o-2024-08-06 \
-    client.async_request_interval=0.5 \
-    dashboard=wandb \
-    dashboard.entity={entity_name} \
-    dashboard.project={project_name} \
-    dashboard.run_name={run_name}
+    client.async_request_interval=0.5
 ```
 
 各設定に関しては[ベンチマーク](#ベンチマーク)や[推論用クライアント](#推論用クライアント)を参照ください。
@@ -163,6 +161,8 @@ python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
 現在はWandBのみサポートしています。
 
 ## WandB
+
+`{entity_name}`、`{project_name}`、`{run_name}`は適宜設定してください。
 
 ```
 python3 -m src.llm_jp_gen_eval.evaluate \
