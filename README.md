@@ -157,7 +157,7 @@ Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパ�
 ```bash
 python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
     client=vllm \
-    client.model_name=$INFERENCE_MODEL_NAME # Huggin Faceのモデル名 or パス
+    client.model_name=llm-jp/llm-jp-3-1.8b-instruct # Huggin Faceのモデル名 or パス
 ```
 
 # ダッシュボード
