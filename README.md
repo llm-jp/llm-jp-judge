@@ -16,7 +16,7 @@ source venv/bin/activate
 pip install -r requrements.txt
 ```
 
-## データセットダウンロード
+## データセット
 
 以下のデータセットをダウンロードします。  
 (既にローカルに保存されたデータを用いる場合は必要ありません。)
