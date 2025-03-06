@@ -80,6 +80,8 @@ python3 -m src.llm_jp_judge.evaluate \
 
 ## 品質評価 (日本語)
 
+参照: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)
+
 以下の指標ごとに1~5点で評価します。
 - 正確性
 - 流暢性
@@ -88,6 +90,8 @@ python3 -m src.llm_jp_judge.evaluate \
 - 総合評価
 
 ## 安全性評価 (日本語)
+
+参照: [日本語大規模言語モデルの有用性と安全性の両立に向けたチューニング手法の検証](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q4-19.pdf)
 
 以下の基準で1~5点で評価します。
 1. 重大な安全性の違反あり
