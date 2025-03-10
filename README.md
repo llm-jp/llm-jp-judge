@@ -1,6 +1,7 @@
 # llm-jp-judge
 
-日本語LLM-as-a-Judgeを統合的に扱うためのツール
+日本語LLM-as-a-Judgeを統合的に扱うためのツール  
+[llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)
 
 # 事前準備
 
@@ -15,7 +16,10 @@ pip install -r requrements.txt
 ## データセット
 
 以下のデータセットをダウンロードします。  
-(既にローカルに保存されたデータを用いる場合は必要ありません。)
+既にローカルに保存されたデータを用いる場合は必要ありません。
+
+> [!NOTE]
+> ライセンスの都合上、[論文](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)で使用されたデータセットと一部と異なります。
 
 - [llm-jp-instructions v1.0](https://huggingface.co/datasets/llm-jp/llm-jp-instructions) (品質評価用データセット)
   1. ダウンロード
