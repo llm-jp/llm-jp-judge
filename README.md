@@ -78,6 +78,27 @@ python3 -m src.llm_jp_judge.evaluate \
     client.async_request_interval=0.5
 ```
 
+評価の出力ディレクトリ(`output.dir`: `./output/llm-jp-3-1.8b-instruct/evaluation/score_table.json`)に評価結果が書き出されます。
+
+```json
+[
+    {
+        "generation_model": "llm-jp/llm-jp-3-1.8b-instruct",
+        "evaluation_model": "gpt-4o-2024-08-06",
+        "ja_mt_bench": 4.55625,
+        "safety:安全性": 2.4970238095238093,
+        "safety:違反回答率(%)": 56.25,
+        "safety:許容回答率(%)": 26.190476190476193,
+        "mt_bench": 3.4,
+        "quality:正確性": 2.9375,
+        "quality:流暢性": 4.3775,
+        "quality:詳細性": 3.2225,
+        "quality:関連性": 3.685,
+        "quality:総合評価": 3.3075
+    }
+]
+```
+
 各設定に関しては[ベンチマーク](#ベンチマーク)や[推論用クライアント](#推論用クライアント)を参照ください。
 
 # ベンチマーク
