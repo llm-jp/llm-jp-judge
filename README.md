@@ -104,7 +104,7 @@ python3 -m src.llm_jp_judge.evaluate \
 非アクティブにしたい場合は、生成時に以下のように指定してください。
 
 ```
-python3 -m src.llm_jp_gen_eval.generate \
+python3 -m src.llm_jp_judge.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
@@ -116,7 +116,7 @@ python3 -m src.llm_jp_gen_eval.generate \
 非アクティブにしたい場合は、生成時に以下のように指定してください。
 
 ```
-python3 -m src.llm_jp_gen_eval.generate \
+python3 -m src.llm_jp_judge.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
@@ -129,7 +129,7 @@ python3 -m src.llm_jp_gen_eval.generate \
 Azure OpenAI APIのデプロイ名(例:`gpt-4o-2024-08-06`)を指定できます。
 
 ```
-python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
+python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=azure \
     client.model_name=gpt-4o-2024-08-06 \  # デプロイ名
     client.async_request_interval=0.5  # APIリクエストの間隔(秒)
@@ -140,7 +140,7 @@ python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
 AWS Bedrock APIのデプロイ名(例:`anthropic.claude-3-5-sonnet-20240620-v1:0`)を指定できます。  
 
 ```
-python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
+python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=bedrock \
     client.model_name=anthropic.claude-3-5-sonnet-20240620-v1:0 \  # デプロイ名
     client.async_request_interval=10  # APIリクエストの間隔(秒)
@@ -155,7 +155,7 @@ Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパ�
 > 対応していない場合、チャットテンプレートに対応したトークナイザーを`client.tokenizer_name`として指定するか、jinja形式のチャットテンプレートを`client.chat_template.path`として与えてください。
 
 ```bash
-python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
+python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=vllm \
     client.model_name=llm-jp/llm-jp-3-1.8b-instruct # Huggin Faceのモデル名 or パス
 ```
@@ -170,7 +170,7 @@ python3 -m src.llm_jp_gen_eval.evaluate \ # generate or evaluate
 `{entity_name}`、`{project_name}`、`{run_name}`は適宜設定してください。
 
 ```
-python3 -m src.llm_jp_gen_eval.evaluate \
+python3 -m src.llm_jp_judge.evaluate \
     dashboard=wandb \
     dashboard.entity={entity_name} \
     dashboard.project={project_name} \
