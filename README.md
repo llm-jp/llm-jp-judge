@@ -17,7 +17,7 @@ pip install -r requrements.txt
 以下のデータセットをダウンロードします。  
 (既にローカルに保存されたデータを用いる場合は必要ありません。)
 
-- [llm-jp-instructions v1.0](./data/cache/llm-jp/llm-jp-instructions/v1.0) (品質評価用データセット)
+- [llm-jp-instructions v1.0](https://huggingface.co/datasets/llm-jp/llm-jp-instructions) (品質評価用データセット)
   1. ダウンロード
       ```bash
       scripts/download_llm_jp_instructions_v1.0.sh
