@@ -1,12 +1,10 @@
 import os
-import re
 import logging
 import warnings
 import asyncio
 
-from copy import deepcopy
-
 import openai
+from openai import OpenAI as OpenAIClient
 from openai import AzureOpenAI as AzureOpenAIClient
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
 
@@ -20,7 +18,7 @@ from .local import BaseClient
 load_dotenv(override=True)
 
 
-class AzureOpenAI(BaseClient):
+class OpenAI(BaseClient):
     def __init__(
         self,
         model_name="gpt-4o-2024-08-06",
@@ -33,22 +31,22 @@ class AzureOpenAI(BaseClient):
         self.async_request_interval = async_request_interval
         self.disable_system_prompt = disable_system_prompt
 
-        api_key = os.getenv("AZURE_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         if api_key is None:
-            logging.warning("Environment variable AZURE_API_KEY is not set.")
+            logging.warning("Environment variable OPENAI_API_KEY is not set.")
             api_key = input("Enter Azure OpenAI API key: ")
 
-        api_endpoint = os.getenv("AZURE_ENDPOINT")
-        if api_endpoint is None:
-            logging.warning("Environment variable AZURE_ENDPOINT is not set.")
-            api_endpoint = input("Enter Azure OpenAI API endpoint: ")
+        base_url = os.getenv("OPENAI_BASE_URL", None)
 
-        api_version = os.getenv("AZURE_API_VERSION", "2023-05-15")
+        organization = os.getenv("OPENAI_ORGANIZATION", None)
 
-        self.client = AzureOpenAIClient(
+        project = os.getenv("OPENAI_PROJECT", None)
+
+        self.client = OpenAIClient(
             api_key=api_key,
-            api_version=api_version,
-            azure_endpoint=api_endpoint,
+            organization=organization,
+            project=project,
+            base_url=base_url,
         )
 
     async def async_request(
@@ -166,6 +164,39 @@ class AzureOpenAI(BaseClient):
             self.process_data(
                 data, score_extractor, system_prompt, sampling_params=sampling_params
             )
+        )
+
+
+class AzureOpenAI(OpenAI):
+
+    def __init__(
+        self,
+        model_name="gpt-4o-2024-08-06",
+        max_retries=1,
+        async_request_interval=1.0,
+        disable_system_prompt=False,
+    ):
+        self.model_name = model_name
+        self.max_retries = max_retries
+        self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
+
+        api_key = os.getenv("AZURE_API_KEY")
+        if api_key is None:
+            logging.warning("Environment variable AZURE_API_KEY is not set.")
+            api_key = input("Enter Azure OpenAI API key: ")
+
+        api_endpoint = os.getenv("AZURE_ENDPOINT")
+        if api_endpoint is None:
+            logging.warning("Environment variable AZURE_ENDPOINT is not set.")
+            api_endpoint = input("Enter Azure OpenAI API endpoint: ")
+
+        api_version = os.getenv("AZURE_API_VERSION", "2023-05-15")
+
+        self.client = AzureOpenAIClient(
+            api_key=api_key,
+            api_version=api_version,
+            azure_endpoint=api_endpoint,
         )
 
 
