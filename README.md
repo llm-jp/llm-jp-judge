@@ -42,6 +42,10 @@ pip install -r requrements.txt
 必要に応じて生成もしくは評価に使用するAPIの情報を`.env`ファイルに入力して下さい。  
 
 ```bash:.env
+# OpenAI API (or any compatible APIs)
+OPENAI_BASE_URL="https://api.openai.com/v1"
+OPENAI_API_KEY="********"
+
 # Microsoft Azure OpenAI Service
 AZURE_ENDPOINT="https://********.openai.azure.com/"
 AZURE_API_KEY="********"
@@ -152,6 +156,20 @@ python3 -m src.llm_jp_judge.generate \
 # 推論用クライアント
 
 生成もしくは評価に使用可能な推論用クライアントは以下の通りです。
+
+## OpenAI API
+
+OpenAI API のモデル名(例:`gpt-4o-2024-08-06`)を指定できます。
+
+```
+python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
+    client=openai \
+    client.model_name=gpt-4o-2024-08-06 \  # モデル名
+    client.async_request_interval=0.5  # APIリクエストの間隔(秒)
+```
+
+> [!NOTE]
+> このクライアントを使用して OpenAI API 互換の別の API を呼び出すこともできます。その場合、`.env`ファイルの中で`OPENAI_BASE_URL`を設定してください。
 
 ## Microsoft Azure OpenAI Service
 
