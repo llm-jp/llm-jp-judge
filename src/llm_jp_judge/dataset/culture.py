@@ -6,8 +6,7 @@ def load_culture(path):
     path = hydra.utils.to_absolute_path(path)
     data = []
     with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            d = json.loads(line)
+        for d in json.load(f):
             data.append(
                 {
                     "ID": d["ID"],
