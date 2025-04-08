@@ -11,8 +11,8 @@ def load_culture(path):
             data.append(
                 {
                     "ID": d["ID"],
-                    "prompt": d["prompt"],
-                    "reference": d["reference"],
+                    "prompt": d["text"],
+                    "reference": d["output"],
                 }
             )
     return data
