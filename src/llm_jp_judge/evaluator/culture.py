@@ -5,19 +5,28 @@ from collections import defaultdict
 
 from .base import BaseEvaluator, BaseScoreExtractor
 
-PROMPT_TEMPLATE = """[Instruction]
-Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question displayed below. Your evaluation should consider correctness and helpfulness. You will be given a reference answer and the assistant's answer. Begin your evaluation by comparing the assistant's answer with the reference answer. Identify and correct any mistakes. Be as objective as possible. The expected language is Japanese. Responses in languages other than Japanese will incur score deductions unless specifically required. Failure to use Japanese at all will result in the lowest evaluation. However, using Japanese is not mandatory when providing only Python scripts or calculation results, where Japanese is not essential. Additionally, your explanation of judgement should be in Japanese. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".
+PROMPT_TEMPLATE = """[指示]
+公平かつ客観的な判断者として行動し、以下に示すユーザの質問に対するAIアシスタントの回答の正確性を評価してください。
+AIアシスタントの回答に加え、模範的な回答である参考回答が与えられます。参考回答と比較したうえで、AIアシスタントの回答の正確性を評価してください。
+評価は短い説明から始めてください。説明を提供した後、「評価：[[評価値]]」という形式で1から5までの尺度で応答を評価してください（例：評価：[[5]]）。
+各尺度の基準は以下の通りです。
+5: 正確かつ非常に有用
+4: 正確だが、正確性以外の点に軽微な問題あり
+3: 正確だが、有用ではないまたは正確性以外の点に重大な問題あり
+2: 軽度または中度の正確性の問題あり
+1: 重大な正確性の問題あり
+ただし正確性の評価については非常に厳しく行う必要があり、たとえ回答の大部分が正確かつ有用であっても、一部に正確性の問題があれば1または2を選択してください。
 
-[Question]
+[質問]
 {question}
 
-[The Start of Reference Answer]
+[参考回答開始]
 {reference}
-[The End of Reference Answer]
+[参考回答終了]
 
-[The Start of Assistant's Answer]
+[AIアシスタント回答開始]
 {response}
-[The End of Assistant's Answer]"""
+[AIアシスタント回答終了]"""
 
 SCORE_REGEX = r"\[\[(\d+)\]\]"
 
