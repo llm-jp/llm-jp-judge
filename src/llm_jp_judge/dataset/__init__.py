@@ -6,7 +6,7 @@ from .mt_bench import load_mt_bench
 def load_dataset(name, path, size=None):
     if name == "quality":
         dataset = load_quality(path)
-    elif name == "safety":
+    elif name in ["safety", "borderline"]:
         dataset = load_safety(path)
     elif name in ["mt_bench", "ja_mt_bench"]:
         dataset = load_mt_bench(path)
