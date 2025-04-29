@@ -29,7 +29,7 @@ safety_boundary:
   metric: safety_boundary
   system_prompt: null
   prompt:
-    path: null
+    path: ./data/cache/safety-boundary-test/data/prompt_v1.0.1.j2
   api_error_score: 0 # API呼び出しがエラーになった場合のスコア(nullの場合はエラーを無視)
   sampling_params:
     max_tokens: 1024
