@@ -24,6 +24,19 @@ safety:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+safety_boundary:
+  name: safety_boundary
+  metric: safety_boundary
+  system_prompt: null
+  prompt:
+    path: null
+  api_error_score: 0 # API呼び出しがエラーになった場合のスコア(nullの場合はエラーを無視)
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.9
+    temperature: 0.7
+    frequency_penalty: 0.0
 mt_bench:
   name: mt_bench
   metric: mt_bench
