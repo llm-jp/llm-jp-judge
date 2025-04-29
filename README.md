@@ -36,6 +36,11 @@ pip install -r requrements.txt
       ```bash
       bash scripts/download_ac_v2.0.sh
       ```
+- [安全性境界テスト](https://github.com/sbintuitions/safety-boundary-test)
+  1. ダウンロード
+      ```bash
+      bash scripts/download_sbi_safety_boundary.sh
+      ```
 
 ## 環境変数
 
@@ -71,7 +76,8 @@ python3 -m src.llm_jp_judge.generate \
     client=vllm \
     client.model_name=$MODEL_NAME \
     benchmark.quality.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
-    benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
+    benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json \
+    benchmark.safety_boundary.dataset.path=./data/cache/safety-boundary-test/data/test.csv
 
 # 評価
 python3 -m src.llm_jp_judge.evaluate \
