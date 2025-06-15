@@ -31,6 +31,7 @@ download_dir: ./data/cache
 chat_template:
   path: null
 
+max_retries: 3
 batch_size: 1
 disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
 
