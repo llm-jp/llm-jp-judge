@@ -116,7 +116,7 @@ class OpenAI(BaseClient):
             d["response"].append(None)
             d["pattern"].append(None)
             d["error_messages"].append([])
-            while retry_count < self.max_retries:
+            while retry_count <= self.max_retries:
                 if len(d["error_messages"][-1]) > 0:
                     logging.warning(
                         f"{d['error_messages'][-1][-1]}. Retrying in {sleep} seconds."

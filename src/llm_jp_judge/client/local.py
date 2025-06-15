@@ -46,7 +46,7 @@ class vLLMClient(BaseClient):
         tokenizer_name=None,
         batch_size=1,
         download_dir="~/.cache/huggingface",
-        max_retries=1,
+        max_retries=3,
         chat_template={"path": None},
         disable_system_prompt=False,
         **init_kwargs,
@@ -121,7 +121,7 @@ class vLLMClient(BaseClient):
 
         retry_count = 0
         done_indices = set()
-        while retry_count < self.max_retries and len(pending_indices) > 0:
+        while retry_count <= self.max_retries and len(pending_indices) > 0:
             responses = self.batch_request(
                 [data[i]["prompt"][: turn + 1] for i in pending_indices],
                 [data[i]["response"][:turn] for i in pending_indices],
