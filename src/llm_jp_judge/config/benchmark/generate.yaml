@@ -22,6 +22,18 @@ safety:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+borderline:
+  name: "borderline"
+  dataset:
+    path: null
+    size: null
+  system_prompt: ""
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
 culture:
   name: "culture"
   dataset:
