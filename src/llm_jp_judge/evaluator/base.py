@@ -40,7 +40,8 @@ class BaseEvaluator:
             "metric",
             "evaluation prompt",
             "evaluation response",
-            "score",
+            "pattern",
+            "score",            
             "generate errors",
             "evaluation errors",
         ]
@@ -51,6 +52,7 @@ class BaseEvaluator:
                 score["prompt"],
                 score["response"],
                 score["pattern"],
+                score["score"],
                 json.dumps(score["generate_errors"]),
                 json.dumps(score["error_messages"]),
             ]
