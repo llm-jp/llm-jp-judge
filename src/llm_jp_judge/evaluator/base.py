@@ -11,10 +11,12 @@ class BaseScoreExtractor(object):
         self.regex = regex
 
     def __call__(self, text):
-        m = re.search(self.regex, text)
-        if m is None:
+        score = None
+        for _score in re.findall(self.regex, text):
+            score = _score
+        if score is None:
             raise ScoreExtractionError(f"Regex '{self.regex}' did not match.")
-        return m.group(1)
+        return score
 
 
 class BaseEvaluator:

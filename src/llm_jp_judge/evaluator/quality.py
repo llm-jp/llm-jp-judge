@@ -54,9 +54,7 @@ class QualityScoreExtractor(object):
     def __call__(self, text):
         scores = {}
         for metric, score in re.findall(self.regex, text):
-            if metric in scores:
-                raise ScoreExtractionError("Duplicate metric")
-            scores[metric] = int(score)
+            scores[metric] = score
 
         if set(scores.keys()) != set(METRICS):
             raise ScoreExtractionError("Invalid score format")
