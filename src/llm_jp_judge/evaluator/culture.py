@@ -88,12 +88,6 @@ class CultureEvaluator(BaseEvaluator):
                     raw_score["score"] = int(self.api_error_score)
                 continue
 
-            if raw_score.get("generate_response") is None or raw_score.get("generate_response") == "":
-                if self.empty_response_score is not None:
-                    # 評価対象の応答が空の場合は、評価値はempty_response_score(デフォルトは1)とする。
-                    raw_score["score"] = int(self.empty_response_score)
-                continue
-
             if raw_score.get("pattern") is None:
                 raw_score["score"] = None
                 continue
