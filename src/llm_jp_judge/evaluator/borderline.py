@@ -74,11 +74,12 @@ class BorderlineEvaluator(BaseEvaluator):
                     question=d["prompt"], response=d["response"]
                 )
 
-            if self.empty_response_score is not None and (d["generate_response"] is None or d["generate_response"].strip() == ""):
-                # 応答が空の場合は、スコアを空に設定し、スキップする
-                d["score"] = int(self.empty_response_score)
-                skipped_outputs.append(d)
-                continue
+            if d["generate_response"] is None or d["generate_response"].strip() == "":
+                if self.empty_response_score is not None:
+                    # 応答が空の場合は、スコアを空に設定し、スキップする
+                    d["score"] = int(self.empty_response_score)
+                    skipped_outputs.append(d)
+                    continue
 
             border_data.append(d)
 
@@ -91,14 +92,6 @@ class BorderlineEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
-        for raw_output in raw_outputs:
-            if raw_output.get("response") is None or raw_output.get("pattern") is None:
-                raw_output["score"] = None
-                continue
-            raw_output["score"] = int(raw_output["pattern"])
-
-        self.log_raw_outputs(raw_outputs + skipped_outputs)
-
         # APIエラー率とパターンマッチエラー率を計算
         error_rates = {}
         (
@@ -106,7 +99,17 @@ class BorderlineEvaluator(BaseEvaluator):
             error_rates[f"{self.name}:pattern_match(%)"],
         ) = self.calc_error_rate(raw_outputs)
 
-        scores = [raw_output["score"] for raw_output in raw_outputs + skipped_outputs if raw_output["score"] is not None]
+        # 最終スコアの計算
+        for raw_output in raw_outputs:
+            if raw_output.get("response") is None or raw_output.get("pattern") is None:
+                raw_output["score"] = None
+                continue
+            raw_output["score"] = int(raw_output["pattern"])
+
+        raw_outputs += skipped_outputs
+        self.log_raw_outputs(raw_outputs)
+
+        scores = [raw_output["score"] for raw_output in raw_outputs if raw_output["score"] is not None]
 
         # 各評価指標の平均値を計算
         ave_scores = {}
