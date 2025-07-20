@@ -74,20 +74,20 @@ class QualityEvaluator(BaseEvaluator):
             "id",
             "evaluation prompt",
             "evaluation response",
-            *METRICS,
+            *[f"pattern:{metric}" for metric in METRICS],
+            *[f"score:{metric}" for metric in METRICS],
             "generate errors",
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
-            if raw_output.get("pattern") is None:
-                scores = {metric: None for metric in METRICS}
-            else:
-                scores = [raw_output["pattern"].get(metric) for metric in METRICS]
+            patterns = [raw_output.get("pattern", {}).get(metric) for metric in METRICS]
+            scores = [raw_output.get("score", {}).get(metric) for metric in METRICS]
             table.append(
                 [
                     raw_output["ID"],
                     raw_output["prompt"],
                     raw_output["response"],
+                    *patterns,
                     *scores,
                     json.dumps(raw_output["generate_errors"], ensure_ascii=False),
                     json.dumps(raw_output["error_messages"], ensure_ascii=False),
@@ -115,14 +115,23 @@ class QualityEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
-        scores = defaultdict(list)
+        # 最終スコアの計算
         for raw_output in raw_outputs:
-            if raw_output.get("pattern") is None:
-                continue
-            for metric, score in raw_output["pattern"].items():
-                scores[metric].append(score)
+            raw_output["score"] = {}
+            for metric in METRICS:
+                if raw_output.get("pattern") is None or raw_output.get("pattern", {}).get(metric) is None:
+                    raw_output["score"][metric] = None
+                    continue
+                raw_output["score"][metric] = int(raw_output["pattern"][metric])
 
         self.log_raw_outputs(raw_outputs)
+
+        # スコアの集計
+        scores = defaultdict(list)
+        for raw_output in raw_outputs:
+            for metric in METRICS:
+                if raw_output["score"][metric] is not None:
+                    scores[metric].append(raw_output["score"][metric])
 
         error_rates = {}
         (
