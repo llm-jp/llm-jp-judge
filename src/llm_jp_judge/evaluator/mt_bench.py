@@ -44,8 +44,9 @@ class MTBenchEvaluator(BaseEvaluator):
 
     def conv_to_query(self, response, use_reference=False, multi_turn=False):
         query = deepcopy(response)
-        query["generate_response"] = query["response"]
-        query["generate_errors"] = query.get("error_messages", [])
+        query["generation_response"] = query["response"]
+        query["generation_prompt"] = query["prompt"]
+        query["generation_errors"] = query.get("error_messages", [])
         if multi_turn:
             query["turn"] = 2
             kwargs = {
@@ -143,12 +144,14 @@ class MTBenchEvaluator(BaseEvaluator):
             "metric",
             "turn",
             "use reference",
-            "system prompt",
-            "prompt",
-            "response",
+            "generation prompt",
+            "generation response",
+            "evaluation system prompt",
+            "evaluation prompt",
+            "evaluation response",
             "pattern",
             "score",
-            "generate errors",
+            "generation errors",
             "evaluation errors",
         ]
         data = [
@@ -158,12 +161,14 @@ class MTBenchEvaluator(BaseEvaluator):
                 score["metric"],
                 score["turn"],
                 score["use_reference"],
+                score["generation_prompt"],
+                score["generation_response"],
                 score["system_prompt"],
                 score["prompt"],
                 score["response"],
                 score["pattern"],
                 score["score"],
-                json.dumps(score["generate_errors"], ensure_ascii=False),
+                json.dumps(score["generation_errors"], ensure_ascii=False),
                 json.dumps(score["error_messages"], ensure_ascii=False),
             ]
             for score in raw_outputs

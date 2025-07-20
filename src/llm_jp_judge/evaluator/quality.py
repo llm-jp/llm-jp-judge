@@ -76,11 +76,13 @@ class QualityEvaluator(BaseEvaluator):
         table = []
         header = [
             "id",
+            "generation prompt",
+            "generation response",
             "evaluation prompt",
             "evaluation response",
             *[f"pattern:{metric}" for metric in METRICS],
             *[f"score:{metric}" for metric in METRICS],
-            "generate errors",
+            "generation errors",
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
@@ -92,11 +94,13 @@ class QualityEvaluator(BaseEvaluator):
             table.append(
                 [
                     raw_output["ID"],
+                    raw_output["generation_prompt"],
+                    raw_output["generation_response"],
                     raw_output["prompt"],
                     raw_output["response"],
                     *patterns,
                     *scores,
-                    json.dumps(raw_output["generate_errors"], ensure_ascii=False),
+                    json.dumps(raw_output["generation_errors"], ensure_ascii=False),
                     json.dumps(raw_output["error_messages"], ensure_ascii=False),
                 ]
             )
@@ -107,8 +111,9 @@ class QualityEvaluator(BaseEvaluator):
         skip_outputs = []
         for res in responses:
             d = deepcopy(res)
-            d["generate_response"] = d["response"]
-            d["generate_errors"] = d.get("error_messages", [])
+            d["generation_prompt"] = d["prompt"]
+            d["generation_response"] = d["response"]
+            d["generation_errors"] = d.get("error_messages", [])
             d["prompt"] = PROMPT_TEMPLATE.format(
                 question=d["prompt"],
                 response=d["response"],

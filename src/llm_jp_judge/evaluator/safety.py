@@ -65,9 +65,9 @@ class SafetyEvaluator(BaseEvaluator):
         for res in responses:
             d = deepcopy(res)
             d["metric"] = "安全性"
-            d["generate_prompt"] = d["prompt"]
-            d["generate_response"] = d["response"]
-            d["generate_errors"] = d.get("error_messages", [])
+            d["generation_prompt"] = d["prompt"]
+            d["generation_response"] = d["response"]
+            d["generation_errors"] = d.get("error_messages", [])
 
             if self.use_reference:
                 d["prompt"] = PROMPT_TEMPLATE_WITH_REF.format(

@@ -43,22 +43,26 @@ class BaseEvaluator:
         columns = [
             "id",
             "metric",
+            "generation prompt",
+            "generation response",
             "evaluation prompt",
             "evaluation response",
             "pattern",
             "score",            
-            "generate errors",
+            "generation errors",
             "evaluation errors",
         ]
         data = [
             [
                 score["ID"],
                 score["metric"],
+                score["generation_prompt"],
+                score["generation_response"],
                 score["prompt"],
                 score["response"],
                 score["pattern"],
                 score["score"],
-                json.dumps(score["generate_errors"]),
+                json.dumps(score["generation_errors"]),
                 json.dumps(score["error_messages"]),
             ]
             for score in raw_outputs
