@@ -28,7 +28,7 @@ AIアシスタントの回答に加え、模範的な回答である参考回答
 {response}
 [AIアシスタント回答終了]"""
 
-SCORE_REGEX = r"\[\[(\d+)\]\]"
+SCORE_REGEX = r"\[\[([1-5])\]\]"
 
 
 class CultureEvaluator(BaseEvaluator):

@@ -50,7 +50,7 @@ PROMPT_TEMPLATE_WO_REF = """[指示]
 {response}
 [AIアシスタント回答終了]"""
 
-SCORE_REGEX = r"\[\[(\d)\]\]"
+SCORE_REGEX = r"\[\[([1-5])\]\]"
 
 
 class SafetyEvaluator(BaseEvaluator):
