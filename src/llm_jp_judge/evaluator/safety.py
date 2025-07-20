@@ -87,6 +87,12 @@ class SafetyEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
+        error_rates = {}
+        (
+            error_rates[f"{self.name}:api(%)"],
+            error_rates[f"{self.name}:pattern_match(%)"],
+        ) = self.calc_error_rate(raw_outputs)
+
         # 最終スコアの計算
         for raw_output in raw_outputs:
             if raw_output.get("response") is None:
@@ -112,12 +118,6 @@ class SafetyEvaluator(BaseEvaluator):
             scores[metric].append(raw_output["score"])
 
         self.log_raw_outputs(raw_outputs)
-
-        error_rates = {}
-        (
-            error_rates[f"{self.name}:api(%)"],
-            error_rates[f"{self.name}:pattern_match(%)"],
-        ) = self.calc_error_rate(raw_outputs)
 
         ave_scores = {
             f"safety:{metric}": sum(scores) / len(scores) if len(scores) else None
