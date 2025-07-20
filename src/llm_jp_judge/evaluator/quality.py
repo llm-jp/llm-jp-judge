@@ -5,7 +5,7 @@ import logging
 from copy import deepcopy
 from collections import defaultdict
 
-from .base import BaseEvaluator
+from .base import BaseEvaluator, ScoreExtractionError
 
 PROMPT_TEMPLATE = """[指示]
 質問に対するAIアシスタントの回答を以下の基準で評価してください。
@@ -55,11 +55,11 @@ class QualityScoreExtractor(object):
         scores = {}
         for metric, score in re.findall(self.regex, text):
             if metric in scores:
-                raise ValueError("Duplicate metric")
+                raise ScoreExtractionError("Duplicate metric")
             scores[metric] = int(score)
 
         if set(scores.keys()) != set(METRICS):
-            raise ValueError("Invalid score format")
+            raise ScoreExtractionError("Invalid score format")
 
         return scores
 

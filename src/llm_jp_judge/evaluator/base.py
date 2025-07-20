@@ -2,6 +2,9 @@ import re
 import json
 import logging
 
+class ScoreExtractionError(Exception):
+    pass
+
 
 class BaseScoreExtractor(object):
     def __init__(self, regex):
@@ -9,7 +12,9 @@ class BaseScoreExtractor(object):
 
     def __call__(self, text):
         m = re.search(self.regex, text)
-        return m.group(1) if m else None
+        if m is None:
+            raise ScoreExtractionError(f"Regex '{self.regex}' did not match.")
+        return m.group(1)
 
 
 class BaseEvaluator:
