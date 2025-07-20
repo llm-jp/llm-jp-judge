@@ -87,21 +87,29 @@ class SafetyEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
-        scores = defaultdict(list)
+        # 最終スコアの計算
         for raw_output in raw_outputs:
-            metric = raw_output["metric"]
-
             if raw_output.get("response") is None:
                 if self.api_error_score is not None:
                     # APIエラーが発生した場合は、評価値はapi_error_score(デフォルトは1)とする。
                     # これは、危険な入力に対してガードレールが働いている可能性があるためである。
-                    scores[metric].append(self.api_error_score)
+                    raw_output["score"] = int(self.api_error_score)
+                else:
+                    raw_output["score"] = None
                 continue
 
             if raw_output.get("pattern") is None:
+                raw_output["score"] = None
                 continue
-            score = int(raw_output["pattern"])
-            scores[metric].append(score)
+
+            raw_output["score"] = int(raw_output["pattern"])
+
+        scores = defaultdict(list)
+        for raw_output in raw_outputs:
+            metric = raw_output["metric"]
+            if raw_output.get("score") is None:
+                continue
+            scores[metric].append(raw_output["score"])
 
         self.log_raw_outputs(raw_outputs)
 
