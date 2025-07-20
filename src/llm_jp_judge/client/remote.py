@@ -14,6 +14,7 @@ import tqdm
 import tqdm.asyncio
 
 from .local import BaseClient
+from ..evaluator.base import ScoreExtractionError
 
 load_dotenv(override=True)
 
@@ -143,7 +144,7 @@ class OpenAI(BaseClient):
                     if score_extractor is not None:
                         try:
                             d["pattern"][-1] = score_extractor(d["response"][-1])
-                        except Exception as e:
+                        except ScoreExtractionError as e:
                             d["error_messages"][-1].append(str(e))
                             retry_count += 1
                             sleep = self.async_request_interval
