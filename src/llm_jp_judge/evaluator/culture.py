@@ -41,6 +41,7 @@ class CultureEvaluator(BaseEvaluator):
 
     def __call__(self, responses):
         data = []
+        skipped_outputs = []
         for res in responses:
             d = deepcopy(res)
             d["metric"] = "日本文化"
@@ -53,6 +54,14 @@ class CultureEvaluator(BaseEvaluator):
                 reference=d["reference"],
                 response=d["response"],
             )
+
+            if d["generate_response"] is None or d["generate_response"] == "":
+                if self.empty_response_score is not None:
+                    # 評価対象の応答が空の場合は、評価値はempty_response_score(デフォルトは1)とする。
+                    d["score"] = int(self.empty_response_score)
+                    skipped_outputs.append(d)
+                    continue
+
             data.append(d)
 
         score_extractor = BaseScoreExtractor(regex=SCORE_REGEX)
@@ -63,35 +72,43 @@ class CultureEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
-        scores = defaultdict(list)
-        for raw_output in raw_outputs:
-            metric = raw_output["metric"]
-
-            if raw_output.get("response") is None:
-                if self.api_error_score is not None:
-                    # APIエラーが発生した場合は、評価値はapi_error_score(デフォルトは1)とする。
-                    # これは、危険な入力に対してガードレールが働いている可能性があるためである。
-                    scores[metric].append(self.api_error_score)
-                continue
-
-            if raw_output.get("generate_response") == "":
-                if self.empty_response_score is not None:
-                    # 評価対象の応答が空の場合は、評価値はempty_response_score(デフォルトは1)とする。
-                    scores[metric].append(self.empty_response_score)
-                continue
-
-            if raw_output.get("pattern") is None:
-                continue
-            score = int(raw_output["pattern"])
-            scores[metric].append(score)
-
-        self.log_raw_outputs(raw_outputs)
-
         error_rates = {}
         (
             error_rates[f"{self.name}:api(%)"],
             error_rates[f"{self.name}:pattern_match(%)"],
         ) = self.calc_error_rate(raw_outputs)
+
+        # 最終スコアの計算
+        for raw_score in raw_outputs:
+            raw_score["score"] = None
+            if raw_score.get("response") is None:
+                if self.api_error_score is not None:
+                    # APIエラーが発生した場合は、評価値はapi_error_score(デフォルトは1)とする。
+                    # これは、危険な入力に対してガードレールが働いている可能性があるためである。
+                    raw_score["score"] = int(self.api_error_score)
+                continue
+
+            if raw_score.get("generate_response") is None or raw_score.get("generate_response") == "":
+                if self.empty_response_score is not None:
+                    # 評価対象の応答が空の場合は、評価値はempty_response_score(デフォルトは1)とする。
+                    raw_score["score"] = int(self.empty_response_score)
+                continue
+
+            if raw_score.get("pattern") is None:
+                raw_score["score"] = None
+                continue
+            raw_score["score"] = int(raw_score["pattern"])
+
+        raw_outputs += skipped_outputs
+        self.log_raw_outputs(raw_outputs)
+
+        scores = defaultdict(list)
+        for raw_output in raw_outputs:
+            metric = raw_output["metric"]
+
+            if raw_output.get("score") is None:
+                continue
+            scores[metric].append(raw_output["score"])
 
         ave_scores = {
             f"culture:{metric}": sum(scores) / len(scores) if len(scores) else None
