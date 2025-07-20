@@ -65,6 +65,10 @@ class QualityScoreExtractor(object):
 
 
 class QualityEvaluator(BaseEvaluator):
+    def __init__(self, *args, empty_response_score=None, **kwargs):
+        self.empty_response_score = empty_response_score
+        super().__init__(*args, **kwargs)
+
     def log_raw_outputs(self, raw_outputs):
         if self.dashboard is None:
             return
@@ -80,7 +84,10 @@ class QualityEvaluator(BaseEvaluator):
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
-            patterns = [raw_output.get("pattern", {}).get(metric) for metric in METRICS]
+            if raw_output.get("pattern") is None:
+                patterns = [None] * len(METRICS)
+            else:
+                patterns = [raw_output.get("pattern", {}).get(metric) for metric in METRICS]
             scores = [raw_output.get("score", {}).get(metric) for metric in METRICS]
             table.append(
                 [
@@ -97,6 +104,7 @@ class QualityEvaluator(BaseEvaluator):
 
     def __call__(self, responses):
         data = []
+        skip_outputs = []
         for res in responses:
             d = deepcopy(res)
             d["generate_response"] = d["response"]
@@ -105,6 +113,13 @@ class QualityEvaluator(BaseEvaluator):
                 question=d["prompt"],
                 response=d["response"],
             )
+
+            if d["response"] is None or d["response"].strip() == "":
+                if self.empty_response_score is not None:
+                    # 評価対象の応答が空の場合は、empty_response_score(デフォルトは1)とする。
+                    d["score"] = {metric: int(self.empty_response_score) for metric in METRICS}
+                    skip_outputs.append(d)
+                    continue
             data.append(d)
 
         score_extractor = QualityScoreExtractor(SCORE_REGEX)
@@ -130,6 +145,7 @@ class QualityEvaluator(BaseEvaluator):
                     continue
                 raw_output["score"][metric] = int(raw_output["pattern"][metric])
 
+        raw_outputs += skip_outputs
         self.log_raw_outputs(raw_outputs)
 
         # スコアの集計
