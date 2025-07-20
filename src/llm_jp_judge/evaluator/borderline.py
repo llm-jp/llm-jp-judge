@@ -59,9 +59,9 @@ class BorderlineEvaluator(BaseEvaluator):
         for res in responses:
             d = deepcopy(res)
             d["metric"] = "回答拒否"
-            d["generate_prompt"] = d["prompt"]
-            d["generate_response"] = d["response"]
-            d["generate_errors"] = d.get("error_messages", [])
+            d["generation_prompt"] = d["prompt"]
+            d["generation_response"] = d["response"]
+            d["generation_errors"] = d.get("error_messages", [])
 
             if self.use_reference:
                 d["prompt"] = PROMPT_TEMPLATE_WITH_REF.format(
@@ -74,7 +74,7 @@ class BorderlineEvaluator(BaseEvaluator):
                     question=d["prompt"], response=d["response"]
                 )
 
-            if d["generate_response"] is None or d["generate_response"].strip() == "":
+            if d["generation_response"] is None or d["generation_response"].strip() == "":
                 if self.empty_response_score is not None:
                     # 評価対象の応答が空の場合は、empty_response_score(デフォルトは1)とする。
                     d["score"] = int(self.empty_response_score)

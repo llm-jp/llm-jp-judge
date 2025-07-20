@@ -45,9 +45,9 @@ class CultureEvaluator(BaseEvaluator):
         for res in responses:
             d = deepcopy(res)
             d["metric"] = "日本文化"
-            d["generate_prompt"] = d["prompt"]
-            d["generate_response"] = d["response"]
-            d["generate_errors"] = d.get("error_messages", [])
+            d["generation_prompt"] = d["prompt"]
+            d["generation_response"] = d["response"]
+            d["generation_errors"] = d.get("error_messages", [])
 
             d["prompt"] = PROMPT_TEMPLATE.format(
                 question=d["prompt"],
@@ -55,7 +55,7 @@ class CultureEvaluator(BaseEvaluator):
                 response=d["response"],
             )
 
-            if d["generate_response"] is None or d["generate_response"] == "":
+            if d["generation_response"] is None or d["generation_response"] == "":
                 if self.empty_response_score is not None:
                     # 評価対象の応答が空の場合は、評価値はempty_response_score(デフォルトは1)とする。
                     d["score"] = int(self.empty_response_score)
