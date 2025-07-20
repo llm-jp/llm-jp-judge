@@ -115,6 +115,12 @@ class QualityEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
+        error_rates = {}
+        (
+            error_rates[f"{self.name}:api(%)"],
+            error_rates[f"{self.name}:pattern_match(%)"],
+        ) = self.calc_error_rate(raw_outputs)
+
         # 最終スコアの計算
         for raw_output in raw_outputs:
             raw_output["score"] = {}
@@ -132,12 +138,6 @@ class QualityEvaluator(BaseEvaluator):
             for metric in METRICS:
                 if raw_output["score"][metric] is not None:
                     scores[metric].append(raw_output["score"][metric])
-
-        error_rates = {}
-        (
-            error_rates[f"{self.name}:api(%)"],
-            error_rates[f"{self.name}:pattern_match(%)"],
-        ) = self.calc_error_rate(raw_outputs)
 
         ave_scores = {
             f"quality:{metric}": sum(scores) / len(scores) if len(scores) else None
