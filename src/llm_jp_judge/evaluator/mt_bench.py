@@ -82,20 +82,20 @@ class MTBenchEvaluator(BaseEvaluator):
         return query
 
     def calc_score(self, raw_outputs):
-        raw_outputs = [r for r in raw_outputs if r.get("pattern") is not None]
+        raw_outputs = [r for r in raw_outputs if r.get("score") is not None]
 
         # Evaluate average score
-        ave_score = sum([int(r["pattern"]) for r in raw_outputs]) / len(raw_outputs)
+        ave_score = sum([r["score"] for r in raw_outputs]) / len(raw_outputs)
         logging.info(f"Average score: {ave_score:.2f}")
 
         # Evaluate turn-wise scores
         t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
         t2_raw_outputs = [r for r in raw_outputs if r["turn"] == 2]
 
-        t1_score = sum([int(r["pattern"]) for r in t1_raw_outputs]) / len(
+        t1_score = sum([r["score"] for r in t1_raw_outputs]) / len(
             t1_raw_outputs
         )
-        t2_score = sum([int(r["pattern"]) for r in t2_raw_outputs]) / len(
+        t2_score = sum([r["score"] for r in t2_raw_outputs]) / len(
             t2_raw_outputs
         )
 
@@ -146,6 +146,7 @@ class MTBenchEvaluator(BaseEvaluator):
             "system prompt",
             "prompt",
             "response",
+            "pattern",
             "score",
             "generate errors",
             "evaluation errors",
@@ -161,6 +162,7 @@ class MTBenchEvaluator(BaseEvaluator):
                 score["prompt"],
                 score["response"],
                 score["pattern"],
+                score["score"],
                 json.dumps(score["generate_errors"], ensure_ascii=False),
                 json.dumps(score["error_messages"], ensure_ascii=False),
             ]
@@ -209,6 +211,13 @@ class MTBenchEvaluator(BaseEvaluator):
         # Multi-turn evaluation
         raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=True)
         raw_outputs += self.evaluate(questions_ref, use_reference=True, multi_turn=True)
+
+        # Calculate final scores
+        for raw_output in raw_outputs:
+            if raw_output.get("pattern") is None:
+                raw_output["score"] = None
+                continue
+            raw_output["score"] = int(raw_output["pattern"])
 
         self.log_raw_outputs(raw_outputs)
 
