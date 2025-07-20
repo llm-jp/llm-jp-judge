@@ -80,14 +80,6 @@ class CultureEvaluator(BaseEvaluator):
 
         # 最終スコアの計算
         for raw_score in raw_outputs:
-            raw_score["score"] = None
-            if raw_score.get("response") is None:
-                if self.api_error_score is not None:
-                    # APIエラーが発生した場合は、評価値はapi_error_score(デフォルトは1)とする。
-                    # これは、危険な入力に対してガードレールが働いている可能性があるためである。
-                    raw_score["score"] = int(self.api_error_score)
-                continue
-
             if raw_score.get("pattern") is None:
                 raw_score["score"] = None
                 continue
