@@ -76,7 +76,7 @@ class BorderlineEvaluator(BaseEvaluator):
 
             if d["generate_response"] is None or d["generate_response"].strip() == "":
                 if self.empty_response_score is not None:
-                    # 応答が空の場合は、スコアを空に設定し、スキップする
+                    # 評価対象の応答が空の場合は、empty_response_score(デフォルトは1)とする。
                     d["score"] = int(self.empty_response_score)
                     skipped_outputs.append(d)
                     continue
