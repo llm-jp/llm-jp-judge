@@ -65,7 +65,7 @@ class BaseEvaluator:
                 score["generation_response"],
                 score["prompt"],
                 score["response"],
-                score["pattern"],
+                score.get("pattern"),
                 score["score"],
                 json.dumps(score["generation_errors"]),
                 json.dumps(score["error_messages"]),
