@@ -54,6 +54,9 @@ AZURE_API_KEY="********"
 AWS_ACCESS_KEY="********"
 AWS_SECRET_KEY="****************"
 AWS_REGION="**-****-*" # e.g. us-west-2
+
+# Google Gemini API
+GEMINI_API_KEY="******"
 ```
 
 # 使い方
@@ -191,6 +194,17 @@ python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=bedrock \
     client.model_name=anthropic.claude-3-5-sonnet-20240620-v1:0 \  # デプロイ名
     client.async_request_interval=10  # APIリクエストの間隔(秒)
+```
+
+## Google Gemini API
+
+Google Geminiのモデル名(例:`gemin-2.0-flash`)を指定できます。  
+
+```
+python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
+    client=gemini \
+    client.model_name=gemin-2.0-flash \  # デプロイ名
+    client.async_request_interval=1  # APIリクエストの間隔(秒)
 ```
 
 ## vLLM
