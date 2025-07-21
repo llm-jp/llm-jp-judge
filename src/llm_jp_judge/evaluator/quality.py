@@ -52,10 +52,12 @@ class QualityScoreExtractor(object):
         self.regex = regex
 
     def __call__(self, text):
-        scores = {}
-        for metric, score in re.findall(self.regex, text):
-            scores[metric] = score
-
+        try:
+            scores = {}
+            for metric, score in re.findall(self.regex, text):
+                scores[metric] = score
+        except TypeError as e:
+            raise ScoreExtractionError(f"Expected a string, got {type(text)}") from e
         if set(scores.keys()) != set(METRICS):
             raise ScoreExtractionError("Invalid score format")
 
