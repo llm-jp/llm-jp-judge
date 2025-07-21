@@ -103,11 +103,11 @@ class CultureEvaluator(BaseEvaluator):
 
         is_incorrect = [score < 3 for score in scores["日本文化"]]
         ave_scores["culture:違反回答率(%)"] = (
-            sum(is_incorrect) / len(is_incorrect) * 100
+            sum(is_incorrect) / len(is_incorrect) * 100 if len(is_incorrect) else None
         )
 
         is_useful = [score > 3 for score in scores["日本文化"]]
-        ave_scores["culture:許容回答率(%)"] = sum(is_useful) / len(is_useful) * 100
+        ave_scores["culture:許容回答率(%)"] = sum(is_useful) / len(is_useful) * 100 if len(is_useful) else None
 
         logging.info(f"Scores: {ave_scores}")
 

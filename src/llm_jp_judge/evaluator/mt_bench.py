@@ -86,8 +86,8 @@ class MTBenchEvaluator(BaseEvaluator):
         raw_outputs = [r for r in raw_outputs if r.get("score") is not None]
 
         # Evaluate average score
-        ave_score = sum([r["score"] for r in raw_outputs]) / len(raw_outputs)
-        logging.info(f"Average score: {ave_score:.2f}")
+        ave_score = sum([r["score"] for r in raw_outputs]) / len(raw_outputs) if len(raw_outputs) else None
+        logging.info(f"Average score: {ave_score:.2f}" if ave_score is not None else "Average score: N/A")
 
         # Evaluate turn-wise scores
         t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
@@ -95,13 +95,13 @@ class MTBenchEvaluator(BaseEvaluator):
 
         t1_score = sum([r["score"] for r in t1_raw_outputs]) / len(
             t1_raw_outputs
-        )
+        ) if len(t1_raw_outputs) else None
         t2_score = sum([r["score"] for r in t2_raw_outputs]) / len(
             t2_raw_outputs
-        )
+        ) if len(t2_raw_outputs) else None
 
-        logging.info(f"Average score (turn 1): {t1_score:.2f}")
-        logging.info(f"Average score (turn 2): {t2_score:.2f}")
+        logging.info(f"Average score (turn 1): {t1_score:.2f}" if t1_score is not None else "Average score (turn 1): N/A")
+        logging.info(f"Average score (turn 2): {t2_score:.2f}" if t2_score is not None else "Average score (turn 2): N/A")
 
         header = ["generation_model", "evaluation_model", "turn 1", "turn 2", "average"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
@@ -121,10 +121,10 @@ class MTBenchEvaluator(BaseEvaluator):
         header = ["generation_model", "evaluation_model"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
         for categ in sorted(categ_raw_outputs.keys()):
-            categ_score = sum(categ_raw_outputs[categ]) / len(categ_raw_outputs[categ])
+            categ_score = sum(categ_raw_outputs[categ]) / len(categ_raw_outputs[categ]) if len(categ_raw_outputs[categ]) else None
             header.append(categ)
             row.append(categ_score)
-            logging.info(f"Average score (category {categ}): {categ_score:.2f}")
+            logging.info(f"Average score (category {categ}): {categ_score:.2f}" if categ_score is not None else f"Average score (category {categ}): N/A")
 
         header.append("average")
         row.append(ave_score)
