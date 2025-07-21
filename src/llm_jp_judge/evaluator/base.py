@@ -11,9 +11,11 @@ class BaseScoreExtractor(object):
         self.regex = regex
 
     def __call__(self, text):
-        score = None
-        for _score in re.findall(self.regex, text):
-            score = _score
+        try:
+            for _score in re.findall(self.regex, text):
+                score = _score
+        except TypeError as e:
+            raise ScoreExtractionError(f"Expected a string, got {type(text)}") from e
         if score is None:
             raise ScoreExtractionError(f"Regex '{self.regex}' did not match.")
         return score
