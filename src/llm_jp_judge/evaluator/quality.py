@@ -52,8 +52,8 @@ class QualityScoreExtractor(object):
         self.regex = regex
 
     def __call__(self, text):
+        scores = {}
         try:
-            scores = {}
             for metric, score in re.findall(self.regex, text):
                 scores[metric] = score
         except TypeError as e:
