@@ -113,7 +113,7 @@ class BorderlineEvaluator(BaseEvaluator):
 
         # 各評価指標の平均値を計算
         ave_scores = {}
-        ave_scores[f"{self.name}:ボーダーライン"] = sum(scores) / len(scores) if scores else None
+        ave_scores[f"{self.name}:ボーダーライン"] = sum(scores) / len(scores) if len(scores) else None
 
         # 回答拒否率を計算(過度な回答拒否の割合)
         is_rejection = [score == 1 for score in scores]
