@@ -3,9 +3,16 @@ import logging
 import warnings
 import asyncio
 
+from copy import deepcopy
+
 import openai
 from openai import OpenAI as OpenAIClient
 from openai import AzureOpenAI as AzureOpenAIClient
+
+from google import genai
+from google.genai import Client as GeminiClient
+from google.genai.types import GenerateContentConfig
+
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
 
 from dotenv import load_dotenv
@@ -169,7 +176,6 @@ class OpenAI(BaseClient):
 
 
 class AzureOpenAI(OpenAI):
-
     def __init__(
         self,
         model_name="gpt-4o-2024-08-06",
@@ -261,3 +267,120 @@ class BedrockAnthropic(AzureOpenAI):
         )
 
         return completions.content[0].text
+
+
+class Gemini(AzureOpenAI):
+    def __init__(
+        self,
+        model_name="gemini-2.0-flash",
+        max_retries=1,
+        async_request_interval=1.0,
+        disable_system_prompt=False,
+    ):
+        self.model_name = model_name
+        self.max_retries = max_retries
+        self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
+
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+        self.client = GeminiClient(api_key=gemini_api_key)
+
+    async def _process_single_request(
+        self, d, score_extractor, system_prompt, wait, sampling_params={}
+    ):
+        await asyncio.sleep(wait)
+
+        d["response"], d["pattern"], d["error_messages"] = [], [], []
+        for turn in range(len(d["prompt"])):
+            retry_count = 0
+            sleep = 0
+
+            d["response"].append(None)
+            d["pattern"].append(None)
+            d["error_messages"].append([])
+            while retry_count <= self.max_retries:
+                if len(d["error_messages"][-1]) > 0:
+                    logging.warning(
+                        f"{d['error_messages'][-1][-1]}. Retrying in {sleep} seconds."
+                    )
+                await asyncio.sleep(sleep)
+
+                try:
+                    d["response"][-1] = await self.async_request(
+                        d["prompt"][: turn + 1],
+                        d["response"][:turn],
+                        system_prompt=system_prompt,
+                        sampling_params=sampling_params,
+                    )
+                except genai.errors.APIError as e:
+                    if hasattr(e, "code") and e.code in [429, 500, 502, 503]:
+                        d["error_messages"][-1].append(str(e))
+                        sleep = 60
+                        retry_count += 1
+                    else:
+                        raise e
+                else:
+                    if score_extractor is not None:
+                        try:
+                            d["pattern"][-1] = score_extractor(d["response"][-1])
+                        except ScoreExtractionError as e:
+                            d["error_messages"][-1].append(str(e))
+                            retry_count += 1
+                            sleep = self.async_request_interval
+                            continue
+                    break
+
+            if turn < len(d["prompt"]) - 1:
+                await asyncio.sleep(self.async_request_interval)
+
+        return d
+
+    def get_messages(self, prompt, response, system_prompt=None):
+        if self.disable_system_prompt and system_prompt is not None:
+            prompt = deepcopy(prompt)
+            prompt[0] = f"{system_prompt}\n\n{prompt[0]}"
+            system_prompt = None
+
+        messages = []
+        for turn in range(len(prompt)):
+            messages.append({"role": "user", "parts": [{"text": prompt[turn]}]})
+            if turn < len(response):
+                messages.append({"role": "model", "parts": [{"text": response[turn]}]})
+
+        return messages
+
+    async def async_request(
+        self,
+        prompt,
+        response,
+        system_prompt=None,
+        sampling_params={},
+    ):
+        messages = await asyncio.to_thread(
+            self.get_messages, prompt, response, system_prompt=system_prompt
+        )
+
+        if self.disable_system_prompt:
+            system_prompt = None
+
+        sampling_params = dict(sampling_params)
+
+        if system_prompt is not None:
+            sampling_params["system_instruction"] = system_prompt
+
+        if "max_tokens" in sampling_params:
+            sampling_params["max_output_tokens"] = sampling_params.pop("max_tokens")
+
+        config = GenerateContentConfig(
+            **sampling_params
+        )
+
+        response = await asyncio.to_thread(
+            self.client.models.generate_content,
+            model=self.model_name,
+            contents=messages,
+            config=config,
+        )
+
+        return response.text
