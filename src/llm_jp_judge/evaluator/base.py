@@ -11,6 +11,7 @@ class BaseScoreExtractor(object):
         self.regex = regex
 
     def __call__(self, text):
+        score = None
         try:
             for _score in re.findall(self.regex, text):
                 score = _score
