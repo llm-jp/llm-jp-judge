@@ -1,0 +1,7 @@
+name: gemini
+model_name: gemini-2.0-flash
+
+max_retries: 3
+async_request_interval: 2 # 非同期のリクエスト間隔(秒)
+disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
+
