@@ -100,8 +100,8 @@ class QualityEvaluator(BaseEvaluator):
                     raw_output["response"],
                     *patterns,
                     *scores,
-                    json.dumps(raw_output["generation_errors"], ensure_ascii=False),
-                    json.dumps(raw_output["error_messages"], ensure_ascii=False),
+                    json.dumps(raw_output.get("generation_errors", []), ensure_ascii=False),
+                    json.dumps(raw_output.get("error_messages", []), ensure_ascii=False),
                 ]
             )
         self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)

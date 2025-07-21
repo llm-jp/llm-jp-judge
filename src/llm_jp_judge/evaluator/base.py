@@ -67,8 +67,8 @@ class BaseEvaluator:
                 score["response"],
                 score.get("pattern"),
                 score["score"],
-                json.dumps(score["generation_errors"]),
-                json.dumps(score["error_messages"]),
+                json.dumps(score.get("generation_errors", [])),
+                json.dumps(score.get("error_messages", [])),
             ]
             for score in raw_outputs
         ]
