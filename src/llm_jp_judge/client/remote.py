@@ -336,7 +336,12 @@ class Gemini(AzureOpenAI):
 
         return d
 
-    def get_messages(self, prompt, response):
+    def get_messages(self, prompt, response, system_prompt=None):
+        if self.disable_system_prompt and system_prompt is not None:
+            prompt = deepcopy(prompt)
+            prompt[0] = f"{system_prompt}\n\n{prompt[0]}"
+            system_prompt = None
+
         messages = []
         for turn in range(len(prompt)):
             messages.append({"role": "user", "parts": [{"text": prompt[turn]}]})
@@ -353,9 +358,12 @@ class Gemini(AzureOpenAI):
         sampling_params={},
     ):
         messages = await asyncio.to_thread(
-            self.get_messages, prompt, response
+            self.get_messages, prompt, response, system_prompt=system_prompt
         )
-        
+
+        if self.disable_system_prompt:
+            system_prompt = None
+
         sampling_params = dict(sampling_params)
 
         if system_prompt is not None:
