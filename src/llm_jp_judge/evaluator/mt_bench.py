@@ -1,11 +1,10 @@
-import logging
-
 import json
-from copy import deepcopy
+import logging
 from collections import defaultdict
+from copy import deepcopy
 
-from .base import BaseEvaluator, BaseScoreExtractor
 from ..utils.data import load_jsonl
+from .base import BaseEvaluator, BaseScoreExtractor
 
 
 class MTBenchEvaluator(BaseEvaluator):

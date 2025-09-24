@@ -1,6 +1,6 @@
+from .mt_bench import MTBenchEvaluator
 from .quality import QualityEvaluator
 from .safety import SafetyEvaluator
-from .mt_bench import MTBenchEvaluator
 
 
 def load_evaluator(client, dashboard, metadata={}, metric="abs_quality", **kwargs):

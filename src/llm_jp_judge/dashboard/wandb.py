@@ -1,6 +1,5 @@
-import wandb
-
 import omegaconf
+import wandb
 
 from .base import BaseDashboard
 

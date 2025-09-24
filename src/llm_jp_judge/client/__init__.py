@@ -1,5 +1,5 @@
-from .remote import OpenAI, AzureOpenAI, BedrockAnthropic
 from .local import vLLMClient
+from .remote import AzureOpenAI, BedrockAnthropic, OpenAI
 
 
 def load_client(name="azure", **kwargs):

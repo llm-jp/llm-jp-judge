@@ -1,17 +1,15 @@
-import os
-import logging
-import warnings
 import asyncio
+import logging
+import os
+import warnings
 
 import openai
-from openai import OpenAI as OpenAIClient
-from openai import AzureOpenAI as AzureOpenAIClient
-from anthropic import AnthropicBedrock as AnthropicBedrockClient
-
-from dotenv import load_dotenv
-
 import tqdm
 import tqdm.asyncio
+from anthropic import AnthropicBedrock as AnthropicBedrockClient
+from dotenv import load_dotenv
+from openai import AzureOpenAI as AzureOpenAIClient
+from openai import OpenAI as OpenAIClient
 
 from .local import BaseClient
 
