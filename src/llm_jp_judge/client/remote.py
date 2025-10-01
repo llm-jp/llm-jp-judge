@@ -155,10 +155,20 @@ class OpenAI(BaseClient):
 
         return d
 
+    def update_sampling_params(self, sampling_params):
+        if self.model_name.startswith("gpt-5"):
+            if "max_tokens" in sampling_params:
+                sampling_params["max_completion_tokens"] = sampling_params.pop("max_tokens")
+            if "top_p" in sampling_params:
+                logging.warning("gpt-5 does not support top_p parameter. Ignoring.")
+                del sampling_params["top_p"]
+        return sampling_params
+
     def __call__(
         self, data, score_extractor=None, system_prompt=None, sampling_params={}
     ):
         sampling_params = self.fill_sampling_params(sampling_params)
+        sampling_params = self.update_sampling_params(sampling_params)
 
         return asyncio.run(
             self.process_data(
