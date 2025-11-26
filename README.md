@@ -147,7 +147,7 @@ uv run python3 -m src.llm_jp_judge.generate \
 非アクティブにしたい場合は、生成時に以下のように指定してください。
 
 ```
-python3 -m src.llm_jp_judge.generate \
+uv run python3 -m src.llm_jp_judge.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
