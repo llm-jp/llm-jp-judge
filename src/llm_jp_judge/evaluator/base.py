@@ -9,7 +9,7 @@ class BaseScoreExtractor(object):
 
     def __call__(self, text):
         m = re.search(self.regex, text)
-        return m.group(1) if m else None
+        return m.group(1)
 
 
 class BaseEvaluator:
