@@ -216,10 +216,22 @@ python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
 
 `{entity_name}`、`{project_name}`、`{run_name}`は適宜設定してください。
 
-```
+```bash
 python3 -m src.llm_jp_judge.evaluate \
     dashboard=wandb \
     dashboard.entity={entity_name} \
     dashboard.project={project_name} \
     dashboard.run_name={run_name}
+```
+
+# 注意事項
+
+## 思考モデルの取り扱い
+
+思考モデルにより推論もしくは評価を行う場合、生成トークン数が不足する可能性があります。  
+以下のオプションを適用することで、最大トークン数を増やして下さい。  
+(BENCHMARK_NAME)は適宜利用するベンチマーク名(`safety`, `quality`, ...)に置き換えて下さい。  
+
+```bash
+benchmark.{BENCHMARK_NAME}.sampling_params.max_tokens=1024
 ```
