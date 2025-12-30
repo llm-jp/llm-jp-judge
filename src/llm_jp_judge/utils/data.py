@@ -4,6 +4,13 @@ import json
 import hydra
 
 
+def load_file(path):
+    path = hydra.utils.to_absolute_path(path)
+    with open(path, "r", encoding="utf-8") as f:
+        data = f.read()
+    return data
+
+
 def load_json(path):
     path = hydra.utils.to_absolute_path(path)
     with open(path, "r", encoding="utf-8") as f:
