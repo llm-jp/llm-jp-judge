@@ -9,7 +9,11 @@ class BaseScoreExtractor(object):
 
     def __call__(self, text):
         m = re.search(self.regex, text)
-        return m.group(1) if m else None
+
+        if m is None:
+            raise ValueError("No score found in the response")
+
+        return m.group(1)
 
 
 class BaseEvaluator:
