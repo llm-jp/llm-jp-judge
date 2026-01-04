@@ -1,15 +1,13 @@
+import logging
 import os
-import hydra
-
 from collections import defaultdict
 
+import hydra
 from omegaconf import OmegaConf
 
 from .client import load_client
-from .utils.data import save_jsonl, save_json
 from .dataset import load_dataset
-
-import logging
+from .utils.data import save_json, save_jsonl
 
 
 def generate(cfg, client, benchmark_cfg):

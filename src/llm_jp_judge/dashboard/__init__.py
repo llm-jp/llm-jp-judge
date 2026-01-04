@@ -1,5 +1,5 @@
-from .wandb import WandB
 from .base import BaseDashboard
+from .wandb import WandB
 
 
 def load_dashboard(cfg, name=None, **kwargs):

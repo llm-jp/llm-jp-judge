@@ -8,9 +8,7 @@
 ## 仮想環境
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requrements.txt
+uv sync
 ```
 
 ## データセット
@@ -66,7 +64,7 @@ MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
 OUTPUT_DIR=./output/llm-jp-3-1.8b-instruct
 
 # 生成
-python3 -m src.llm_jp_judge.generate \
+uv run python3 -m src.llm_jp_judge.generate \
     output.dir=$OUTPUT_DIR/generation \
     client=vllm \
     client.model_name=$MODEL_NAME \
@@ -74,7 +72,7 @@ python3 -m src.llm_jp_judge.generate \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
 # 評価
-python3 -m src.llm_jp_judge.evaluate \
+uv run python3 -m src.llm_jp_judge.evaluate \
     input.dir=$OUTPUT_DIR/generation \
     output.dir=$OUTPUT_DIR/evaluation \
     client=azure \
@@ -137,7 +135,7 @@ python3 -m src.llm_jp_judge.evaluate \
 非アクティブにしたい場合は、生成時に以下のように指定してください。
 
 ```
-python3 -m src.llm_jp_judge.generate \
+uv run python3 -m src.llm_jp_judge.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
@@ -149,7 +147,7 @@ python3 -m src.llm_jp_judge.generate \
 非アクティブにしたい場合は、生成時に以下のように指定してください。
 
 ```
-python3 -m src.llm_jp_judge.generate \
+uv run python3 -m src.llm_jp_judge.generate \
     benchmark.mt_bench.dataset.path=null
 ```
 
@@ -162,7 +160,7 @@ python3 -m src.llm_jp_judge.generate \
 OpenAI API のモデル名(例:`gpt-4o-2024-08-06`)を指定できます。
 
 ```
-python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
+uv run python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=openai \
     client.model_name=gpt-4o-2024-08-06 \  # モデル名
     client.async_request_interval=0.5  # APIリクエストの間隔(秒)
@@ -176,7 +174,7 @@ python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
 Azure OpenAI APIのデプロイ名(例:`gpt-4o-2024-08-06`)を指定できます。
 
 ```
-python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
+uv run python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=azure \
     client.model_name=gpt-4o-2024-08-06 \  # デプロイ名
     client.async_request_interval=0.5  # APIリクエストの間隔(秒)
@@ -187,7 +185,7 @@ python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
 AWS Bedrock APIのデプロイ名(例:`anthropic.claude-3-5-sonnet-20240620-v1:0`)を指定できます。  
 
 ```
-python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
+uv run python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=bedrock \
     client.model_name=anthropic.claude-3-5-sonnet-20240620-v1:0 \  # デプロイ名
     client.async_request_interval=10  # APIリクエストの間隔(秒)
@@ -202,7 +200,7 @@ Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパ�
 > 対応していない場合、チャットテンプレートに対応したトークナイザーを`client.tokenizer_name`として指定するか、jinja形式のチャットテンプレートを`client.chat_template.path`として与えてください。
 
 ```bash
-python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
+uv run python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client=vllm \
     client.model_name=llm-jp/llm-jp-3-1.8b-instruct # Huggin Faceのモデル名 or パス
 ```
@@ -217,7 +215,7 @@ python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
 `{entity_name}`、`{project_name}`、`{run_name}`は適宜設定してください。
 
 ```bash
-python3 -m src.llm_jp_judge.evaluate \
+uv run python3 -m src.llm_jp_judge.evaluate \
     dashboard=wandb \
     dashboard.entity={entity_name} \
     dashboard.project={project_name} \
