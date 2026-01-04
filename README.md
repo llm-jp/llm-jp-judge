@@ -214,7 +214,7 @@ uv run python3 -m src.llm_jp_judge.evaluate \ # generate or evaluate
 
 `{entity_name}`、`{project_name}`、`{run_name}`は適宜設定してください。
 
-```
+```bash
 uv run python3 -m src.llm_jp_judge.evaluate \
     dashboard=wandb \
     dashboard.entity={entity_name} \
