@@ -15,7 +15,7 @@ import tqdm.asyncio
 
 from .local import BaseClient
 
-load_dotenv(override=True)
+load_dotenv(override=False)
 
 
 class OpenAI(BaseClient):

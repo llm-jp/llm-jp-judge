@@ -1,3 +1,4 @@
+import base64
 import re
 from copy import deepcopy
 
@@ -18,6 +19,51 @@ def load_chat_template(file_path):
 
 
 class BaseClient:
+    @staticmethod
+    def encode_image_to_data_url(image_path):
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+        b64_str = base64.b64encode(image_bytes).decode("utf-8")
+        return f"data:image/jpeg;base64,{b64_str}"
+
+    @staticmethod
+    def conv_content(prompt):
+        image_link_pattern = r"!\[([^\]]*)\]\(([^)]+)\)"
+        if re.search(image_link_pattern, prompt) is None:
+            return prompt
+
+        content = []
+        last_end = 0
+        for m in re.finditer(image_link_pattern, prompt):
+            text = prompt[last_end : m.start()].strip()
+            if text:
+                content.append({
+                    "type": "text",
+                    "text": text,
+                })
+
+            image_path = m.group(2)
+            data_url = BaseClient.encode_image_to_data_url(image_path)
+
+            content.append({    
+                    "type": "image_url",
+                    "image_url":
+                    {
+                        "url": data_url,
+                    } 
+                })
+            
+            last_end = m.end()
+
+        text = prompt[last_end : ].strip()
+        if text:
+            content.append({
+                "type": "text",
+                "text": text,
+            })
+
+        return content
+
     def get_messages(self, prompt, response, system_prompt=None):
         if self.disable_system_prompt and system_prompt is not None:
             prompt = deepcopy(prompt)
@@ -26,9 +72,9 @@ class BaseClient:
 
         messages = []
         for turn in range(len(prompt)):
-            messages.append({"role": "user", "content": prompt[turn]})
+            messages.append({"role": "user", "content": self.conv_content(prompt[turn])})
             if turn < len(response):
-                messages.append({"role": "assistant", "content": response[turn]})
+                messages.append({"role": "assistant", "content": self.conv_content(response[turn])})
 
         if system_prompt is not None:
             messages.insert(0, {"role": "system", "content": system_prompt})

@@ -1,6 +1,7 @@
 from .safety import load_safety
 from .quality import load_quality
 from .mt_bench import load_mt_bench
+from .msts import load_msts
 
 
 def load_dataset(name, path, size=None):
@@ -10,6 +11,8 @@ def load_dataset(name, path, size=None):
         dataset = load_safety(path)
     elif name in ["mt_bench", "ja_mt_bench"]:
         dataset = load_mt_bench(path)
+    elif name in ["msts", "jmsts"]:
+        dataset = load_msts(path)
     else:
         raise ValueError(f"Unknown dataset: {name}")
 

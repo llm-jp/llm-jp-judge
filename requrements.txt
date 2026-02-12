@@ -1,8 +1,9 @@
 hydra-core==1.3.2
-openai==1.65.2
-vllm==0.6.2
-anthropic==0.49.0
+openai>=1.65.2
+vllm==0.13.0
+anthropic>=0.49.0
 python-dotenv==1.0.1
-wandb==0.19.7
-awscli==1.38.5
-boto3==1.37.5
+wandb>=0.19.7
+awscli>=1.38.5
+boto3>=1.37.5
+transformers>=4.57.3
