@@ -1,4 +1,4 @@
-python -c "import os, datasets, pandas as pd; \
+uv run python -c "import os, datasets, pandas as pd; \
 output_dir = './data/cache/llm-jp/AnswerCarefully/v2.0'; \
 ds = datasets.load_dataset('llm-jp/AnswerCarefully', 'v2.0'); \
 os.makedirs(output_dir, exist_ok=True); \
