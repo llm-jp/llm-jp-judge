@@ -2,10 +2,9 @@ import re
 from copy import deepcopy
 
 import hydra
-
 import torch
-from vllm import LLM, SamplingParams
 from huggingface_hub import repo_exists
+from vllm import LLM, SamplingParams
 
 NUM_GPUS = torch.cuda.device_count()
 

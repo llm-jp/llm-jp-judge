@@ -1,9 +1,8 @@
-import re
 import json
 import logging
-
-from copy import deepcopy
+import re
 from collections import defaultdict
+from copy import deepcopy
 
 from .base import BaseEvaluator
 

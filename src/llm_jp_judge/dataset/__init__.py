@@ -1,6 +1,6 @@
-from .safety import load_safety
-from .quality import load_quality
 from .mt_bench import load_mt_bench
+from .quality import load_quality
+from .safety import load_safety
 
 
 def load_dataset(name, path, size=None):
