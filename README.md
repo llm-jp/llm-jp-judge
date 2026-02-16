@@ -5,8 +5,10 @@
 
 # 事前準備
 
-## 仮想環境
-
+## 環境構築
+> [!NOTE]
+> Pythonのパッケージマネージャーとしてuvを使用しています。
+> uvのインストール方法は[こちら](https://docs.astral.sh/uv/getting-started/installation/)を確認ください。
 ```bash
 uv sync
 ```
