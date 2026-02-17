@@ -3,7 +3,7 @@ name = "llm-jp-judge"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "anthropic==0.49.0",
     "awscli==1.38.5",
