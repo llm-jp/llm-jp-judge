@@ -47,12 +47,13 @@ OPENAI_BASE_URL="https://api.openai.com/v1"
 OPENAI_API_KEY="********"
 
 # Microsoft Azure OpenAI Service
-AZURE_ENDPOINT="https://********.openai.azure.com/"
-AZURE_API_KEY="********"
+AZURE_OPENAI_ENDPOINT="https://********.openai.azure.com/"
+AZURE_OPENAI_API_KEY="********"
+OPENAI_API_VERSION="****-**-**" # e.g. 2025-04-01-preview
 
 # Amazon Bedrock API (Anthropic)
-AWS_ACCESS_KEY="********"
-AWS_SECRET_KEY="****************"
+AWS_ACCESS_KEY_ID="********"
+AWS_SECRET_ACCESS_KEY="****************"
 AWS_REGION="**-****-*" # e.g. us-west-2
 ```
 
@@ -61,15 +62,22 @@ AWS_REGION="**-****-*" # e.g. us-west-2
 llm-jp-gen-evalでは生成と評価を分けて行います。
 以下は、Hugging Face Hubの[llm-jp/llm-jp-3-1.8b-instruct](https://huggingface.co/llm-jp/llm-jp-3-1.8b-instruct)により生成を行い、gpt-4oにより評価する例です。
 
+> [!NOTE]
+> llm-jp/llm-jp-3-1.8b-instructは[vLLM](https://docs.vllm.ai/en/stable/)で起動し、OpenAI API互換のAPI経由で呼び出します。
+
 ```bash
-MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
+# 別プロセスで vLLM を起動させておく
+uv run -- vllm serve llm-jp/llm-jp-3-1.8b-instruct --port 8000 --api-key vllm
+
 OUTPUT_DIR=./output/llm-jp-3-1.8b-instruct
 
 # 生成
 uv run python -m src.llm_jp_judge.generate \
     output.dir=$OUTPUT_DIR/generation \
-    client=vllm \
-    client.model_name=$MODEL_NAME \
+    client=openai \
+    client.model_name=llm-jp/llm-jp-3-1.8b-instruct \
+    client.api_key=vllm \
+    client.base_url=http://localhost:8000/v1 \
     benchmark.quality.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
