@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from openai import AzureOpenAI as AzureOpenAIClient
 from openai import OpenAI as OpenAIClient
 
-from .local import BaseClient
+from .base import BaseClient
 
 
 load_dotenv(override=True)
