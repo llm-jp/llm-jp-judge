@@ -201,18 +201,21 @@ uv run python -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client.async_request_interval=10  # APIリクエストの間隔(秒)
 ```
 
-## vLLM
+## vLLM（OpenAI APIクライアント経由）
 
-vLLMを使用してローカルで推論を行います。
+vLLMを使用してローカルで推論を行うことができます。
 Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパスを指定できます。
+
 > [!NOTE]
-> モデルが使用するトークナイザーがチャットテンプレートに対応している必要があります。
-> 対応していない場合、チャットテンプレートに対応したトークナイザーを`client.tokenizer_name`として指定するか、jinja形式のチャットテンプレートを`client.chat_template.path`として与えてください。
+> 従来の`vllm`クライアントは廃止されました。
+> vLLMサーバーを別プロセスで起動し、`openai`クライアント経由で利用して下さい。
 
 ```bash
 uv run python -m src.llm_jp_judge.evaluate \ # generate or evaluate
-    client=vllm \
-    client.model_name=llm-jp/llm-jp-3-1.8b-instruct # Huggin Faceのモデル名 or パス
+    client=openai \
+    client.model_name=llm-jp/llm-jp-3-1.8b-instruct \ # Huggin Faceのモデル名 or パス
+    client.api_key=... \ # vLLMサーバー起動時に指定したAPIキー
+    client.base_url=http://localhost:8000/v1 # vLLMサーバーのURL
 ```
 
 # ダッシュボード
