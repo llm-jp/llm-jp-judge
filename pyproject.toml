@@ -16,3 +16,9 @@ dependencies = [
     "vllm>=0.6.2",
     "wandb==0.19.7",
 ]
+
+[tool.ruff]
+line-length = 119
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
