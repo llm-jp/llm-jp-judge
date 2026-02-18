@@ -59,11 +59,11 @@ AWS_REGION="**-****-*" # e.g. us-west-2
 
 # 使い方
 
-llm-jp-gen-evalでは生成と評価を分けて行います。
+llm-jp-judgeでは生成と評価を分けて行います。
 以下は、Hugging Face Hubの[llm-jp/llm-jp-3-1.8b-instruct](https://huggingface.co/llm-jp/llm-jp-3-1.8b-instruct)により生成を行い、gpt-4oにより評価する例です。
 
 > [!NOTE]
-> llm-jp/llm-jp-3-1.8b-instructは[vLLM](https://docs.vllm.ai/en/stable/)で起動し、OpenAI API互換のAPI経由で呼び出します。
+> オープンモデルやローカルモデルは[vLLM](https://docs.vllm.ai/en/stable/)でローカルサーバーを起動し、OpenAI APIクライアント経由で呼び出します。
 
 ```bash
 # 別プロセスで vLLM を起動させておく
