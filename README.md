@@ -47,29 +47,37 @@ OPENAI_BASE_URL="https://api.openai.com/v1"
 OPENAI_API_KEY="********"
 
 # Microsoft Azure OpenAI Service
-AZURE_ENDPOINT="https://********.openai.azure.com/"
-AZURE_API_KEY="********"
+AZURE_OPENAI_ENDPOINT="https://********.openai.azure.com/"
+AZURE_OPENAI_API_KEY="********"
+OPENAI_API_VERSION="****-**-**" # e.g. 2025-04-01-preview
 
 # Amazon Bedrock API (Anthropic)
-AWS_ACCESS_KEY="********"
-AWS_SECRET_KEY="****************"
+AWS_ACCESS_KEY_ID="********"
+AWS_SECRET_ACCESS_KEY="****************"
 AWS_REGION="**-****-*" # e.g. us-west-2
 ```
 
 # 使い方
 
-llm-jp-gen-evalでは生成と評価を分けて行います。
+llm-jp-judgeでは生成と評価を分けて行います。
 以下は、Hugging Face Hubの[llm-jp/llm-jp-3-1.8b-instruct](https://huggingface.co/llm-jp/llm-jp-3-1.8b-instruct)により生成を行い、gpt-4oにより評価する例です。
 
+> [!NOTE]
+> オープンモデルやローカルモデルは[vLLM](https://docs.vllm.ai/en/stable/)でローカルサーバーを起動し、OpenAI APIクライアント経由で呼び出します。
+
 ```bash
-MODEL_NAME=llm-jp/llm-jp-3-1.8b-instruct
+# 別プロセスで vLLM を起動させておく
+uv run -- vllm serve llm-jp/llm-jp-3-1.8b-instruct --port 8000 --api-key vllm
+
 OUTPUT_DIR=./output/llm-jp-3-1.8b-instruct
 
 # 生成
 uv run python -m src.llm_jp_judge.generate \
     output.dir=$OUTPUT_DIR/generation \
-    client=vllm \
-    client.model_name=$MODEL_NAME \
+    client=openai \
+    client.model_name=llm-jp/llm-jp-3-1.8b-instruct \
+    client.api_key=vllm \
+    client.base_url=http://localhost:8000/v1 \
     benchmark.quality.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
     benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
@@ -193,18 +201,24 @@ uv run python -m src.llm_jp_judge.evaluate \ # generate or evaluate
     client.async_request_interval=10  # APIリクエストの間隔(秒)
 ```
 
-## vLLM
+## vLLM（OpenAI APIクライアント経由）
 
-vLLMを使用してローカルで推論を行います。
+vLLMを使用してローカルで推論を行うことができます。
 Hugging Faceのモデル名(例:`llm-jp/llm-jp-3-1.8b-instruct`)もしくはパスを指定できます。
+
 > [!NOTE]
-> モデルが使用するトークナイザーがチャットテンプレートに対応している必要があります。
-> 対応していない場合、チャットテンプレートに対応したトークナイザーを`client.tokenizer_name`として指定するか、jinja形式のチャットテンプレートを`client.chat_template.path`として与えてください。
+> 従来の`vllm`クライアントは廃止されました。
+> vLLMサーバーを別プロセスで起動し、`openai`クライアント経由で利用して下さい。
 
 ```bash
+# 別プロセスで vLLM を起動させておく
+uv run -- vllm serve llm-jp/llm-jp-3-1.8b-instruct --port 8000 --api-key vllm
+
 uv run python -m src.llm_jp_judge.evaluate \ # generate or evaluate
-    client=vllm \
-    client.model_name=llm-jp/llm-jp-3-1.8b-instruct # Huggin Faceのモデル名 or パス
+    client=openai \
+    client.model_name=llm-jp/llm-jp-3-1.8b-instruct \ # Huggin Faceのモデル名 or パス
+    client.api_key=vllm \ # vLLMサーバー起動時に指定したAPIキー
+    client.base_url=http://localhost:8000/v1 # vLLMサーバーのURL
 ```
 
 # ダッシュボード

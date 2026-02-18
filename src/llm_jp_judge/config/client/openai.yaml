@@ -4,3 +4,8 @@ model_name: gpt-4o-2024-08-06
 max_retries: 3
 async_request_interval: 0.5 # 非同期のリクエスト間隔(秒)
 disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
+
+api_key: null  # null の場合、環境変数 OPENAI_API_KEY から読み込まれます。
+organization: null  # null の場合、環境変数 OPENAI_ORG_ID から読み込まれます。
+project: null  # null の場合、環境変数 OPENAI_PROJECT_ID から読み込まれます。
+base_url: null  # null の場合、環境変数 OPENAI_BASE_URL から読み込まれるか、既定値の https://api.openai.com/v1 が使用されます。

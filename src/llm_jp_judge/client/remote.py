@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import warnings
 
 import openai
@@ -11,7 +10,8 @@ from dotenv import load_dotenv
 from openai import AzureOpenAI as AzureOpenAIClient
 from openai import OpenAI as OpenAIClient
 
-from .local import BaseClient
+from .base import BaseClient
+
 
 load_dotenv(override=True)
 
@@ -23,22 +23,15 @@ class OpenAI(BaseClient):
         max_retries=1,
         async_request_interval=1.0,
         disable_system_prompt=False,
+        api_key=None,
+        organization=None,
+        project=None,
+        base_url=None,
     ):
         self.model_name = model_name
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
         self.disable_system_prompt = disable_system_prompt
-
-        api_key = os.getenv("OPENAI_API_KEY")
-        if api_key is None:
-            logging.warning("Environment variable OPENAI_API_KEY is not set.")
-            api_key = input("Enter Azure OpenAI API key: ")
-
-        base_url = os.getenv("OPENAI_BASE_URL", None)
-
-        organization = os.getenv("OPENAI_ORGANIZATION", None)
-
-        project = os.getenv("OPENAI_PROJECT", None)
 
         self.client = OpenAIClient(
             api_key=api_key,
@@ -54,9 +47,7 @@ class OpenAI(BaseClient):
         system_prompt=None,
         sampling_params={},
     ):
-        messages = await asyncio.to_thread(
-            self.get_messages, prompt, response, system_prompt=system_prompt
-        )
+        messages = await asyncio.to_thread(self.get_messages, prompt, response, system_prompt=system_prompt)
 
         response = await asyncio.to_thread(
             self.client.chat.completions.create,
@@ -66,9 +57,7 @@ class OpenAI(BaseClient):
         )
         return response.choices[0].message.content
 
-    async def process_data(
-        self, data, score_extractor=None, system_prompt=None, sampling_params={}
-    ):
+    async def process_data(self, data, score_extractor=None, system_prompt=None, sampling_params={}):
         tasks = []
         wait = 0
         for d in data:
@@ -101,9 +90,7 @@ class OpenAI(BaseClient):
 
         return data
 
-    async def _process_single_request(
-        self, d, score_extractor, system_prompt, wait, sampling_params={}
-    ):
+    async def _process_single_request(self, d, score_extractor, system_prompt, wait, sampling_params={}):
         await asyncio.sleep(wait)
 
         d["response"], d["pattern"], d["error_messages"] = [], [], []
@@ -116,9 +103,7 @@ class OpenAI(BaseClient):
             d["error_messages"].append([])
             while retry_count <= self.max_retries:
                 if len(d["error_messages"][-1]) > 0:
-                    logging.warning(
-                        f"{d['error_messages'][-1][-1]}. Retrying in {sleep} seconds."
-                    )
+                    logging.warning(f"{d['error_messages'][-1][-1]}. Retrying in {sleep} seconds.")
                 await asyncio.sleep(sleep)
 
                 try:
@@ -153,7 +138,6 @@ class OpenAI(BaseClient):
 
         return d
 
-
     def update_sampling_params(self, sampling_params):
         if self.model_name.startswith("gpt-5"):
             if "max_tokens" in sampling_params:
@@ -163,50 +147,33 @@ class OpenAI(BaseClient):
                 del sampling_params["top_p"]
         return sampling_params
 
-
-    def __call__(
-        self, data, score_extractor=None, system_prompt=None, sampling_params={}
-    ):
+    def __call__(self, data, score_extractor=None, system_prompt=None, sampling_params={}):
         sampling_params = self.fill_sampling_params(sampling_params)
         sampling_params = self.update_sampling_params(sampling_params)
 
-        return asyncio.run(
-            self.process_data(
-                data, score_extractor, system_prompt, sampling_params=sampling_params
-            )
-        )
+        return asyncio.run(self.process_data(data, score_extractor, system_prompt, sampling_params=sampling_params))
 
 
 class AzureOpenAI(OpenAI):
-
     def __init__(
         self,
         model_name="gpt-4o-2024-08-06",
         max_retries=1,
         async_request_interval=1.0,
         disable_system_prompt=False,
+        azure_endpoint=None,
+        api_version=None,
+        api_key=None,
     ):
         self.model_name = model_name
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
         self.disable_system_prompt = disable_system_prompt
 
-        api_key = os.getenv("AZURE_API_KEY")
-        if api_key is None:
-            logging.warning("Environment variable AZURE_API_KEY is not set.")
-            api_key = input("Enter Azure OpenAI API key: ")
-
-        api_endpoint = os.getenv("AZURE_ENDPOINT")
-        if api_endpoint is None:
-            logging.warning("Environment variable AZURE_ENDPOINT is not set.")
-            api_endpoint = input("Enter Azure OpenAI API endpoint: ")
-
-        api_version = os.getenv("AZURE_API_VERSION", "2023-05-15")
-
         self.client = AzureOpenAIClient(
-            api_key=api_key,
+            azure_endpoint=azure_endpoint,
             api_version=api_version,
-            azure_endpoint=api_endpoint,
+            api_key=api_key,
         )
 
 
@@ -217,26 +184,14 @@ class BedrockAnthropic(AzureOpenAI):
         max_retries=1,
         async_request_interval=1.0,
         disable_system_prompt=False,
+        aws_access_key=None,
+        aws_secret_key=None,
+        aws_region=None,
     ):
         self.model_name = model_name
         self.max_retries = max_retries
         self.async_request_interval = async_request_interval
         self.disable_system_prompt = disable_system_prompt
-
-        aws_access_key = os.getenv("AWS_ACCESS_KEY")
-        if aws_access_key is None:
-            logging.warning("Environment variable AWS_ACCESS_KEY is not set.")
-            aws_access_key = input("Enter AWS Bedrock access key: ")
-
-        aws_secret_key = os.getenv("AWS_SECRET_KEY")
-        if aws_secret_key is None:
-            logging.warning("Environment variable AWS_SECRET_KEY is not set.")
-            aws_secret_key = input("Enter AWS Bedrock secret key: ")
-
-        aws_region = os.getenv("AWS_REGION")
-        if aws_region is None:
-            logging.warning("Environment variable AWS_REGION is not set.")
-            aws_region = input("Enter AWS Bedrock region: ")
 
         self.client = AnthropicBedrockClient(
             aws_access_key=aws_access_key,
@@ -257,9 +212,7 @@ class BedrockAnthropic(AzureOpenAI):
         # Ignore unsupported parameters
         for key in ["seed", "frequency_penalty"]:
             if key in sampling_params:
-                warnings.warn(
-                    f"BedrockAnthropic does not support {key} parameter. Ignoring."
-                )
+                warnings.warn(f"BedrockAnthropic does not support {key} parameter. Ignoring.")
                 sampling_params.pop(key)
 
         completions = self.client.messages.create(
