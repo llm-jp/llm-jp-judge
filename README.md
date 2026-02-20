@@ -10,7 +10,10 @@
 > Pythonのパッケージマネージャーとしてuvを使用しています。
 > uvのインストール方法は[こちら](https://docs.astral.sh/uv/getting-started/installation/)を確認ください。
 ```bash
-uv sync
+uv sync --locked
+
+# vllm を使用する場合は続けて実行
+uv pip install vllm --torch-backend=auto
 ```
 
 ## データセット
