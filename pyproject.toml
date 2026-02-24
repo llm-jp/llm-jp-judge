@@ -17,6 +17,11 @@ dependencies = [
     "wandb>=0.25.0",
 ]
 
+[project.optional-dependencies]
+vllm = [
+    "vllm>=0.15.1",
+]
+
 [tool.ruff]
 line-length = 119
 
