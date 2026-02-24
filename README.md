@@ -12,8 +12,8 @@
 ```bash
 uv sync --locked
 
-# vllm を使用する場合は続けて実行
-uv pip install vllm --torch-backend=auto
+# vllm を使用する場合
+uv sync --locked --extra vllm
 ```
 
 ## データセット
