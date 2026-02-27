@@ -27,12 +27,17 @@ class BaseEvaluator:
         self,
         client: BaseClient,
         dashboard: BaseDashboard,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         name: str = "base",
         use_reference: bool = False,
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] | DictConfig = {},
+        sampling_params: dict[str, Any] | DictConfig | None = None,
     ):
+        if metadata is None:
+            metadata = {}
+        if sampling_params is None:
+            sampling_params = {}
+
         self.client = client
         self.dashboard = dashboard
         self.name = name

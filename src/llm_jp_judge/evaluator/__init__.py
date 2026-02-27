@@ -8,8 +8,15 @@ from llm_jp_judge.evaluator.safety import SafetyEvaluator
 
 
 def load_evaluator(
-    client: BaseClient, dashboard: BaseDashboard, metadata: dict[str, Any] = {}, metric: str = "abs_quality", **kwargs
+    client: BaseClient,
+    dashboard: BaseDashboard,
+    metadata: dict[str, Any] | None = None,
+    metric: str = "abs_quality",
+    **kwargs,
 ):
+    if metadata is None:
+        metadata = {}
+
     if metric == "quality":
         return QualityEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "safety":

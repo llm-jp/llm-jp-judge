@@ -17,14 +17,19 @@ class MTBenchEvaluator(BaseEvaluator):
         self,
         client: BaseClient,
         dashboard: BaseDashboard,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         name: str = "mt_bench",
         mode: str = "single",
         prompt_template: dict[str, dict[str, str]] | DictConfig | None = None,
-        sampling_params: dict[str, Any] | DictConfig = {},
+        sampling_params: dict[str, Any] | DictConfig | None = None,
         reference: dict[str, str | list[str]] | DictConfig = {"path": None, "categories": None},
         **kwargs,
     ):
+        if metadata is None:
+            metadata = {}
+        if sampling_params is None:
+            sampling_params = {}
+
         self.client = client
         self.dashboard = dashboard
         self.metadata = metadata

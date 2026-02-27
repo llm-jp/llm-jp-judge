@@ -13,7 +13,12 @@ class BaseDashboard:
     def log(self, data: dict[str, Any]):
         self.cache.update(data)
 
-    def log_table(self, name: str, columns: list[str] = [], data: list[list[Any]] = []):
+    def log_table(self, name: str, columns: list[str] | None = None, data: list[list[Any]] | None = None):
+        if columns is None:
+            columns = []
+        if data is None:
+            data = []
+
         self.cache[name] = [dict(zip(columns, row)) for row in data]
 
     def log_summary(self, key: str, value: Any):

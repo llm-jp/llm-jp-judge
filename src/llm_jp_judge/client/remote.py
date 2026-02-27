@@ -48,8 +48,11 @@ class OpenAI(BaseClient):
         prompt: list[str],
         response: list[str | None],
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] = {},
+        sampling_params: dict[str, Any] | None = None,
     ) -> str:
+        if sampling_params is None:
+            sampling_params = {}
+
         messages = await asyncio.to_thread(self.get_messages, prompt, response, system_prompt=system_prompt)
 
         response = await asyncio.to_thread(
@@ -65,8 +68,11 @@ class OpenAI(BaseClient):
         data: list[dict[str, Any]],
         score_extractor: BaseScoreExtractor | None = None,
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] = {},
+        sampling_params: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
+        if sampling_params is None:
+            sampling_params = {}
+
         tasks = []
         wait = 0
         for d in data:
@@ -105,8 +111,11 @@ class OpenAI(BaseClient):
         score_extractor: BaseScoreExtractor | None,
         system_prompt: str | None,
         wait: float,
-        sampling_params: dict[str, Any] = {},
+        sampling_params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        if sampling_params is None:
+            sampling_params = {}
+
         await asyncio.sleep(wait)
 
         d["response"], d["pattern"], d["error_messages"] = [], [], []
@@ -168,8 +177,11 @@ class OpenAI(BaseClient):
         data: list[dict[str, Any]],
         score_extractor: BaseScoreExtractor | None = None,
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] | DictConfig = {},
+        sampling_params: dict[str, Any] | DictConfig | None = None,
     ) -> list[dict[str, Any]]:
+        if sampling_params is None:
+            sampling_params = {}
+
         sampling_params = self.fill_sampling_params(sampling_params)
         sampling_params = self.update_sampling_params(sampling_params)
 

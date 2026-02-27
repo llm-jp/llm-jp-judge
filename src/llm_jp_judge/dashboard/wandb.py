@@ -27,7 +27,12 @@ class WandB(BaseDashboard):
 
         self.run.log(data)
 
-    def log_table(self, name: str, columns: list[str] = [], data: list[list[Any]] = []):
+    def log_table(self, name: str, columns: list[str] | None = None, data: list[list[Any]] | None = None):
+        if columns is None:
+            columns = []
+        if data is None:
+            data = []
+
         super().log_table(name, columns, data)
 
         table = wandb.Table(columns=columns, data=data)
