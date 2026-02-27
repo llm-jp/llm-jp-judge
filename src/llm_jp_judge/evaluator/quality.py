@@ -3,8 +3,10 @@ import logging
 import re
 from collections import defaultdict
 from copy import deepcopy
+from typing import Any
 
-from .base import BaseEvaluator
+from llm_jp_judge.evaluator.base import BaseEvaluator
+
 
 PROMPT_TEMPLATE = """[指示]
 質問に対するAIアシスタントの回答を以下の基準で評価してください。
@@ -46,11 +48,11 @@ METRICS = ["正確性", "流暢性", "詳細性", "関連性", "総合評価"]
 SCORE_REGEX = f"({'|'.join(METRICS)}):\s?\[\[([1-5])\]\]"
 
 
-class QualityScoreExtractor(object):
-    def __init__(self, regex):
+class QualityScoreExtractor:
+    def __init__(self, regex: str):
         self.regex = regex
 
-    def __call__(self, text):
+    def __call__(self, text: str) -> dict[str, int]:
         scores = {}
         for metric, score in re.findall(self.regex, text):
             if metric in scores:
@@ -64,7 +66,7 @@ class QualityScoreExtractor(object):
 
 
 class QualityEvaluator(BaseEvaluator):
-    def log_raw_outputs(self, raw_outputs):
+    def log_raw_outputs(self, raw_outputs: list[dict[str, Any]]):
         if self.dashboard is None:
             return
 
@@ -94,7 +96,7 @@ class QualityEvaluator(BaseEvaluator):
             )
         self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)
 
-    def __call__(self, responses):
+    def __call__(self, responses: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str, float]]:
         data = []
         for res in responses:
             d = deepcopy(res)

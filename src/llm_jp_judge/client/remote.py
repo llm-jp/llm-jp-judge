@@ -1,16 +1,19 @@
 import asyncio
 import logging
 import warnings
+from typing import Any
 
 import openai
 import tqdm
 import tqdm.asyncio
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
 from dotenv import load_dotenv
+from omegaconf import DictConfig
 from openai import AzureOpenAI as AzureOpenAIClient
 from openai import OpenAI as OpenAIClient
 
-from .base import BaseClient
+from llm_jp_judge.client.base import BaseClient
+from llm_jp_judge.evaluator.base import BaseScoreExtractor
 
 
 load_dotenv(override=True)
@@ -19,14 +22,14 @@ load_dotenv(override=True)
 class OpenAI(BaseClient):
     def __init__(
         self,
-        model_name="gpt-4o-2024-08-06",
-        max_retries=1,
-        async_request_interval=1.0,
-        disable_system_prompt=False,
-        api_key=None,
-        organization=None,
-        project=None,
-        base_url=None,
+        model_name: str = "gpt-4o-2024-08-06",
+        max_retries: int = 1,
+        async_request_interval: float = 1.0,
+        disable_system_prompt: bool = False,
+        api_key: str | None = None,
+        organization: str | None = None,
+        project: str | None = None,
+        base_url: str | None = None,
     ):
         self.model_name = model_name
         self.max_retries = max_retries
@@ -42,11 +45,11 @@ class OpenAI(BaseClient):
 
     async def async_request(
         self,
-        prompt,
-        response,
-        system_prompt=None,
-        sampling_params={},
-    ):
+        prompt: list[str],
+        response: list[str | None],
+        system_prompt: str | None = None,
+        sampling_params: dict[str, Any] = {},
+    ) -> str:
         messages = await asyncio.to_thread(self.get_messages, prompt, response, system_prompt=system_prompt)
 
         response = await asyncio.to_thread(
@@ -57,14 +60,20 @@ class OpenAI(BaseClient):
         )
         return response.choices[0].message.content
 
-    async def process_data(self, data, score_extractor=None, system_prompt=None, sampling_params={}):
+    async def process_data(
+        self,
+        data: list[dict[str, Any]],
+        score_extractor: BaseScoreExtractor | None = None,
+        system_prompt: str | None = None,
+        sampling_params: dict[str, Any] = {},
+    ) -> list[dict[str, Any]]:
         tasks = []
         wait = 0
         for d in data:
-            if type(d["prompt"]) == str:  # Single turn
+            if isinstance(d["prompt"], str):  # Single turn
                 d["is_single_turn"] = True
                 d["prompt"] = [d["prompt"]]
-            elif type(d["prompt"]) == list:  # Multi turn
+            elif isinstance(d["prompt"], list):  # Multi turn
                 d["is_single_turn"] = False
 
             tasks.append(
@@ -90,7 +99,14 @@ class OpenAI(BaseClient):
 
         return data
 
-    async def _process_single_request(self, d, score_extractor, system_prompt, wait, sampling_params={}):
+    async def _process_single_request(
+        self,
+        d: dict[str, Any],
+        score_extractor: BaseScoreExtractor | None,
+        system_prompt: str | None,
+        wait: float,
+        sampling_params: dict[str, Any] = {},
+    ) -> dict[str, Any]:
         await asyncio.sleep(wait)
 
         d["response"], d["pattern"], d["error_messages"] = [], [], []
@@ -138,7 +154,7 @@ class OpenAI(BaseClient):
 
         return d
 
-    def update_sampling_params(self, sampling_params):
+    def update_sampling_params(self, sampling_params: dict[str, Any]) -> dict[str, Any]:
         if self.model_name.startswith("gpt-5"):
             if "max_tokens" in sampling_params:
                 sampling_params["max_completion_tokens"] = sampling_params.pop("max_tokens")
@@ -147,7 +163,13 @@ class OpenAI(BaseClient):
                 del sampling_params["top_p"]
         return sampling_params
 
-    def __call__(self, data, score_extractor=None, system_prompt=None, sampling_params={}):
+    def __call__(
+        self,
+        data: list[dict[str, Any]],
+        score_extractor: BaseScoreExtractor | None = None,
+        system_prompt: str | None = None,
+        sampling_params: dict[str, Any] | DictConfig = {},
+    ) -> list[dict[str, Any]]:
         sampling_params = self.fill_sampling_params(sampling_params)
         sampling_params = self.update_sampling_params(sampling_params)
 
@@ -157,13 +179,13 @@ class OpenAI(BaseClient):
 class AzureOpenAI(OpenAI):
     def __init__(
         self,
-        model_name="gpt-4o-2024-08-06",
-        max_retries=1,
-        async_request_interval=1.0,
-        disable_system_prompt=False,
-        azure_endpoint=None,
-        api_version=None,
-        api_key=None,
+        model_name: str = "gpt-4o-2024-08-06",
+        max_retries: int = 1,
+        async_request_interval: float = 1.0,
+        disable_system_prompt: bool = False,
+        azure_endpoint: str | None = None,
+        api_version: str | None = None,
+        api_key: str | None = None,
     ):
         self.model_name = model_name
         self.max_retries = max_retries
@@ -180,13 +202,13 @@ class AzureOpenAI(OpenAI):
 class BedrockAnthropic(AzureOpenAI):
     def __init__(
         self,
-        model_name="anthropic.claude-3-5-sonnet-20240620-v1:0",
-        max_retries=1,
-        async_request_interval=1.0,
-        disable_system_prompt=False,
-        aws_access_key=None,
-        aws_secret_key=None,
-        aws_region=None,
+        model_name: str = "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        max_retries: int = 1,
+        async_request_interval: float = 1.0,
+        disable_system_prompt: bool = False,
+        aws_access_key: str | None = None,
+        aws_secret_key: str | None = None,
+        aws_region: str | None = None,
     ):
         self.model_name = model_name
         self.max_retries = max_retries
@@ -201,11 +223,11 @@ class BedrockAnthropic(AzureOpenAI):
 
     async def async_request(
         self,
-        prompt,
-        response,
-        system_prompt=None,
-        sampling_params={},
-    ):
+        prompt: list[str],
+        response: list[str | None],
+        system_prompt: str | None = None,
+        sampling_params: dict[str, Any] = {},
+    ) -> str:
         messages = await asyncio.to_thread(self.get_messages, prompt, response)
 
         sampling_params = dict(sampling_params)

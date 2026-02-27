@@ -3,14 +3,15 @@ import os
 from collections import defaultdict
 
 import hydra
-from omegaconf import OmegaConf
+from omegaconf import DictConfig, OmegaConf
 
-from .client import load_client
-from .dataset import load_dataset
-from .utils.data import save_json, save_jsonl
+from llm_jp_judge.client import load_client
+from llm_jp_judge.client.base import BaseClient
+from llm_jp_judge.dataset import load_dataset
+from llm_jp_judge.utils.data import save_json, save_jsonl
 
 
-def generate(cfg, client, benchmark_cfg):
+def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
     output_dir = hydra.utils.to_absolute_path(cfg.output.dir)
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"{benchmark_cfg.name}.jsonl")
@@ -20,16 +21,12 @@ def generate(cfg, client, benchmark_cfg):
         return
 
     logging.info(f"Loading dataset: {benchmark_cfg.name}")
-    data = load_dataset(
-        benchmark_cfg.name, benchmark_cfg.dataset.path, benchmark_cfg.dataset.size
-    )
+    data = load_dataset(benchmark_cfg.name, benchmark_cfg.dataset.path, benchmark_cfg.dataset.size)
 
     if (
         "category_sampling_params" in benchmark_cfg
     ):  # データカテゴリー毎にサンプリングパラメータを設定する場合: MT-Bench用
-        category_sampling_params = OmegaConf.to_container(
-            benchmark_cfg.category_sampling_params, resolve=True
-        )
+        category_sampling_params = OmegaConf.to_container(benchmark_cfg.category_sampling_params, resolve=True)
 
         categorized_data = defaultdict(list)
         for i, d in enumerate(data):
@@ -38,14 +35,10 @@ def generate(cfg, client, benchmark_cfg):
 
         responses = []
         for category, category_data in categorized_data.items():
-            sampling_params = OmegaConf.to_container(
-                benchmark_cfg.sampling_params, resolve=True
-            )
+            sampling_params = OmegaConf.to_container(benchmark_cfg.sampling_params, resolve=True)
             sampling_params.update(category_sampling_params.get(category, {}))
 
-            logging.info(
-                f"Running generate on {len(category_data)} samples in category: {category}"
-            )
+            logging.info(f"Running generate on {len(category_data)} samples in category: {category}")
             responses += client(
                 category_data,
                 system_prompt=benchmark_cfg.system_prompt,
@@ -71,7 +64,7 @@ def generate(cfg, client, benchmark_cfg):
     save_jsonl(output_path, responses)
 
 
-def save_metadata(cfg):
+def save_metadata(cfg: DictConfig):
     output_dir = hydra.utils.to_absolute_path(cfg.output.dir)
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "metadata.json")
@@ -84,10 +77,8 @@ def save_metadata(cfg):
 
 
 @hydra.main(config_path="./config", config_name="generate")
-def main(cfg):
-    any_specified = any(
-        benchmark_cfg.dataset.path for benchmark_cfg in cfg.benchmark.values()
-    )
+def main(cfg: DictConfig):
+    any_specified = any(benchmark_cfg.dataset.path for benchmark_cfg in cfg.benchmark.values())
     if not any_specified:
         logging.error("Must specify at least one dataset.path")
         return

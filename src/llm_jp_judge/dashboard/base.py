@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any
 
 
 class BaseDashboard:
@@ -9,23 +10,23 @@ class BaseDashboard:
     def close(self):
         pass
 
-    def log(self, data):
+    def log(self, data: dict[str, Any]):
         self.cache.update(data)
 
-    def log_table(self, name, columns=[], data=[]):
+    def log_table(self, name: str, columns: list[str] = [], data: list[list[Any]] = []):
         self.cache[name] = [dict(zip(columns, row)) for row in data]
 
-    def log_summary(self, key, value):
+    def log_summary(self, key: str, value: Any):
         if self.cache.get("summary") is None:
             self.cache["summary"] = {}
         self.cache["summary"][key] = value
 
-    def log_summaries(self, data):
+    def log_summaries(self, data: dict[str, Any]):
         if self.cache.get("summary") is None:
             self.cache["summary"] = {}
         self.cache["summary"].update(data)
 
-    def save_json(self, file_dir):
+    def save_json(self, file_dir: str):
         os.makedirs(file_dir, exist_ok=True)
         for key, value in self.cache.items():
             file_path = os.path.join(file_dir, f"{key}.json")

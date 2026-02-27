@@ -1,9 +1,9 @@
-from .mt_bench import load_mt_bench
-from .quality import load_quality
-from .safety import load_safety
+from llm_jp_judge.dataset.mt_bench import load_mt_bench
+from llm_jp_judge.dataset.quality import load_quality
+from llm_jp_judge.dataset.safety import load_safety
 
 
-def load_dataset(name, path, size=None):
+def load_dataset(name: str, path: str, size: int | None = None) -> list[dict[str, str | list[str]]]:
     if name == "quality":
         dataset = load_quality(path)
     elif name == "safety":

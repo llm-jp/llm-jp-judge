@@ -2,22 +2,27 @@ import json
 import logging
 from collections import defaultdict
 from copy import deepcopy
+from typing import Any
 
-from ..utils.data import load_jsonl
-from .base import BaseEvaluator, BaseScoreExtractor
+from omegaconf import DictConfig
+
+from llm_jp_judge.client.base import BaseClient
+from llm_jp_judge.dashboard.base import BaseDashboard
+from llm_jp_judge.evaluator.base import BaseEvaluator, BaseScoreExtractor
+from llm_jp_judge.utils.data import load_jsonl
 
 
 class MTBenchEvaluator(BaseEvaluator):
     def __init__(
         self,
-        client,
-        dashboard,
-        metadata={},
-        name="mt_bench",
-        mode="single",
-        prompt_template=None,
-        sampling_params={},
-        reference={"path": None, "categories": None},
+        client: BaseClient,
+        dashboard: BaseDashboard,
+        metadata: dict[str, Any] = {},
+        name: str = "mt_bench",
+        mode: str = "single",
+        prompt_template: dict[str, dict[str, str]] | DictConfig | None = None,
+        sampling_params: dict[str, Any] | DictConfig = {},
+        reference: dict[str, str | list[str]] | DictConfig = {"path": None, "categories": None},
         **kwargs,
     ):
         self.client = client
@@ -41,7 +46,9 @@ class MTBenchEvaluator(BaseEvaluator):
         self.reference_categories = reference["categories"]
         self.sampling_params = sampling_params
 
-    def conv_to_query(self, response, use_reference=False, multi_turn=False):
+    def conv_to_query(
+        self, response: dict[str, Any], use_reference: bool = False, multi_turn: bool = False
+    ) -> dict[str, Any]:
         query = deepcopy(response)
         query["generate_response"] = query["response"]
         query["generate_errors"] = query.get("error_messages", [])
@@ -80,7 +87,7 @@ class MTBenchEvaluator(BaseEvaluator):
         query["system_prompt"] = self.prompt_template[query["metric"]]["system_prompt"]
         return query
 
-    def calc_score(self, raw_outputs):
+    def calc_score(self, raw_outputs: list[dict[str, Any]]) -> float:
         raw_outputs = [r for r in raw_outputs if r.get("pattern") is not None]
 
         # Evaluate average score
@@ -91,12 +98,8 @@ class MTBenchEvaluator(BaseEvaluator):
         t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
         t2_raw_outputs = [r for r in raw_outputs if r["turn"] == 2]
 
-        t1_score = sum([int(r["pattern"]) for r in t1_raw_outputs]) / len(
-            t1_raw_outputs
-        )
-        t2_score = sum([int(r["pattern"]) for r in t2_raw_outputs]) / len(
-            t2_raw_outputs
-        )
+        t1_score = sum([int(r["pattern"]) for r in t1_raw_outputs]) / len(t1_raw_outputs)
+        t2_score = sum([int(r["pattern"]) for r in t2_raw_outputs]) / len(t2_raw_outputs)
 
         logging.info(f"Average score (turn 1): {t1_score:.2f}")
         logging.info(f"Average score (turn 2): {t2_score:.2f}")
@@ -107,9 +110,7 @@ class MTBenchEvaluator(BaseEvaluator):
         row.append(t1_score)
         row.append(t2_score)
         row.append(ave_score)
-        self.dashboard.log_table(
-            f"{self.name}_turn_score_table", columns=header, data=[row]
-        )
+        self.dashboard.log_table(f"{self.name}_turn_score_table", columns=header, data=[row])
 
         # Evaluate category-wise scores
         categ_raw_outputs = defaultdict(list)
@@ -126,13 +127,11 @@ class MTBenchEvaluator(BaseEvaluator):
 
         header.append("average")
         row.append(ave_score)
-        self.dashboard.log_table(
-            f"{self.name}_category_score_table", columns=header, data=[row]
-        )
+        self.dashboard.log_table(f"{self.name}_category_score_table", columns=header, data=[row])
 
         return ave_score
 
-    def log_raw_outputs(self, raw_outputs):
+    def log_raw_outputs(self, raw_outputs: list[dict[str, Any]]):
         if self.dashboard is None:
             return
 
@@ -165,11 +164,14 @@ class MTBenchEvaluator(BaseEvaluator):
             ]
             for score in raw_outputs
         ]
-        return self.dashboard.log_table(
-            f"{self.name}_raw_output_table", columns=columns, data=data
-        )
+        self.dashboard.log_table(f"{self.name}_raw_output_table", columns=columns, data=data)
 
-    def evaluate(self, responses, use_reference=False, multi_turn=False):
+    def evaluate(
+        self,
+        responses: list[dict[str, Any]],
+        use_reference: bool = False,
+        multi_turn: bool = False,
+    ) -> list[dict[str, Any]]:
         if len(responses) == 0:
             return []
 
@@ -179,9 +181,7 @@ class MTBenchEvaluator(BaseEvaluator):
             queries.append(query)
 
         metric = queries[-1]["metric"]
-        score_extractor = BaseScoreExtractor(
-            regex=self.prompt_template[metric]["regex"]
-        )
+        score_extractor = BaseScoreExtractor(regex=self.prompt_template[metric]["regex"])
         responses = self.client(
             queries,
             score_extractor=score_extractor,
@@ -190,20 +190,14 @@ class MTBenchEvaluator(BaseEvaluator):
         )
         return responses
 
-    def __call__(self, responses):
-        questions_ref = [
-            r for r in responses if r["category"] in self.reference_categories
-        ]
-        questions = [
-            r for r in responses if r["category"] not in self.reference_categories
-        ]
+    def __call__(self, responses: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str, float]]:
+        questions_ref = [r for r in responses if r["category"] in self.reference_categories]
+        questions = [r for r in responses if r["category"] not in self.reference_categories]
 
         raw_outputs = []
         # Single-turn evaluation
         raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=False)
-        raw_outputs += self.evaluate(
-            questions_ref, use_reference=True, multi_turn=False
-        )
+        raw_outputs += self.evaluate(questions_ref, use_reference=True, multi_turn=False)
 
         # Multi-turn evaluation
         raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=True)
