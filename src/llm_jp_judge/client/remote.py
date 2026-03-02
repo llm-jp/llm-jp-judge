@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import warnings
-from typing import Any
 
 import openai
 import tqdm
@@ -12,8 +11,9 @@ from omegaconf import DictConfig
 from openai import AzureOpenAI as AzureOpenAIClient
 from openai import OpenAI as OpenAIClient
 
-from llm_jp_judge.client.base import BaseClient
-from llm_jp_judge.evaluator.base import BaseScoreExtractor
+from src.llm_jp_judge.client.base import BaseClient
+from src.llm_jp_judge.dataset import DatasetItem
+from src.llm_jp_judge.evaluator.base import BaseScoreExtractor
 
 
 load_dotenv(override=True)
@@ -48,7 +48,7 @@ class OpenAI(BaseClient):
         prompt: list[str],
         response: list[str | None],
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] | None = None,
+        sampling_params: dict[str, int | float] | None = None,
     ) -> str:
         if sampling_params is None:
             sampling_params = {}
@@ -65,23 +65,17 @@ class OpenAI(BaseClient):
 
     async def process_data(
         self,
-        data: list[dict[str, Any]],
+        data: list[DatasetItem],
         score_extractor: BaseScoreExtractor | None = None,
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] | None = None,
-    ) -> list[dict[str, Any]]:
+        sampling_params: dict[str, int | float] | None = None,
+    ) -> list[DatasetItem]:
         if sampling_params is None:
             sampling_params = {}
 
         tasks = []
         wait = 0
         for d in data:
-            if isinstance(d["prompt"], str):  # Single turn
-                d["is_single_turn"] = True
-                d["prompt"] = [d["prompt"]]
-            elif isinstance(d["prompt"], list):  # Multi turn
-                d["is_single_turn"] = False
-
             tasks.append(
                 self._process_single_request(
                     d,
@@ -91,58 +85,50 @@ class OpenAI(BaseClient):
                     sampling_params=sampling_params,
                 )
             )
-            wait += self.async_request_interval * len(d["prompt"])
+            wait += self.async_request_interval * len(d.prompt)
 
         data = await tqdm.asyncio.tqdm.gather(*tasks, desc=self.model_name)
-
-        for d in data:
-            is_single_turn = d.pop("is_single_turn")
-            if is_single_turn:
-                d["prompt"] = d["prompt"][0]
-                d["response"] = d["response"][0]
-                d["pattern"] = d["pattern"][0]
-                d["error_messages"] = d["error_messages"][0]
 
         return data
 
     async def _process_single_request(
         self,
-        d: dict[str, Any],
+        d: DatasetItem,
         score_extractor: BaseScoreExtractor | None,
         system_prompt: str | None,
         wait: float,
-        sampling_params: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+        sampling_params: dict[str, int | float] | None = None,
+    ) -> DatasetItem:
         if sampling_params is None:
             sampling_params = {}
 
         await asyncio.sleep(wait)
 
-        d["response"], d["pattern"], d["error_messages"] = [], [], []
-        for turn in range(len(d["prompt"])):
+        d.response, d.pattern, d.error_messages = [], [], []
+        for turn in range(len(d.prompt)):
             retry_count = 0
             sleep = 0
 
-            d["response"].append(None)
-            d["pattern"].append(None)
-            d["error_messages"].append([])
+            d.response.append(None)
+            d.pattern.append(None)
+            d.error_messages.append([])
             while retry_count <= self.max_retries:
-                if len(d["error_messages"][-1]) > 0:
-                    logging.warning(f"{d['error_messages'][-1][-1]}. Retrying in {sleep} seconds.")
+                if len(d.error_messages[-1]) > 0:
+                    logging.warning(f"{d.error_messages[-1][-1]}. Retrying in {sleep} seconds.")
                 await asyncio.sleep(sleep)
 
                 try:
-                    d["response"][-1] = await self.async_request(
-                        d["prompt"][: turn + 1],
-                        d["response"][:turn],
+                    d.response[-1] = await self.async_request(
+                        d.prompt[: turn + 1],
+                        d.response[:turn],
                         system_prompt=system_prompt,
                         sampling_params=sampling_params,
                     )
                 except (openai.RateLimitError, openai.APITimeoutError) as e:
-                    d["error_messages"][-1].append(str(e))
+                    d.error_messages[-1].append(str(e))
                     sleep = 60
                 except openai.BadRequestError as e:
-                    d["error_messages"][-1].append(str(e))
+                    d.error_messages[-1].append(str(e))
 
                     retry_count += 1
                     sleep = self.async_request_interval
@@ -150,20 +136,20 @@ class OpenAI(BaseClient):
                 else:
                     if score_extractor is not None:
                         try:
-                            d["pattern"][-1] = score_extractor(d["response"][-1])
+                            d.pattern[-1] = score_extractor(d.response[-1])
                         except Exception as e:
-                            d["error_messages"][-1].append(str(e))
+                            d.error_messages[-1].append(str(e))
                             retry_count += 1
                             sleep = self.async_request_interval
                             continue
                     break
 
-            if turn < len(d["prompt"]) - 1:
+            if turn < len(d.prompt) - 1:
                 await asyncio.sleep(self.async_request_interval)
 
         return d
 
-    def update_sampling_params(self, sampling_params: dict[str, Any]) -> dict[str, Any]:
+    def update_sampling_params(self, sampling_params: dict[str, int | float]) -> dict[str, int | float]:
         if self.model_name.startswith("gpt-5"):
             if "max_tokens" in sampling_params:
                 sampling_params["max_completion_tokens"] = sampling_params.pop("max_tokens")
@@ -174,11 +160,11 @@ class OpenAI(BaseClient):
 
     def __call__(
         self,
-        data: list[dict[str, Any]],
+        data: list[DatasetItem],
         score_extractor: BaseScoreExtractor | None = None,
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] | DictConfig | None = None,
-    ) -> list[dict[str, Any]]:
+        sampling_params: dict[str, int | float | None] | DictConfig | None = None,
+    ) -> list[DatasetItem]:
         if sampling_params is None:
             sampling_params = {}
 
@@ -238,8 +224,11 @@ class BedrockAnthropic(AzureOpenAI):
         prompt: list[str],
         response: list[str | None],
         system_prompt: str | None = None,
-        sampling_params: dict[str, Any] = {},
+        sampling_params: dict[str, int | float] = None,
     ) -> str:
+        if sampling_params is None:
+            sampling_params = {}
+
         messages = await asyncio.to_thread(self.get_messages, prompt, response)
 
         sampling_params = dict(sampling_params)

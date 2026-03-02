@@ -1,7 +1,7 @@
 from omegaconf import DictConfig
 
-from llm_jp_judge.dashboard.base import BaseDashboard
-from llm_jp_judge.dashboard.wandb import WandB
+from src.llm_jp_judge.dashboard.base import BaseDashboard
+from src.llm_jp_judge.dashboard.wandb import WandB
 
 
 def load_dashboard(cfg: DictConfig, name: str = None, **kwargs) -> BaseDashboard:

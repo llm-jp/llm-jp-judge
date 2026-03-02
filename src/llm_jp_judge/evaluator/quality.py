@@ -2,10 +2,9 @@ import json
 import logging
 import re
 from collections import defaultdict
-from copy import deepcopy
-from typing import Any
 
-from llm_jp_judge.evaluator.base import BaseEvaluator
+from src.llm_jp_judge.dataset.quality import QualityDatasetItem, QualityDatasetItemForEvaluation
+from src.llm_jp_judge.evaluator.base import BaseEvaluator, BaseScoreExtractor
 
 
 PROMPT_TEMPLATE = """[指示]
@@ -48,10 +47,7 @@ METRICS = ["正確性", "流暢性", "詳細性", "関連性", "総合評価"]
 SCORE_REGEX = f"({'|'.join(METRICS)}):\s?\[\[([1-5])\]\]"
 
 
-class QualityScoreExtractor:
-    def __init__(self, regex: str):
-        self.regex = regex
-
+class QualityScoreExtractor(BaseScoreExtractor):
     def __call__(self, text: str) -> dict[str, int]:
         scores = {}
         for metric, score in re.findall(self.regex, text):
@@ -66,7 +62,7 @@ class QualityScoreExtractor:
 
 
 class QualityEvaluator(BaseEvaluator):
-    def log_raw_outputs(self, raw_outputs: list[dict[str, Any]]):
+    def log_raw_outputs(self, raw_outputs: list[QualityDatasetItemForEvaluation]):
         if self.dashboard is None:
             return
 
@@ -80,31 +76,32 @@ class QualityEvaluator(BaseEvaluator):
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
-            if raw_output.get("pattern") is None:
+            if raw_output.pattern is None:
                 scores = {metric: None for metric in METRICS}
             else:
-                scores = [raw_output["pattern"].get(metric) for metric in METRICS]
+                scores = [raw_output.pattern[0].get(metric) for metric in METRICS]
             table.append(
                 [
-                    raw_output["ID"],
-                    raw_output["prompt"],
-                    raw_output["response"],
+                    raw_output.ID,
+                    raw_output.prompt[0],
+                    raw_output.response[0],
                     *scores,
-                    json.dumps(raw_output["generate_errors"], ensure_ascii=False),
-                    json.dumps(raw_output["error_messages"], ensure_ascii=False),
+                    json.dumps(raw_output.generate_errors[0], ensure_ascii=False),
+                    json.dumps(raw_output.error_messages[0], ensure_ascii=False),
                 ]
             )
         self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)
 
-    def __call__(self, responses: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str, float]]:
+    def __call__(self, responses: list[QualityDatasetItem]) -> tuple[dict[str, float], dict[str, float]]:
         data = []
         for res in responses:
-            d = deepcopy(res)
-            d["generate_response"] = d["response"]
-            d["generate_errors"] = d.get("error_messages", [])
-            d["prompt"] = PROMPT_TEMPLATE.format(
-                question=d["prompt"],
-                response=d["response"],
+            d = QualityDatasetItemForEvaluation(
+                ID=res.ID,
+                prompt=[PROMPT_TEMPLATE.format(question=res.prompt, response=res.response)],
+                text=res.text,
+                generate_prompt=res.prompt,
+                generate_response=res.response,
+                generate_errors=res.error_messages,
             )
             data.append(d)
 
@@ -118,9 +115,9 @@ class QualityEvaluator(BaseEvaluator):
 
         scores = defaultdict(list)
         for raw_output in raw_outputs:
-            if raw_output.get("pattern") is None:
+            if raw_output.pattern[0] is None:
                 continue
-            for metric, score in raw_output["pattern"].items():
+            for metric, score in raw_output.pattern[0].items():
                 scores[metric].append(score)
 
         self.log_raw_outputs(raw_outputs)

@@ -1,16 +1,14 @@
-from typing import Any
-
-from llm_jp_judge.client.base import BaseClient
-from llm_jp_judge.dashboard.base import BaseDashboard
-from llm_jp_judge.evaluator.mt_bench import MTBenchEvaluator
-from llm_jp_judge.evaluator.quality import QualityEvaluator
-from llm_jp_judge.evaluator.safety import SafetyEvaluator
+from src.llm_jp_judge.client.base import BaseClient
+from src.llm_jp_judge.dashboard.base import BaseDashboard
+from src.llm_jp_judge.evaluator.mt_bench import MTBenchEvaluator
+from src.llm_jp_judge.evaluator.quality import QualityEvaluator
+from src.llm_jp_judge.evaluator.safety import SafetyEvaluator
 
 
 def load_evaluator(
     client: BaseClient,
     dashboard: BaseDashboard,
-    metadata: dict[str, Any] | None = None,
+    metadata: dict[str, str] | None = None,
     metric: str = "abs_quality",
     **kwargs,
 ):

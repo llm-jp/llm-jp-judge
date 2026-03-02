@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Any
 
 from omegaconf import DictConfig
 
@@ -27,5 +26,7 @@ class BaseClient:
 
         return messages
 
-    def fill_sampling_params(self, sampling_params: dict[str, Any] | DictConfig) -> dict[str, Any]:
+    def fill_sampling_params(
+        self, sampling_params: dict[str, int | float | None] | DictConfig
+    ) -> dict[str, int | float]:
         return {k: v for k, v in sampling_params.items() if v is not None}

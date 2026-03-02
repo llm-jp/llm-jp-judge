@@ -4,7 +4,7 @@ import omegaconf
 import wandb
 from omegaconf import DictConfig
 
-from llm_jp_judge.dashboard.base import BaseDashboard
+from src.llm_jp_judge.dashboard.base import BaseDashboard
 
 
 class WandB(BaseDashboard):

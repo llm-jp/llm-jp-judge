@@ -5,10 +5,10 @@ from collections import defaultdict
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from llm_jp_judge.client import load_client
-from llm_jp_judge.client.base import BaseClient
-from llm_jp_judge.dataset import load_dataset
-from llm_jp_judge.utils.data import save_json, save_jsonl
+from src.llm_jp_judge.client import load_client
+from src.llm_jp_judge.client.base import BaseClient
+from src.llm_jp_judge.dataset.utils import load_dataset
+from src.llm_jp_judge.utils.data import save_json, save_jsonl
 
 
 def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
@@ -30,8 +30,8 @@ def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
 
         categorized_data = defaultdict(list)
         for i, d in enumerate(data):
-            d["original_index"] = i
-            categorized_data[d["category"]].append(d)
+            d.original_index = i
+            categorized_data[d.category].append(d)
 
         responses = []
         for category, category_data in categorized_data.items():
@@ -44,9 +44,9 @@ def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
                 system_prompt=benchmark_cfg.system_prompt,
                 sampling_params=sampling_params,
             )
-        responses = sorted(responses, key=lambda x: x["original_index"])
+        responses = sorted(responses, key=lambda x: x.original_index)
         for res in responses:
-            del res["original_index"]
+            res.original_index = None
 
     else:
         logging.info(f"Running generate on {len(data)} samples")
@@ -56,12 +56,12 @@ def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
             sampling_params=benchmark_cfg.sampling_params,
         )
 
-    success = [res["response"] is not None for res in responses]
+    success = [all(response_text is not None for response_text in res.response) for res in responses]
     success_rate = sum(success) / len(success) * 100
     logging.info(f"Inference success rate: {success_rate:.2f}%")
 
     logging.info(f"Saving responses to {output_path}")
-    save_jsonl(output_path, responses)
+    save_jsonl(output_path, (res.model_dump(exclude={"original_index"}) for res in responses))
 
 
 def save_metadata(cfg: DictConfig):

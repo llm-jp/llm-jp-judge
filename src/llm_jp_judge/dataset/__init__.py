@@ -1,19 +1,17 @@
-from llm_jp_judge.dataset.mt_bench import load_mt_bench
-from llm_jp_judge.dataset.quality import load_quality
-from llm_jp_judge.dataset.safety import load_safety
+from pydantic import BaseModel
 
 
-def load_dataset(name: str, path: str, size: int | None = None) -> list[dict[str, str | list[str]]]:
-    if name == "quality":
-        dataset = load_quality(path)
-    elif name == "safety":
-        dataset = load_safety(path)
-    elif name in ["mt_bench", "ja_mt_bench"]:
-        dataset = load_mt_bench(path)
-    else:
-        raise ValueError(f"Unknown dataset: {name}")
+class DatasetItem(BaseModel):
+    ID: int | str
+    prompt: list[str]
+    response: list[str | None] = []
+    error_messages: list[list[str]] = []
+    pattern: list[str | dict[str, int] | None] = []
+    original_index: int | None = None
 
-    if size is None:
-        return dataset
 
-    return dataset[:size]
+class DatasetItemForEvaluation(DatasetItem):
+    generate_prompt: list[str] = []
+    generate_response: list[str | None] = []
+    generate_errors: list[list[str]] = []
+    metric: str | None = None

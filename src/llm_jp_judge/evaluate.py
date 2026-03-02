@@ -1,25 +1,26 @@
 import glob
 import logging
 import os
-from typing import Any
 
 import hydra
 from omegaconf import DictConfig
 
-from llm_jp_judge.client import load_client
-from llm_jp_judge.dashboard import load_dashboard
-from llm_jp_judge.evaluator import load_evaluator
-from llm_jp_judge.utils.data import load_json, load_jsonl
+from src.llm_jp_judge.client import load_client
+from src.llm_jp_judge.dashboard import load_dashboard
+from src.llm_jp_judge.dataset import DatasetItem
+from src.llm_jp_judge.dataset.utils import load_raw_output
+from src.llm_jp_judge.evaluator import load_evaluator
+from src.llm_jp_judge.utils.data import load_json
 
 
-def load_metadata(cfg: DictConfig) -> dict[str, Any]:
+def load_metadata(cfg: DictConfig) -> dict[str, str]:
     input_dir = hydra.utils.to_absolute_path(cfg.input.dir)
     metadata_path = os.path.join(input_dir, "metadata.json")
     assert os.path.exists(metadata_path), f"Metadata not found at {metadata_path}"
     return load_json(metadata_path)
 
 
-def load_raw_outputs(cfg: DictConfig) -> dict[str, list[dict[str, Any]]]:
+def load_raw_outputs(cfg: DictConfig) -> dict[str, list[DatasetItem]]:
     input_dir = hydra.utils.to_absolute_path(cfg.input.dir)
     output_paths = glob.glob(os.path.join(input_dir, "*.jsonl"))
 
@@ -28,7 +29,7 @@ def load_raw_outputs(cfg: DictConfig) -> dict[str, list[dict[str, Any]]]:
         assert os.path.exists(output_path), f"Responses not found at {output_path}"
 
         benchmark_name = os.path.splitext(os.path.basename(output_path))[0]
-        raw_outputs[benchmark_name] = load_jsonl(output_path)
+        raw_outputs[benchmark_name] = load_raw_output(benchmark_name, output_path)
 
     assert len(raw_outputs) > 0, f"No raw outputs (.jsonl) found in {cfg.input.dir}"
     return raw_outputs

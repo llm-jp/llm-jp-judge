@@ -1,7 +1,7 @@
 import hydra
 from omegaconf import DictConfig
 
-import llm_jp_judge.generate as generate
+import src.llm_jp_judge.generate as generate
 
 
 @hydra.main(config_path="./config", config_name="config")
