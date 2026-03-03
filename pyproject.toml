@@ -12,6 +12,7 @@ dependencies = [
     "hydra-core>=1.3.2",
     "numpy<2.3",  # for compatibility with vllm (as of v0.15.1)
     "openai>=2.21.0",
+    "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "transformers<5",  # for compatibility with vllm (as of v0.15.1)
     "wandb>=0.25.0",

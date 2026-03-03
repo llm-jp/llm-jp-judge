@@ -1,10 +1,11 @@
 import hydra
+from omegaconf import DictConfig
 
-from . import generate
+import src.llm_jp_judge.generate as generate
 
 
 @hydra.main(config_path="./config", config_name="config")
-def main(cfg):
+def main(cfg: DictConfig):
     generate.main(cfg)
 
 

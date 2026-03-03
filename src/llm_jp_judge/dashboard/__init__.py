@@ -1,8 +1,10 @@
-from .base import BaseDashboard
-from .wandb import WandB
+from omegaconf import DictConfig
+
+from src.llm_jp_judge.dashboard.base import BaseDashboard
+from src.llm_jp_judge.dashboard.wandb import WandB
 
 
-def load_dashboard(cfg, name=None, **kwargs):
+def load_dashboard(cfg: DictConfig, name: str = None, **kwargs) -> BaseDashboard:
     if name is None:
         return BaseDashboard()
     elif name == "wandb":

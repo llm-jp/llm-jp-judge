@@ -1,24 +1,26 @@
 import glob
 import logging
 import os
-import re
 
 import hydra
+from omegaconf import DictConfig
 
-from .client import load_client
-from .dashboard import load_dashboard
-from .evaluator import load_evaluator
-from .utils.data import load_json, load_jsonl
+from src.llm_jp_judge.client import load_client
+from src.llm_jp_judge.dashboard import load_dashboard
+from src.llm_jp_judge.dataset import DatasetItem
+from src.llm_jp_judge.dataset.utils import load_raw_output
+from src.llm_jp_judge.evaluator import load_evaluator
+from src.llm_jp_judge.utils.data import load_json
 
 
-def load_metadata(cfg):
+def load_metadata(cfg: DictConfig) -> dict[str, str]:
     input_dir = hydra.utils.to_absolute_path(cfg.input.dir)
     metadata_path = os.path.join(input_dir, "metadata.json")
     assert os.path.exists(metadata_path), f"Metadata not found at {metadata_path}"
     return load_json(metadata_path)
 
 
-def load_raw_outputs(cfg):
+def load_raw_outputs(cfg: DictConfig) -> dict[str, list[DatasetItem]]:
     input_dir = hydra.utils.to_absolute_path(cfg.input.dir)
     output_paths = glob.glob(os.path.join(input_dir, "*.jsonl"))
 
@@ -27,21 +29,21 @@ def load_raw_outputs(cfg):
         assert os.path.exists(output_path), f"Responses not found at {output_path}"
 
         benchmark_name = os.path.splitext(os.path.basename(output_path))[0]
-        raw_outputs[benchmark_name] = load_jsonl(output_path)
+        raw_outputs[benchmark_name] = load_raw_output(benchmark_name, output_path)
 
     assert len(raw_outputs) > 0, f"No raw outputs (.jsonl) found in {cfg.input.dir}"
     return raw_outputs
 
 
 @hydra.main(config_path="./config", config_name="evaluate")
-def main(cfg):
-    logging.info(f"Loading metadata")
+def main(cfg: DictConfig):
+    logging.info("Loading metadata")
     metadata = load_metadata(cfg)
 
-    logging.info(f"Loading raw outputs")
+    logging.info("Loading raw outputs")
     raw_outputs = load_raw_outputs(cfg)
 
-    logging.info(f"Loading dashboard")
+    logging.info("Loading dashboard")
     dashboard = load_dashboard(cfg, **cfg.get("dashboard", {}))
 
     logging.info(f"Loading client: {cfg.client.model_name}")
@@ -51,25 +53,19 @@ def main(cfg):
     for benchmark_name, data in raw_outputs.items():
         logging.info(f"Evaluating benchmark: {benchmark_name}")
         benchmark_cfg = cfg.benchmark[benchmark_name]
-        evaluator = load_evaluator(
-            client, dashboard, metadata=metadata, **benchmark_cfg
-        )
+        evaluator = load_evaluator(client, dashboard, metadata=metadata, **benchmark_cfg)
         scores, error_rates = evaluator(data)
         all_scores.update(scores)
         all_error_rates.update(error_rates)
 
     metrics = list(all_scores.keys())
     columns = ["generation_model", "evaluation_model"] + metrics
-    row = [metadata["model_name"], cfg.client.model_name] + [
-        all_scores[metric] for metric in metrics
-    ]
+    row = [metadata["model_name"], cfg.client.model_name] + [all_scores[metric] for metric in metrics]
     dashboard.log_table("score_table", columns=columns, data=[row])
 
     header = list(all_error_rates.keys())
     columns = ["generation_model", "evaluation_model"] + header
-    row = [metadata["model_name"], cfg.client.model_name] + [
-        all_error_rates[key] for key in header
-    ]
+    row = [metadata["model_name"], cfg.client.model_name] + [all_error_rates[key] for key in header]
     dashboard.log_table("evaluate_error_rate_table", columns=columns, data=[row])
 
     if cfg.output.dir is not None:

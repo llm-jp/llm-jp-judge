@@ -1,8 +1,15 @@
 from copy import deepcopy
 
+from omegaconf import DictConfig
+
 
 class BaseClient:
-    def get_messages(self, prompt, response, system_prompt=None):
+    def get_messages(
+        self,
+        prompt: list[str],
+        response: list[str | None],
+        system_prompt: str | None = None,
+    ) -> list[dict[str, str | None]]:
         if self.disable_system_prompt and system_prompt is not None:
             prompt = deepcopy(prompt)
             prompt[0] = f"{system_prompt}\n\n{prompt[0]}"
@@ -19,5 +26,7 @@ class BaseClient:
 
         return messages
 
-    def fill_sampling_params(self, sampling_params):
+    def fill_sampling_params(
+        self, sampling_params: dict[str, int | float | None] | DictConfig
+    ) -> dict[str, int | float]:
         return {k: v for k, v in sampling_params.items() if v is not None}

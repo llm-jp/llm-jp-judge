@@ -1,25 +1,36 @@
 import json
 import logging
 from collections import defaultdict
-from copy import deepcopy
 
-from ..utils.data import load_jsonl
-from .base import BaseEvaluator, BaseScoreExtractor
+from omegaconf import DictConfig
+
+from src.llm_jp_judge.client.base import BaseClient
+from src.llm_jp_judge.dashboard.base import BaseDashboard
+from src.llm_jp_judge.dataset.mt_bench import MTBenchDatasetItem, MTBenchDatasetItemForEvaluation
+from src.llm_jp_judge.evaluator.base import BaseEvaluator, BaseScoreExtractor
+from src.llm_jp_judge.utils.data import load_jsonl
 
 
 class MTBenchEvaluator(BaseEvaluator):
     def __init__(
         self,
-        client,
-        dashboard,
-        metadata={},
-        name="mt_bench",
-        mode="single",
-        prompt_template=None,
-        sampling_params={},
-        reference={"path": None, "categories": None},
+        client: BaseClient,
+        dashboard: BaseDashboard,
+        metadata: dict[str, str] | None = None,
+        name: str = "mt_bench",
+        mode: str = "single",
+        prompt_template: dict[str, dict[str, str]] | DictConfig | None = None,
+        sampling_params: dict[str, dict[int | float | None]] | DictConfig | None = None,
+        reference: dict[str, str | list[str]] | DictConfig | None = None,
         **kwargs,
     ):
+        if metadata is None:
+            metadata = {}
+        if sampling_params is None:
+            sampling_params = {}
+        if reference is None:
+            reference = {"path": None, "categories": None}
+
         self.client = client
         self.dashboard = dashboard
         self.metadata = metadata
@@ -41,62 +52,66 @@ class MTBenchEvaluator(BaseEvaluator):
         self.reference_categories = reference["categories"]
         self.sampling_params = sampling_params
 
-    def conv_to_query(self, response, use_reference=False, multi_turn=False):
-        query = deepcopy(response)
-        query["generate_response"] = query["response"]
-        query["generate_errors"] = query.get("error_messages", [])
+    def conv_to_query(
+        self, response: MTBenchDatasetItem, use_reference: bool = False, multi_turn: bool = False
+    ) -> MTBenchDatasetItemForEvaluation:
         if multi_turn:
-            query["turn"] = 2
+            turn = 2
             kwargs = {
-                "question_1": response["prompt"][0],
-                "question_2": response["prompt"][1],
-                "answer_1": response["response"][0],
-                "answer_2": response["response"][1],
+                "question_1": response.prompt[0],
+                "question_2": response.prompt[1],
+                "answer_1": response.response[0],
+                "answer_2": response.response[1],
             }
             if use_reference:
-                query["metric"] = "single-math-v1-multi-turn"
-                query["use_reference"] = True
-                kwargs["ref_answer_1"] = self.references[response["ID"]][0]
-                kwargs["ref_answer_2"] = self.references[response["ID"]][1]
+                metric = "single-math-v1-multi-turn"
+                kwargs["ref_answer_1"] = self.references[response.ID][0]
+                kwargs["ref_answer_2"] = self.references[response.ID][1]
             else:
-                query["use_reference"] = False
-                query["metric"] = "single-v1-multi-turn"
+                metric = "single-v1-multi-turn"
         else:
-            query["turn"] = 1
+            turn = 1
             kwargs = {
-                "question": response["prompt"][0],
-                "answer": response["response"][0],
+                "question": response.prompt[0],
+                "answer": response.response[0],
             }
             if use_reference:
-                query["use_reference"] = True
-                query["metric"] = "single-math-v1"
-                kwargs["ref_answer_1"] = self.references[response["ID"]][0]
+                metric = "single-math-v1"
+                kwargs["ref_answer_1"] = self.references[response.ID][0]
             else:
-                query["use_reference"] = False
-                query["metric"] = "single-v1"
+                metric = "single-v1"
 
-        prompt_template = self.prompt_template[query["metric"]]["prompt_template"]
-        query["prompt"] = prompt_template.format(**kwargs)
-        query["system_prompt"] = self.prompt_template[query["metric"]]["system_prompt"]
+        prompt_template = self.prompt_template[metric]["prompt_template"]
+        prompt = prompt_template.format(**kwargs)
+        system_prompt = self.prompt_template[metric]["system_prompt"]
+
+        query = MTBenchDatasetItemForEvaluation(
+            ID=response.ID,
+            prompt=[prompt],
+            category=response.category,
+            generate_response=response.response,
+            generate_errors=response.error_messages,
+            metric=metric,
+            turn=turn,
+            use_reference=use_reference,
+            system_prompt=system_prompt,
+        )
+
         return query
 
-    def calc_score(self, raw_outputs):
-        raw_outputs = [r for r in raw_outputs if r.get("pattern") is not None]
+    def calc_score(self, raw_outputs: list[MTBenchDatasetItem]) -> float:
+        raw_outputs = [r for r in raw_outputs if r.pattern[0] is not None]
 
         # Evaluate average score
-        ave_score = sum([int(r["pattern"]) for r in raw_outputs]) / len(raw_outputs)
+        ave_score = sum([int(r.pattern[0]) for r in raw_outputs]) / len(raw_outputs)
         logging.info(f"Average score: {ave_score:.2f}")
 
         # Evaluate turn-wise scores
-        t1_raw_outputs = [r for r in raw_outputs if r["turn"] == 1]
-        t2_raw_outputs = [r for r in raw_outputs if r["turn"] == 2]
+        t1_raw_outputs = [r for r in raw_outputs if r.turn == 1]
+        t2_raw_outputs = [r for r in raw_outputs if r.turn == 2]
 
-        t1_score = sum([int(r["pattern"]) for r in t1_raw_outputs]) / len(
-            t1_raw_outputs
-        )
-        t2_score = sum([int(r["pattern"]) for r in t2_raw_outputs]) / len(
-            t2_raw_outputs
-        )
+        t1_score = sum([int(r.pattern[0]) for r in t1_raw_outputs]) / len(t1_raw_outputs)
+        t2_score = sum([int(r.pattern[0]) for r in t2_raw_outputs]) / len(t2_raw_outputs)
 
         logging.info(f"Average score (turn 1): {t1_score:.2f}")
         logging.info(f"Average score (turn 2): {t2_score:.2f}")
@@ -107,14 +122,12 @@ class MTBenchEvaluator(BaseEvaluator):
         row.append(t1_score)
         row.append(t2_score)
         row.append(ave_score)
-        self.dashboard.log_table(
-            f"{self.name}_turn_score_table", columns=header, data=[row]
-        )
+        self.dashboard.log_table(f"{self.name}_turn_score_table", columns=header, data=[row])
 
         # Evaluate category-wise scores
         categ_raw_outputs = defaultdict(list)
         for raw_output in raw_outputs:
-            categ_raw_outputs[raw_output["category"]].append(int(raw_output["pattern"]))
+            categ_raw_outputs[raw_output.category].append(int(raw_output.pattern[0]))
 
         header = ["generation_model", "evaluation_model"]
         row = [self.metadata.get("model_name", "N/A"), self.client.model_name]
@@ -126,13 +139,11 @@ class MTBenchEvaluator(BaseEvaluator):
 
         header.append("average")
         row.append(ave_score)
-        self.dashboard.log_table(
-            f"{self.name}_category_score_table", columns=header, data=[row]
-        )
+        self.dashboard.log_table(f"{self.name}_category_score_table", columns=header, data=[row])
 
         return ave_score
 
-    def log_raw_outputs(self, raw_outputs):
+    def log_raw_outputs(self, raw_outputs: list[MTBenchDatasetItemForEvaluation]):
         if self.dashboard is None:
             return
 
@@ -151,25 +162,28 @@ class MTBenchEvaluator(BaseEvaluator):
         ]
         data = [
             [
-                score["ID"],
-                score["category"],
-                score["metric"],
-                score["turn"],
-                score["use_reference"],
-                score["system_prompt"],
-                score["prompt"],
-                score["response"],
-                score["pattern"],
-                json.dumps(score["generate_errors"], ensure_ascii=False),
-                json.dumps(score["error_messages"], ensure_ascii=False),
+                score.ID,
+                score.category,
+                score.metric,
+                score.turn,
+                score.use_reference,
+                score.system_prompt,
+                score.prompt[0],
+                score.response[0],
+                score.pattern[0],
+                json.dumps(score.generate_errors, ensure_ascii=False),
+                json.dumps(score.error_messages[0], ensure_ascii=False),
             ]
             for score in raw_outputs
         ]
-        return self.dashboard.log_table(
-            f"{self.name}_raw_output_table", columns=columns, data=data
-        )
+        self.dashboard.log_table(f"{self.name}_raw_output_table", columns=columns, data=data)
 
-    def evaluate(self, responses, use_reference=False, multi_turn=False):
+    def evaluate(
+        self,
+        responses: list[MTBenchDatasetItem],
+        use_reference: bool = False,
+        multi_turn: bool = False,
+    ) -> list[MTBenchDatasetItemForEvaluation]:
         if len(responses) == 0:
             return []
 
@@ -178,10 +192,8 @@ class MTBenchEvaluator(BaseEvaluator):
             query = self.conv_to_query(response, use_reference, multi_turn)
             queries.append(query)
 
-        metric = queries[-1]["metric"]
-        score_extractor = BaseScoreExtractor(
-            regex=self.prompt_template[metric]["regex"]
-        )
+        metric = queries[-1].metric
+        score_extractor = BaseScoreExtractor(regex=self.prompt_template[metric]["regex"])
         responses = self.client(
             queries,
             score_extractor=score_extractor,
@@ -190,20 +202,14 @@ class MTBenchEvaluator(BaseEvaluator):
         )
         return responses
 
-    def __call__(self, responses):
-        questions_ref = [
-            r for r in responses if r["category"] in self.reference_categories
-        ]
-        questions = [
-            r for r in responses if r["category"] not in self.reference_categories
-        ]
+    def __call__(self, responses: list[MTBenchDatasetItem]) -> tuple[dict[str, float], dict[str, float]]:
+        questions_ref = [r for r in responses if r.category in self.reference_categories]
+        questions = [r for r in responses if r.category not in self.reference_categories]
 
         raw_outputs = []
         # Single-turn evaluation
         raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=False)
-        raw_outputs += self.evaluate(
-            questions_ref, use_reference=True, multi_turn=False
-        )
+        raw_outputs += self.evaluate(questions_ref, use_reference=True, multi_turn=False)
 
         # Multi-turn evaluation
         raw_outputs += self.evaluate(questions, use_reference=False, multi_turn=True)
