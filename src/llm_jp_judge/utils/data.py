@@ -1,5 +1,6 @@
 import json
 import os
+from collections.abc import Iterable
 from typing import Any
 
 import hydra
@@ -27,7 +28,7 @@ def save_json(path: str, data: Any):
         json.dump(data, f, ensure_ascii=False)
 
 
-def save_jsonl(path: str, data: list[Any]):
+def save_jsonl(path: str, data: Iterable[Any]):
     path = hydra.utils.to_absolute_path(path)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:

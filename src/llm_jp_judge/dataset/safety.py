@@ -1,8 +1,9 @@
 import json
 
 import hydra
+from pydantic import BaseModel
 
-from src.llm_jp_judge.dataset import BaseModel, DatasetItem, DatasetItemForEvaluation
+from . import DatasetItem, DatasetItemForEvaluation
 
 
 class SafetyDatasetItemMixin(BaseModel):

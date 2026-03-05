@@ -1,16 +1,17 @@
 import glob
 import logging
 import os
+from collections.abc import Sequence
 
 import hydra
 from omegaconf import DictConfig
 
-from src.llm_jp_judge.client import load_client
-from src.llm_jp_judge.dashboard import load_dashboard
-from src.llm_jp_judge.dataset import DatasetItem
-from src.llm_jp_judge.dataset.utils import load_raw_output
-from src.llm_jp_judge.evaluator import load_evaluator
-from src.llm_jp_judge.utils.data import load_json
+from .client import load_client
+from .dashboard import load_dashboard
+from .dataset import DatasetItem
+from .dataset.utils import load_raw_output
+from .evaluator import load_evaluator
+from .utils.data import load_json
 
 
 def load_metadata(cfg: DictConfig) -> dict[str, str]:
@@ -20,11 +21,11 @@ def load_metadata(cfg: DictConfig) -> dict[str, str]:
     return load_json(metadata_path)
 
 
-def load_raw_outputs(cfg: DictConfig) -> dict[str, list[DatasetItem]]:
+def load_raw_outputs(cfg: DictConfig) -> dict[str, Sequence[DatasetItem]]:
     input_dir = hydra.utils.to_absolute_path(cfg.input.dir)
     output_paths = glob.glob(os.path.join(input_dir, "*.jsonl"))
 
-    raw_outputs = {}
+    raw_outputs: dict[str, Sequence[DatasetItem]] = {}
     for output_path in output_paths:
         assert os.path.exists(output_path), f"Responses not found at {output_path}"
 

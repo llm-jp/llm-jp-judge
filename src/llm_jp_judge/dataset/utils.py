@@ -1,16 +1,19 @@
-from src.llm_jp_judge.dataset import DatasetItem
-from src.llm_jp_judge.dataset.mt_bench import MTBenchDatasetItem, load_mt_bench, load_mt_bench_raw_output
-from src.llm_jp_judge.dataset.quality import QualityDatasetItem, load_quality, load_quality_raw_output
-from src.llm_jp_judge.dataset.safety import SafetyDatasetItem, load_safety, load_safety_raw_output
+from collections.abc import Sequence
+
+from . import DatasetItem
+from .mt_bench import load_mt_bench, load_mt_bench_raw_output
+from .quality import load_quality, load_quality_raw_output
+from .safety import load_safety, load_safety_raw_output
 
 
-def load_dataset(name: str, path: str, size: int | None = None) -> list[DatasetItem]:
+def load_dataset(name: str, path: str, size: int | None = None) -> Sequence[DatasetItem]:
+    dataset: Sequence[DatasetItem]
     if name == "quality":
-        dataset: list[QualityDatasetItem] = load_quality(path)
+        dataset = load_quality(path)
     elif name == "safety":
-        dataset: list[SafetyDatasetItem] = load_safety(path)
+        dataset = load_safety(path)
     elif name in ["mt_bench", "ja_mt_bench"]:
-        dataset: list[MTBenchDatasetItem] = load_mt_bench(path)
+        dataset = load_mt_bench(path)
     else:
         raise ValueError(f"Unknown dataset: {name}")
 
@@ -20,13 +23,14 @@ def load_dataset(name: str, path: str, size: int | None = None) -> list[DatasetI
     return dataset[:size]
 
 
-def load_raw_output(name: str, path: str) -> list[DatasetItem]:
+def load_raw_output(name: str, path: str) -> Sequence[DatasetItem]:
+    dataset: Sequence[DatasetItem]
     if name == "quality":
-        dataset: list[QualityDatasetItem] = load_quality_raw_output(path)
+        dataset = load_quality_raw_output(path)
     elif name == "safety":
-        dataset: list[SafetyDatasetItem] = load_safety_raw_output(path)
+        dataset = load_safety_raw_output(path)
     elif name in ["mt_bench", "ja_mt_bench"]:
-        dataset: list[MTBenchDatasetItem] = load_mt_bench_raw_output(path)
+        dataset = load_mt_bench_raw_output(path)
     else:
         raise ValueError(f"Unknown dataset for raw output: {name}")
 

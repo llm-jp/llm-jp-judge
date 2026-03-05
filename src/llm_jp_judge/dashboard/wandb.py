@@ -1,10 +1,10 @@
-from typing import Any
+from typing import Any, cast
 
 import omegaconf
 import wandb
 from omegaconf import DictConfig
 
-from src.llm_jp_judge.dashboard.base import BaseDashboard
+from .base import BaseDashboard
 
 
 class WandB(BaseDashboard):
@@ -16,7 +16,9 @@ class WandB(BaseDashboard):
         assert entity is not None, "dashboard.entity is required for dashboard=wandb"
         assert project is not None, "dashboard.project is required for dashboard=wandb"
 
-        wandb.config = omegaconf.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)
+        wandb.config = cast(
+            wandb.sdk.wandb_config.Config, omegaconf.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)
+        )
         self.run = wandb.init(project=project, entity=entity, name=run_name)
 
     def close(self):

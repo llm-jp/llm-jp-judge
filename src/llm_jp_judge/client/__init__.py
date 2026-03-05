@@ -1,5 +1,5 @@
-from src.llm_jp_judge.client.base import BaseClient
-from src.llm_jp_judge.client.remote import AzureOpenAI, BedrockAnthropic, OpenAI
+from .base import BaseClient
+from .remote import AzureOpenAI, BedrockAnthropic, OpenAI
 
 
 def load_client(name: str = "azure", **kwargs) -> BaseClient:

@@ -1,14 +1,17 @@
 import logging
 import os
 from collections import defaultdict
+from typing import Sequence
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from src.llm_jp_judge.client import load_client
-from src.llm_jp_judge.client.base import BaseClient
-from src.llm_jp_judge.dataset.utils import load_dataset
-from src.llm_jp_judge.utils.data import save_json, save_jsonl
+from .client import load_client
+from .client.base import BaseClient
+from .dataset import DatasetItem
+from .dataset.mt_bench import MTBenchDatasetItem
+from .dataset.utils import load_dataset
+from .utils.data import save_json, save_jsonl
 
 
 def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
@@ -23,19 +26,23 @@ def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
     logging.info(f"Loading dataset: {benchmark_cfg.name}")
     data = load_dataset(benchmark_cfg.name, benchmark_cfg.dataset.path, benchmark_cfg.dataset.size)
 
+    responses: Sequence[DatasetItem]
     if (
         "category_sampling_params" in benchmark_cfg
     ):  # データカテゴリー毎にサンプリングパラメータを設定する場合: MT-Bench用
         category_sampling_params = OmegaConf.to_container(benchmark_cfg.category_sampling_params, resolve=True)
+        assert isinstance(category_sampling_params, dict)
 
-        categorized_data = defaultdict(list)
+        categorized_data: dict[str, list[DatasetItem]] = defaultdict(list)
         for i, d in enumerate(data):
+            assert isinstance(d, MTBenchDatasetItem)
             d.original_index = i
             categorized_data[d.category].append(d)
 
         responses = []
         for category, category_data in categorized_data.items():
             sampling_params = OmegaConf.to_container(benchmark_cfg.sampling_params, resolve=True)
+            assert isinstance(sampling_params, dict)
             sampling_params.update(category_sampling_params.get(category, {}))
 
             logging.info(f"Running generate on {len(category_data)} samples in category: {category}")
@@ -44,7 +51,12 @@ def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
                 system_prompt=benchmark_cfg.system_prompt,
                 sampling_params=sampling_params,
             )
-        responses = sorted(responses, key=lambda x: x.original_index)
+
+        def sort_key(x: DatasetItem) -> int:
+            assert x.original_index is not None
+            return x.original_index
+
+        responses = sorted(responses, key=sort_key)
         for res in responses:
             res.original_index = None
 

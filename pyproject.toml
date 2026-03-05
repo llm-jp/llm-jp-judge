@@ -22,6 +22,11 @@ dependencies = [
 vllm = [
     "vllm>=0.15.1",
 ]
+dev = [
+    "mypy>=1.19.1",
+    "ruff>=0.15.4",
+    "types-tqdm>=4.67.3.20260303",
+]
 
 [tool.ruff]
 line-length = 119
