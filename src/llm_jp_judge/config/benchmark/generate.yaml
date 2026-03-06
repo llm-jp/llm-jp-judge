@@ -25,7 +25,7 @@ safety_ja:
 mt_bench_en:
   name: "mt_bench_en"
   dataset:
-    path: ./src/llm_jp_judge/data/mt_bench/question/question-v0.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_en/question/question-v0.jsonl
     size: null
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
@@ -54,7 +54,7 @@ mt_bench_en:
 mt_bench_ja:
   name: "mt_bench_ja"
   dataset:
-    path: ./src/llm_jp_judge/data/ja_mt_bench/question/question_full-v3.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_ja/question/question_full-v3.jsonl
     size: null
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:

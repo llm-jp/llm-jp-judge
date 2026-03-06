@@ -31,7 +31,7 @@ mt_bench_en:
   metric: mt_bench
   mode: single # Currently, only the 'single' mode is supported, and 'pairwise' mode is not supported.
   reference:
-    path: ./src/llm_jp_judge/data/mt_bench/reference_answer/gpt-4-v0.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_en/reference_answer/gpt-4-v0.jsonl
     categories:
       - math
       - reasoning
@@ -47,7 +47,7 @@ mt_bench_ja:
   metric: mt_bench
   mode: single # Currently, only the 'single' mode is supported, and 'pairwise' mode is not supported.
   reference:
-    path: ./src/llm_jp_judge/data/ja_mt_bench/reference_answer/base-gpt4o-with-human-annotation-v0.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_ja/reference_answer/base-gpt4o-with-human-annotation-v0.jsonl
     categories:
       - math
       - reasoning
