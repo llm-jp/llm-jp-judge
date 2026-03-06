@@ -16,10 +16,10 @@ class MTBenchEvaluator(BaseEvaluator):
         self,
         client: BaseClient,
         dashboard: BaseDashboard,
+        prompt_template: MutableMapping,
         metadata: dict[str, str] | None = None,
         name: str = "mt_bench",
         mode: str = "single",
-        prompt_template: MutableMapping | None = None,
         sampling_params: MutableMapping | None = None,
         reference: MutableMapping | None = None,
         **kwargs,
@@ -40,8 +40,6 @@ class MTBenchEvaluator(BaseEvaluator):
             raise ValueError("Invalid mode for MTBenchEvaluator: {mode}")
         self.mode = mode
 
-        if prompt_template is None:
-            raise ValueError("prompt_template is required for MTBenchEvaluator")
         self.prompt_template = prompt_template
 
         self.references: dict[int | str, list[str]] | None = None

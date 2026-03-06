@@ -1,4 +1,6 @@
 defaults:
+  - /benchmark/prompt/evaluate@quality.prompt_template: quality
+  - /benchmark/prompt/evaluate@safety.prompt_template: safety
   - /benchmark/prompt/evaluate@mt_bench.prompt_template: mt_bench_en_prompt_v0
   - /benchmark/prompt/evaluate@ja_mt_bench.prompt_template: mt_bench_ja_prompt_v1
 
