@@ -96,7 +96,7 @@ class QualityEvaluator(BaseEvaluator):
         ) = self.calc_error_rate(raw_outputs)
 
         ave_scores = {
-            f"quality:{metric}": sum(scores) / len(scores) if len(scores) else None
+            f"{self.name}:{metric}": sum(scores) / len(scores) if len(scores) else None
             for metric, scores in scores.items()
         }
         logging.info(f"Scores: {ave_scores}")
