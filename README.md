@@ -81,8 +81,8 @@ uv run python -m src.llm_jp_judge.generate \
     client.model_name=llm-jp/llm-jp-3-1.8b-instruct \
     client.api_key=vllm \
     client.base_url=http://localhost:8000/v1 \
-    benchmark.quality.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
-    benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
+    benchmark.quality_ja.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
+    benchmark.safety_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
 # 評価
 uv run python -m src.llm_jp_judge.evaluate \

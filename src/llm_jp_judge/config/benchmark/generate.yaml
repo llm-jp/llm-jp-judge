@@ -1,6 +1,6 @@
-quality:
-  name: "quality"
-  dataset: 
+quality_ja:
+  name: "quality_ja"
+  dataset:
     path: null
     size: null # Use the first 'size' number of data entries
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
@@ -10,8 +10,8 @@ quality:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-safety:
-  name: "safety"
+safety_ja:
+  name: "safety_ja"
   dataset:
     path: null
     size: null
@@ -22,8 +22,8 @@ safety:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-mt_bench:
-  name: "mt_bench"
+mt_bench_en:
+  name: "mt_bench_en"
   dataset:
     path: ./src/llm_jp_judge/data/mt_bench/question/question-v0.jsonl
     size: null
@@ -51,8 +51,8 @@ mt_bench:
       temperature: 0.1
     humanities:
       temperature: 0.1
-ja_mt_bench:
-  name: "ja_mt_bench"
+mt_bench_ja:
+  name: "mt_bench_ja"
   dataset:
     path: ./src/llm_jp_judge/data/ja_mt_bench/question/question_full-v3.jsonl
     size: null
@@ -80,4 +80,3 @@ ja_mt_bench:
       temperature: 0.1
     humanities:
       temperature: 0.1
-    
