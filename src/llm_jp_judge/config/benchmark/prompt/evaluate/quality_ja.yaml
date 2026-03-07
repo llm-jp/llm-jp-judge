@@ -34,3 +34,9 @@ prompt_template: |-
   [AIアシスタント回答開始]
   {response}
   [AIアシスタント回答終了]
+metrics:
+  - 正確性
+  - 流暢性
+  - 詳細性
+  - 関連性
+  - 総合評価

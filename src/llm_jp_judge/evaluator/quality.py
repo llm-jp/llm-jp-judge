@@ -8,10 +8,11 @@ from ..dataset.quality import QualityDatasetItem, QualityDatasetItemForEvaluatio
 from .base import BaseEvaluator, BaseScoreExtractor
 
 
-METRICS = ["正確性", "流暢性", "詳細性", "関連性", "総合評価"]
-
-
 class QualityScoreExtractor(BaseScoreExtractor):
+    def __init__(self, regex: str, metrics: Sequence[str]):
+        super().__init__(regex)
+        self.metrics = metrics
+
     def __call__(self, text: str) -> dict[str, int]:  # type: ignore[override]
         scores = {}
         for metric, score in re.findall(self.regex, text):
@@ -19,7 +20,7 @@ class QualityScoreExtractor(BaseScoreExtractor):
                 raise ValueError("Duplicate metric")
             scores[metric] = int(score)
 
-        if set(scores.keys()) != set(METRICS):
+        if set(scores.keys()) != set(self.metrics):
             raise ValueError("Invalid score format")
 
         return scores
@@ -30,21 +31,23 @@ class QualityEvaluator(BaseEvaluator):
         if self.dashboard is None:
             return
 
+        metrics = self.prompt_template["metrics"]
+
         table = []
         header = [
             "id",
             "evaluation prompt",
             "evaluation response",
-            *METRICS,
+            *metrics,
             "generate errors",
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
             if raw_output.pattern is None:
-                scores = {metric: None for metric in METRICS}
+                scores = {metric: None for metric in metrics}
             else:
                 assert isinstance(raw_output.pattern[0], dict)
-                scores = [raw_output.pattern[0].get(metric) for metric in METRICS]
+                scores = [raw_output.pattern[0].get(metric) for metric in metrics]
             table.append(
                 [
                     raw_output.ID,
@@ -70,7 +73,7 @@ class QualityEvaluator(BaseEvaluator):
             )
             data.append(d)
 
-        score_extractor = QualityScoreExtractor(self.prompt_template["regex"])
+        score_extractor = QualityScoreExtractor(self.prompt_template["regex"], self.prompt_template["metrics"])
         raw_outputs = self.client(
             data,
             score_extractor=score_extractor,
