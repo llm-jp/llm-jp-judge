@@ -26,6 +26,7 @@ class BaseEvaluator:
         self,
         client: BaseClient,
         dashboard: BaseDashboard,
+        prompt_template: MutableMapping,
         metadata: dict[str, str] | None = None,
         name: str = "base",
         use_reference: bool = False,
@@ -39,6 +40,7 @@ class BaseEvaluator:
 
         self.client = client
         self.dashboard = dashboard
+        self.prompt_template = prompt_template
         self.name = name
         self.metadata = metadata
         self.use_reference = use_reference

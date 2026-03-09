@@ -8,11 +8,11 @@ from .safety import load_safety, load_safety_raw_output
 
 def load_dataset(name: str, path: str, size: int | None = None) -> Sequence[DatasetItem]:
     dataset: Sequence[DatasetItem]
-    if name == "quality":
+    if name == "quality_ja":
         dataset = load_quality(path)
-    elif name == "safety":
+    elif name == "safety_ja":
         dataset = load_safety(path)
-    elif name in ["mt_bench", "ja_mt_bench"]:
+    elif name in ["mt_bench_en", "mt_bench_ja"]:
         dataset = load_mt_bench(path)
     else:
         raise ValueError(f"Unknown dataset: {name}")
@@ -25,11 +25,11 @@ def load_dataset(name: str, path: str, size: int | None = None) -> Sequence[Data
 
 def load_raw_output(name: str, path: str) -> Sequence[DatasetItem]:
     dataset: Sequence[DatasetItem]
-    if name == "quality":
+    if name == "quality_ja":
         dataset = load_quality_raw_output(path)
-    elif name == "safety":
+    elif name == "safety_ja":
         dataset = load_safety_raw_output(path)
-    elif name in ["mt_bench", "ja_mt_bench"]:
+    elif name in ["mt_bench_en", "mt_bench_ja"]:
         dataset = load_mt_bench_raw_output(path)
     else:
         raise ValueError(f"Unknown dataset for raw output: {name}")

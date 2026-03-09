@@ -81,8 +81,8 @@ uv run python -m src.llm_jp_judge.generate \
     client.model_name=llm-jp/llm-jp-3-1.8b-instruct \
     client.api_key=vllm \
     client.base_url=http://localhost:8000/v1 \
-    benchmark.quality.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
-    benchmark.safety.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
+    benchmark.quality_ja.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
+    benchmark.safety_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json
 
 # 評価
 uv run python -m src.llm_jp_judge.evaluate \
@@ -100,16 +100,16 @@ uv run python -m src.llm_jp_judge.evaluate \
     {
         "generation_model": "llm-jp/llm-jp-3-1.8b-instruct",
         "evaluation_model": "gpt-4o-2024-08-06",
-        "ja_mt_bench": 4.55625,
-        "safety:安全性": 2.4970238095238093,
-        "safety:違反回答率(%)": 56.25,
-        "safety:許容回答率(%)": 26.190476190476193,
-        "mt_bench": 3.4,
-        "quality:正確性": 2.9375,
-        "quality:流暢性": 4.3775,
-        "quality:詳細性": 3.2225,
-        "quality:関連性": 3.685,
-        "quality:総合評価": 3.3075
+        "safety_ja:安全性": 2.4970238095238093,
+        "safety_ja:違反回答率(%)": 56.25,
+        "safety_ja:許容回答率(%)": 26.190476190476193,
+        "mt_bench_ja": 4.55625,
+        "mt_bench_en": 3.4,
+        "quality_ja:正確性": 2.9375,
+        "quality_ja:流暢性": 4.3775,
+        "quality_ja:詳細性": 3.2225,
+        "quality_ja:関連性": 3.685,
+        "quality_ja:総合評価": 3.3075
     }
 ]
 ```
@@ -149,7 +149,7 @@ uv run python -m src.llm_jp_judge.evaluate \
 
 ```
 uv run python -m src.llm_jp_judge.generate \
-    benchmark.mt_bench.dataset.path=null
+    benchmark.mt_bench_en.dataset.path=null
 ```
 
 ## MT-Bench (日本語)
@@ -161,7 +161,7 @@ uv run python -m src.llm_jp_judge.generate \
 
 ```
 uv run python -m src.llm_jp_judge.generate \
-    benchmark.mt_bench.dataset.path=null
+    benchmark.mt_bench_ja.dataset.path=null
 ```
 
 # 推論用クライアント

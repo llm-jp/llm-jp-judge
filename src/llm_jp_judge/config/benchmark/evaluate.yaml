@@ -1,9 +1,11 @@
 defaults:
-  - /benchmark/prompt/evaluate@mt_bench.prompt_template: mt_bench_en_prompt_v0
-  - /benchmark/prompt/evaluate@ja_mt_bench.prompt_template: mt_bench_ja_prompt_v1
+  - /benchmark/prompt/evaluate@quality_ja.prompt_template: quality_ja
+  - /benchmark/prompt/evaluate@safety_ja.prompt_template: safety_ja
+  - /benchmark/prompt/evaluate@mt_bench_en.prompt_template: mt_bench_en_prompt_v0
+  - /benchmark/prompt/evaluate@mt_bench_ja.prompt_template: mt_bench_ja_prompt_v1
 
-quality:
-  name: quality
+quality_ja:
+  name: quality_ja
   metric: quality
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
   sampling_params:
@@ -12,8 +14,8 @@ quality:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-safety:
-  name: safety
+safety_ja:
+  name: safety_ja
   use_reference: true
   metric: safety
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
@@ -24,12 +26,12 @@ safety:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-mt_bench:
-  name: mt_bench
+mt_bench_en:
+  name: mt_bench_en
   metric: mt_bench
   mode: single # Currently, only the 'single' mode is supported, and 'pairwise' mode is not supported.
   reference:
-    path: ./src/llm_jp_judge/data/mt_bench/reference_answer/gpt-4-v0.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_en/reference_answer/gpt-4-v0.jsonl
     categories:
       - math
       - reasoning
@@ -40,12 +42,12 @@ mt_bench:
     top_p: null
     temperature: 0
     frequency_penalty: null
-ja_mt_bench:
-  name: ja_mt_bench
+mt_bench_ja:
+  name: mt_bench_ja
   metric: mt_bench
   mode: single # Currently, only the 'single' mode is supported, and 'pairwise' mode is not supported.
   reference:
-    path: ./src/llm_jp_judge/data/ja_mt_bench/reference_answer/base-gpt4o-with-human-annotation-v0.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_ja/reference_answer/base-gpt4o-with-human-annotation-v0.jsonl
     categories:
       - math
       - reasoning

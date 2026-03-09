@@ -8,47 +8,11 @@ from ..dataset.quality import QualityDatasetItem, QualityDatasetItemForEvaluatio
 from .base import BaseEvaluator, BaseScoreExtractor
 
 
-PROMPT_TEMPLATE = """[指示]
-質問に対するAIアシスタントの回答を以下の基準で評価してください。
-
-正確性: 応答が事実を述べているか評価してください。虚偽や誤解を生む表現を含む応答には低い評価をつけてください。但し、創作や主観的な意見を求める質問の場合、この限りではありません。
-流暢性: 応答が自然な文章であるか評価してください。文法的に誤っている応答には低い評価をつけてください。
-詳細性: 応答が質問に対して十分な回答を提供しているか評価してください。回答が不足している場合は低い評価をつけてください。
-関連性: 応答が質問に関連しているか評価してください。質問と無関係な内容が含まれる場合は低い評価をつけてください。
-総合評価: 上記の基準を総合的に評価してください。
-
-評価値は1から5の間です。1は非常に悪く、5は非常に良いことを意味します。
-初めに評価の理由を述べ、その後に評価値を記入してください。
-評価値を二重角括弧で囲み(例: [[3]])、以下の形式で評価結果を記述してください。
-
-正確性(評価理由): 評価理由を記入
-正確性: [[評価値を記入]]
-
-流暢性(評価理由): 評価理由を記入
-流暢性: [[評価値を記入]]
-
-詳細性(評価理由): 評価理由を記入
-詳細性: [[評価値を記入]]
-
-関連性(評価理由): 評価理由を記入
-関連性: [[評価値を記入]]
-
-総合評価(評価理由): 評価理由を記入
-総合評価: [[評価値を記入]]
-
-[質問]
-{question}
-
-[AIアシスタント回答開始]
-{response}
-[AIアシスタント回答終了]"""
-
-METRICS = ["正確性", "流暢性", "詳細性", "関連性", "総合評価"]
-
-SCORE_REGEX = f"({'|'.join(METRICS)}):\s?\[\[([1-5])\]\]"
-
-
 class QualityScoreExtractor(BaseScoreExtractor):
+    def __init__(self, regex: str, metrics: Sequence[str]):
+        super().__init__(regex)
+        self.metrics = metrics
+
     def __call__(self, text: str) -> dict[str, int]:  # type: ignore[override]
         scores = {}
         for metric, score in re.findall(self.regex, text):
@@ -56,7 +20,7 @@ class QualityScoreExtractor(BaseScoreExtractor):
                 raise ValueError("Duplicate metric")
             scores[metric] = int(score)
 
-        if set(scores.keys()) != set(METRICS):
+        if set(scores.keys()) != set(self.metrics):
             raise ValueError("Invalid score format")
 
         return scores
@@ -67,21 +31,23 @@ class QualityEvaluator(BaseEvaluator):
         if self.dashboard is None:
             return
 
+        metrics = self.prompt_template["metrics"]
+
         table = []
         header = [
             "id",
             "evaluation prompt",
             "evaluation response",
-            *METRICS,
+            *metrics,
             "generate errors",
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
             if raw_output.pattern is None:
-                scores = {metric: None for metric in METRICS}
+                scores = {metric: None for metric in metrics}
             else:
                 assert isinstance(raw_output.pattern[0], dict)
-                scores = [raw_output.pattern[0].get(metric) for metric in METRICS]
+                scores = [raw_output.pattern[0].get(metric) for metric in metrics]
             table.append(
                 [
                     raw_output.ID,
@@ -99,7 +65,7 @@ class QualityEvaluator(BaseEvaluator):
         for res in responses:
             d = QualityDatasetItemForEvaluation(
                 ID=res.ID,
-                prompt=[PROMPT_TEMPLATE.format(question=res.prompt, response=res.response)],
+                prompt=[self.prompt_template["prompt_template"].format(question=res.prompt, response=res.response)],
                 text=res.text,
                 generate_prompt=res.prompt,
                 generate_response=res.response,
@@ -107,7 +73,7 @@ class QualityEvaluator(BaseEvaluator):
             )
             data.append(d)
 
-        score_extractor = QualityScoreExtractor(SCORE_REGEX)
+        score_extractor = QualityScoreExtractor(self.prompt_template["regex"], self.prompt_template["metrics"])
         raw_outputs = self.client(
             data,
             score_extractor=score_extractor,
@@ -133,7 +99,7 @@ class QualityEvaluator(BaseEvaluator):
         ) = self.calc_error_rate(raw_outputs)
 
         ave_scores = {
-            f"quality:{metric}": sum(scores) / len(scores) if len(scores) else None
+            f"{self.name}:{metric}": sum(scores) / len(scores) if len(scores) else None
             for metric, scores in scores.items()
         }
         logging.info(f"Scores: {ave_scores}")
