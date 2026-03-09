@@ -2,9 +2,10 @@ import json
 import logging
 import re
 from collections import defaultdict
+from collections.abc import Sequence
 
-from src.llm_jp_judge.dataset.quality import QualityDatasetItem, QualityDatasetItemForEvaluation
-from src.llm_jp_judge.evaluator.base import BaseEvaluator, BaseScoreExtractor
+from ..dataset.quality import QualityDatasetItem, QualityDatasetItemForEvaluation
+from .base import BaseEvaluator, BaseScoreExtractor
 
 
 PROMPT_TEMPLATE = """[指示]
@@ -48,7 +49,7 @@ SCORE_REGEX = f"({'|'.join(METRICS)}):\s?\[\[([1-5])\]\]"
 
 
 class QualityScoreExtractor(BaseScoreExtractor):
-    def __call__(self, text: str) -> dict[str, int]:
+    def __call__(self, text: str) -> dict[str, int]:  # type: ignore[override]
         scores = {}
         for metric, score in re.findall(self.regex, text):
             if metric in scores:
@@ -62,7 +63,7 @@ class QualityScoreExtractor(BaseScoreExtractor):
 
 
 class QualityEvaluator(BaseEvaluator):
-    def log_raw_outputs(self, raw_outputs: list[QualityDatasetItemForEvaluation]):
+    def log_raw_outputs(self, raw_outputs: Sequence[QualityDatasetItemForEvaluation]):  # type: ignore[override]
         if self.dashboard is None:
             return
 
@@ -79,6 +80,7 @@ class QualityEvaluator(BaseEvaluator):
             if raw_output.pattern is None:
                 scores = {metric: None for metric in METRICS}
             else:
+                assert isinstance(raw_output.pattern[0], dict)
                 scores = [raw_output.pattern[0].get(metric) for metric in METRICS]
             table.append(
                 [
@@ -92,8 +94,8 @@ class QualityEvaluator(BaseEvaluator):
             )
         self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)
 
-    def __call__(self, responses: list[QualityDatasetItem]) -> tuple[dict[str, float], dict[str, float]]:
-        data = []
+    def __call__(self, responses: Sequence[QualityDatasetItem]) -> tuple[dict[str, float | None], dict[str, float]]:  # type: ignore[override]
+        data: list[QualityDatasetItemForEvaluation] = []
         for res in responses:
             d = QualityDatasetItemForEvaluation(
                 ID=res.ID,
@@ -117,6 +119,8 @@ class QualityEvaluator(BaseEvaluator):
         for raw_output in raw_outputs:
             if raw_output.pattern[0] is None:
                 continue
+
+            assert isinstance(raw_output.pattern[0], dict)
             for metric, score in raw_output.pattern[0].items():
                 scores[metric].append(score)
 

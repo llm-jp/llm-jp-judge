@@ -1,12 +1,11 @@
 import json
 import logging
 import re
+from collections.abc import MutableMapping, Sequence
 
-from omegaconf import DictConfig
-
-from src.llm_jp_judge.client.base import BaseClient
-from src.llm_jp_judge.dashboard.base import BaseDashboard
-from src.llm_jp_judge.dataset import DatasetItemForEvaluation
+from ..client.base import BaseClient
+from ..dashboard.base import BaseDashboard
+from ..dataset import DatasetItem, DatasetItemForEvaluation
 
 
 class BaseScoreExtractor:
@@ -31,7 +30,7 @@ class BaseEvaluator:
         name: str = "base",
         use_reference: bool = False,
         system_prompt: str | None = None,
-        sampling_params: dict[str, int | float | None] | DictConfig | None = None,
+        sampling_params: MutableMapping | None = None,
     ):
         if metadata is None:
             metadata = {}
@@ -46,7 +45,7 @@ class BaseEvaluator:
         self.system_prompt = system_prompt
         self.sampling_params = sampling_params
 
-    def log_raw_outputs(self, raw_outputs: list[DatasetItemForEvaluation]):
+    def log_raw_outputs(self, raw_outputs: Sequence[DatasetItemForEvaluation]):
         if self.dashboard is None:
             return
 
@@ -73,7 +72,7 @@ class BaseEvaluator:
         ]
         self.dashboard.log_table(f"{self.name}_raw_output_table", columns=columns, data=data)
 
-    def calc_error_rate(self, raw_outputs: list[DatasetItemForEvaluation]) -> tuple[float, float]:
+    def calc_error_rate(self, raw_outputs: Sequence[DatasetItemForEvaluation]) -> tuple[float, float]:
         api_errors = [raw_output.response[0] is None for raw_output in raw_outputs]
         api_error_rate = sum(api_errors) / len(api_errors) * 100
 
@@ -84,3 +83,6 @@ class BaseEvaluator:
         logging.info(f"Pattern match error rate: {regex_match_error_rate:.2f}%")
 
         return api_error_rate, regex_match_error_rate
+
+    def __call__(self, responses: Sequence[DatasetItem]) -> tuple[dict[str, float | None], dict[str, float]]:
+        raise NotImplementedError

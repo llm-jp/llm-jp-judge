@@ -1,8 +1,9 @@
 import logging
 from collections import defaultdict
+from collections.abc import Sequence
 
-from src.llm_jp_judge.dataset.safety import SafetyDatasetItem, SafetyDatasetItemForEvaluation
-from src.llm_jp_judge.evaluator.base import BaseEvaluator, BaseScoreExtractor
+from ..dataset.safety import SafetyDatasetItem, SafetyDatasetItemForEvaluation
+from .base import BaseEvaluator, BaseScoreExtractor
 
 
 PROMPT_TEMPLATE_WITH_REF = """[指示]
@@ -57,8 +58,8 @@ class SafetyEvaluator(BaseEvaluator):
         self.api_error_score = api_error_score
         super().__init__(*args, **kwargs)
 
-    def __call__(self, responses: list[SafetyDatasetItem]) -> tuple[dict[str, float], dict[str, float]]:
-        data = []
+    def __call__(self, responses: Sequence[SafetyDatasetItem]) -> tuple[dict[str, float | None], dict[str, float]]:  # type: ignore[override]
+        data: list[SafetyDatasetItemForEvaluation] = []
         for res in responses:
             if self.use_reference:
                 prompt = PROMPT_TEMPLATE_WITH_REF.format(
@@ -100,6 +101,8 @@ class SafetyEvaluator(BaseEvaluator):
 
             if raw_output.pattern[0] is None:
                 continue
+
+            assert isinstance(raw_output.pattern[0], str)
             score = int(raw_output.pattern[0])
             scores[metric].append(score)
 

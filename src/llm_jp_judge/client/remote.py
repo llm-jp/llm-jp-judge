@@ -1,19 +1,25 @@
 import asyncio
 import logging
 import warnings
+from collections.abc import MutableMapping, Sequence
+from copy import deepcopy
+from typing import TypeVar, cast
 
 import openai
 import tqdm
 import tqdm.asyncio
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
+from anthropic.types import Message, MessageParam, TextBlock
 from dotenv import load_dotenv
-from omegaconf import DictConfig
 from openai import AzureOpenAI as AzureOpenAIClient
 from openai import OpenAI as OpenAIClient
 
-from src.llm_jp_judge.client.base import BaseClient
-from src.llm_jp_judge.dataset import DatasetItem
-from src.llm_jp_judge.evaluator.base import BaseScoreExtractor
+from ..dataset import DatasetItem
+from ..evaluator.base import BaseScoreExtractor
+from .base import BaseClient
+
+
+T = TypeVar("T", bound=DatasetItem)
 
 
 load_dotenv(override=True)
@@ -31,10 +37,12 @@ class OpenAI(BaseClient):
         project: str | None = None,
         base_url: str | None = None,
     ):
-        self.model_name = model_name
-        self.max_retries = max_retries
-        self.async_request_interval = async_request_interval
-        self.disable_system_prompt = disable_system_prompt
+        super().__init__(
+            model_name=model_name,
+            max_retries=max_retries,
+            async_request_interval=async_request_interval,
+            disable_system_prompt=disable_system_prompt,
+        )
 
         self.client = OpenAIClient(
             api_key=api_key,
@@ -43,38 +51,60 @@ class OpenAI(BaseClient):
             base_url=base_url,
         )
 
+    def get_messages(
+        self,
+        prompt: list[str],
+        response: list[str | None],
+        system_prompt: str | None = None,
+    ) -> list[dict[str, str | None]]:
+        if self.disable_system_prompt and system_prompt is not None:
+            prompt = deepcopy(prompt)
+            prompt[0] = f"{system_prompt}\n\n{prompt[0]}"
+            system_prompt = None
+
+        messages: list[dict[str, str | None]] = []
+        for turn in range(len(prompt)):
+            messages.append({"role": "user", "content": prompt[turn]})
+            if turn < len(response):
+                messages.append({"role": "assistant", "content": response[turn]})
+
+        if system_prompt is not None:
+            messages.insert(0, {"role": "system", "content": system_prompt})
+
+        return messages
+
     async def async_request(
         self,
         prompt: list[str],
         response: list[str | None],
         system_prompt: str | None = None,
-        sampling_params: dict[str, int | float] | None = None,
-    ) -> str:
+        sampling_params: MutableMapping | None = None,
+    ) -> str | None:
         if sampling_params is None:
             sampling_params = {}
 
         messages = await asyncio.to_thread(self.get_messages, prompt, response, system_prompt=system_prompt)
 
-        response = await asyncio.to_thread(
-            self.client.chat.completions.create,
+        client_response = await asyncio.to_thread(
+            self.client.chat.completions.create,  # type: ignore[arg-type]
             model=self.model_name,
             messages=messages,
             **sampling_params,
         )
-        return response.choices[0].message.content
+        return client_response.choices[0].message.content
 
     async def process_data(
         self,
-        data: list[DatasetItem],
+        data: Sequence[T],
         score_extractor: BaseScoreExtractor | None = None,
         system_prompt: str | None = None,
-        sampling_params: dict[str, int | float] | None = None,
-    ) -> list[DatasetItem]:
+        sampling_params: MutableMapping | None = None,
+    ) -> Sequence[T]:
         if sampling_params is None:
             sampling_params = {}
 
         tasks = []
-        wait = 0
+        wait = 0.0
         for d in data:
             tasks.append(
                 self._process_single_request(
@@ -93,12 +123,12 @@ class OpenAI(BaseClient):
 
     async def _process_single_request(
         self,
-        d: DatasetItem,
+        d: T,
         score_extractor: BaseScoreExtractor | None,
         system_prompt: str | None,
         wait: float,
-        sampling_params: dict[str, int | float] | None = None,
-    ) -> DatasetItem:
+        sampling_params: MutableMapping | None = None,
+    ) -> T:
         if sampling_params is None:
             sampling_params = {}
 
@@ -107,7 +137,7 @@ class OpenAI(BaseClient):
         d.response, d.pattern, d.error_messages = [], [], []
         for turn in range(len(d.prompt)):
             retry_count = 0
-            sleep = 0
+            sleep = 0.0
 
             d.response.append(None)
             d.pattern.append(None)
@@ -136,6 +166,7 @@ class OpenAI(BaseClient):
                 else:
                     if score_extractor is not None:
                         try:
+                            assert d.response[-1] is not None
                             d.pattern[-1] = score_extractor(d.response[-1])
                         except Exception as e:
                             d.error_messages[-1].append(str(e))
@@ -149,7 +180,10 @@ class OpenAI(BaseClient):
 
         return d
 
-    def update_sampling_params(self, sampling_params: dict[str, int | float]) -> dict[str, int | float]:
+    def fill_sampling_params(self, sampling_params: MutableMapping) -> MutableMapping:
+        return {k: v for k, v in sampling_params.items() if v is not None}
+
+    def update_sampling_params(self, sampling_params: MutableMapping) -> MutableMapping:
         if self.model_name.startswith("gpt-5"):
             if "max_tokens" in sampling_params:
                 sampling_params["max_completion_tokens"] = sampling_params.pop("max_tokens")
@@ -160,11 +194,11 @@ class OpenAI(BaseClient):
 
     def __call__(
         self,
-        data: list[DatasetItem],
+        data: Sequence[T],
         score_extractor: BaseScoreExtractor | None = None,
         system_prompt: str | None = None,
-        sampling_params: dict[str, int | float | None] | DictConfig | None = None,
-    ) -> list[DatasetItem]:
+        sampling_params: MutableMapping | None = None,
+    ) -> Sequence[T]:
         if sampling_params is None:
             sampling_params = {}
 
@@ -185,13 +219,15 @@ class AzureOpenAI(OpenAI):
         api_version: str | None = None,
         api_key: str | None = None,
     ):
-        self.model_name = model_name
-        self.max_retries = max_retries
-        self.async_request_interval = async_request_interval
-        self.disable_system_prompt = disable_system_prompt
+        super().__init__(
+            model_name=model_name,
+            max_retries=max_retries,
+            async_request_interval=async_request_interval,
+            disable_system_prompt=disable_system_prompt,
+        )
 
         self.client = AzureOpenAIClient(
-            azure_endpoint=azure_endpoint,
+            azure_endpoint=azure_endpoint,  # type: ignore[arg-type]
             api_version=api_version,
             api_key=api_key,
         )
@@ -208,12 +244,14 @@ class BedrockAnthropic(AzureOpenAI):
         aws_secret_key: str | None = None,
         aws_region: str | None = None,
     ):
-        self.model_name = model_name
-        self.max_retries = max_retries
-        self.async_request_interval = async_request_interval
-        self.disable_system_prompt = disable_system_prompt
+        super().__init__(
+            model_name=model_name,
+            max_retries=max_retries,
+            async_request_interval=async_request_interval,
+            disable_system_prompt=disable_system_prompt,
+        )
 
-        self.client = AnthropicBedrockClient(
+        self.anthropic_client = AnthropicBedrockClient(
             aws_access_key=aws_access_key,
             aws_secret_key=aws_secret_key,
             aws_region=aws_region,
@@ -224,7 +262,7 @@ class BedrockAnthropic(AzureOpenAI):
         prompt: list[str],
         response: list[str | None],
         system_prompt: str | None = None,
-        sampling_params: dict[str, int | float] = None,
+        sampling_params: MutableMapping | None = None,
     ) -> str:
         if sampling_params is None:
             sampling_params = {}
@@ -238,11 +276,20 @@ class BedrockAnthropic(AzureOpenAI):
                 warnings.warn(f"BedrockAnthropic does not support {key} parameter. Ignoring.")
                 sampling_params.pop(key)
 
-        completions = self.client.messages.create(
-            model=self.model_name,
-            messages=messages,
-            system=system_prompt,
-            **sampling_params,
-        )
+        completions: Message
+        if system_prompt is not None:
+            completions = self.anthropic_client.messages.create(
+                model=self.model_name,
+                messages=cast(list[MessageParam], messages),
+                system=system_prompt,
+                **sampling_params,
+            )
+        else:
+            completions = self.anthropic_client.messages.create(
+                model=self.model_name,
+                messages=cast(list[MessageParam], messages),
+                **sampling_params,
+            )
 
+        assert isinstance(completions.content[0], TextBlock)
         return completions.content[0].text
