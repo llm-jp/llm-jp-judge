@@ -34,3 +34,10 @@ def save_jsonl(path: str, data: Iterable[Any]):
     with open(path, "w", encoding="utf-8") as f:
         for d in data:
             f.write(json.dumps(d, ensure_ascii=False) + "\n")
+
+
+def load_file(path: str) -> Any:
+    path = hydra.utils.to_absolute_path(path)
+    with open(path, "r", encoding="utf-8") as f:
+        data = f.read()
+    return data

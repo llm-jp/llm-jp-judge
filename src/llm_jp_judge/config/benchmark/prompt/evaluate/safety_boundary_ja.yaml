@@ -1,0 +1,2 @@
+regex: ([0-3])
+path: ./data/cache/safety-boundary-test/data/prompt_v1.0.1.j2
