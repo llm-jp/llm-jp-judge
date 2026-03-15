@@ -2,6 +2,9 @@ import re
 import json
 import logging
 
+class ScoreExtractionError(Exception):
+    pass
+
 
 class BaseScoreExtractor(object):
     def __init__(self, regex):
@@ -42,21 +45,27 @@ class BaseEvaluator:
         columns = [
             "id",
             "metric",
+            "generation prompt",
+            "generation response",
             "evaluation prompt",
             "evaluation response",
-            "score",
-            "generate errors",
+            "pattern",
+            "score",            
+            "generation errors",
             "evaluation errors",
         ]
         data = [
             [
                 score["ID"],
                 score["metric"],
+                score["generation_prompt"],
+                score["generation_response"],
                 score["prompt"],
                 score["response"],
-                score["pattern"],
-                json.dumps(score["generate_errors"]),
-                json.dumps(score["error_messages"]),
+                score.get("pattern"),
+                score["score"],
+                json.dumps(score.get("generation_errors", [])),
+                json.dumps(score.get("error_messages", [])),
             ]
             for score in raw_outputs
         ]

@@ -5,7 +5,7 @@ import logging
 from copy import deepcopy
 from collections import defaultdict
 
-from .base import BaseEvaluator
+from .base import BaseEvaluator, ScoreExtractionError
 
 PROMPT_TEMPLATE = """[指示]
 質問に対するAIアシスタントの回答を以下の基準で評価してください。
@@ -53,18 +53,22 @@ class QualityScoreExtractor(object):
 
     def __call__(self, text):
         scores = {}
-        for metric, score in re.findall(self.regex, text):
-            if metric in scores:
-                raise ValueError("Duplicate metric")
-            scores[metric] = int(score)
-
+        try:
+            for metric, score in re.findall(self.regex, text):
+                scores[metric] = score
+        except TypeError as e:
+            raise ScoreExtractionError(f"Expected a string, got {type(text)}") from e
         if set(scores.keys()) != set(METRICS):
-            raise ValueError("Invalid score format")
+            raise ScoreExtractionError("Invalid score format")
 
         return scores
 
 
 class QualityEvaluator(BaseEvaluator):
+    def __init__(self, *args, empty_response_score=None, **kwargs):
+        self.empty_response_score = empty_response_score
+        super().__init__(*args, **kwargs)
+
     def log_raw_outputs(self, raw_outputs):
         if self.dashboard is None:
             return
@@ -72,39 +76,55 @@ class QualityEvaluator(BaseEvaluator):
         table = []
         header = [
             "id",
+            "generation prompt",
+            "generation response",
             "evaluation prompt",
             "evaluation response",
-            *METRICS,
-            "generate errors",
+            *[f"pattern:{metric}" for metric in METRICS],
+            *[f"score:{metric}" for metric in METRICS],
+            "generation errors",
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
             if raw_output.get("pattern") is None:
-                scores = {metric: None for metric in METRICS}
+                patterns = [None] * len(METRICS)
             else:
-                scores = [raw_output["pattern"].get(metric) for metric in METRICS]
+                patterns = [raw_output.get("pattern", {}).get(metric) for metric in METRICS]
+            scores = [raw_output.get("score", {}).get(metric) for metric in METRICS]
             table.append(
                 [
                     raw_output["ID"],
+                    raw_output["generation_prompt"],
+                    raw_output["generation_response"],
                     raw_output["prompt"],
                     raw_output["response"],
+                    *patterns,
                     *scores,
-                    json.dumps(raw_output["generate_errors"], ensure_ascii=False),
-                    json.dumps(raw_output["error_messages"], ensure_ascii=False),
+                    json.dumps(raw_output.get("generation_errors", []), ensure_ascii=False),
+                    json.dumps(raw_output.get("error_messages", []), ensure_ascii=False),
                 ]
             )
         self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)
 
     def __call__(self, responses):
         data = []
+        skip_outputs = []
         for res in responses:
             d = deepcopy(res)
-            d["generate_response"] = d["response"]
-            d["generate_errors"] = d.get("error_messages", [])
+            d["generation_prompt"] = d["prompt"]
+            d["generation_response"] = d["response"]
+            d["generation_errors"] = d.get("error_messages", [])
             d["prompt"] = PROMPT_TEMPLATE.format(
                 question=d["prompt"],
                 response=d["response"],
             )
+
+            if d["response"] is None or d["response"].strip() == "":
+                if self.empty_response_score is not None:
+                    # 評価対象の応答が空の場合は、empty_response_score(デフォルトは1)とする。
+                    d["score"] = {metric: int(self.empty_response_score) for metric in METRICS}
+                    skip_outputs.append(d)
+                    continue
             data.append(d)
 
         score_extractor = QualityScoreExtractor(SCORE_REGEX)
@@ -115,20 +135,30 @@ class QualityEvaluator(BaseEvaluator):
             sampling_params=self.sampling_params,
         )
 
-        scores = defaultdict(list)
-        for raw_output in raw_outputs:
-            if raw_output.get("pattern") is None:
-                continue
-            for metric, score in raw_output["pattern"].items():
-                scores[metric].append(score)
-
-        self.log_raw_outputs(raw_outputs)
-
         error_rates = {}
         (
             error_rates[f"{self.name}:api(%)"],
             error_rates[f"{self.name}:pattern_match(%)"],
         ) = self.calc_error_rate(raw_outputs)
+
+        # 最終スコアの計算
+        for raw_output in raw_outputs:
+            raw_output["score"] = {}
+            for metric in METRICS:
+                if raw_output.get("pattern") is None or raw_output.get("pattern", {}).get(metric) is None:
+                    raw_output["score"][metric] = None
+                    continue
+                raw_output["score"][metric] = int(raw_output["pattern"][metric])
+
+        raw_outputs += skip_outputs
+        self.log_raw_outputs(raw_outputs)
+
+        # スコアの集計
+        scores = defaultdict(list)
+        for raw_output in raw_outputs:
+            for metric in METRICS:
+                if raw_output["score"][metric] is not None:
+                    scores[metric].append(raw_output["score"][metric])
 
         ave_scores = {
             f"quality:{metric}": sum(scores) / len(scores) if len(scores) else None
