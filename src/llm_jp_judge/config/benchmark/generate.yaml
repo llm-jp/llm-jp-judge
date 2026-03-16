@@ -22,6 +22,30 @@ safety_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+culture_ja:
+  name: "culture_ja"
+  dataset:
+    path: null
+    size: null
+  system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+safety_boundary_ja:
+  name: "safety_boundary_ja"
+  dataset:
+    path: null
+    size: null
+  system_prompt: null
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.9
+    temperature: 0.7
+    frequency_penalty: 0.0
 mt_bench_en:
   name: "mt_bench_en"
   dataset:
