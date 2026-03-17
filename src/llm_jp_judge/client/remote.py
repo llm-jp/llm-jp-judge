@@ -37,12 +37,10 @@ class OpenAI(BaseClient):
         project: str | None = None,
         base_url: str | None = None,
     ):
-        super().__init__(
-            model_name=model_name,
-            max_retries=max_retries,
-            async_request_interval=async_request_interval,
-            disable_system_prompt=disable_system_prompt,
-        )
+        self.model_name = model_name
+        self.max_retries = max_retries
+        self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
 
         self.client = OpenAIClient(
             api_key=api_key,
@@ -219,12 +217,10 @@ class AzureOpenAI(OpenAI):
         api_version: str | None = None,
         api_key: str | None = None,
     ):
-        super().__init__(
-            model_name=model_name,
-            max_retries=max_retries,
-            async_request_interval=async_request_interval,
-            disable_system_prompt=disable_system_prompt,
-        )
+        self.model_name = model_name
+        self.max_retries = max_retries
+        self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
 
         self.client = AzureOpenAIClient(
             azure_endpoint=azure_endpoint,  # type: ignore[arg-type]
@@ -244,12 +240,10 @@ class BedrockAnthropic(AzureOpenAI):
         aws_secret_key: str | None = None,
         aws_region: str | None = None,
     ):
-        super().__init__(
-            model_name=model_name,
-            max_retries=max_retries,
-            async_request_interval=async_request_interval,
-            disable_system_prompt=disable_system_prompt,
-        )
+        self.model_name = model_name
+        self.max_retries = max_retries
+        self.async_request_interval = async_request_interval
+        self.disable_system_prompt = disable_system_prompt
 
         self.anthropic_client = AnthropicBedrockClient(
             aws_access_key=aws_access_key,
