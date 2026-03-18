@@ -17,6 +17,7 @@ quality_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 safety_ja:
   name: safety_ja
   use_reference: true
@@ -29,6 +30,7 @@ safety_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 culture_ja:
   name: culture_ja
   use_reference: true
@@ -42,6 +44,7 @@ culture_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 safety_borderline_ja:
   name: safety_borderline_ja
   use_reference: true
@@ -54,6 +57,7 @@ safety_borderline_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 safety_boundary_ja:
   name: safety_boundary_ja
   metric: safety_boundary
@@ -65,6 +69,7 @@ safety_boundary_ja:
     top_p: 0.9
     temperature: 0.7
     frequency_penalty: 0.0
+    reasoning_effort: null
 mt_bench_en:
   name: mt_bench_en
   metric: mt_bench
@@ -81,6 +86,7 @@ mt_bench_en:
     top_p: null
     temperature: 0
     frequency_penalty: null
+    reasoning_effort: null
 mt_bench_ja:
   name: mt_bench_ja
   metric: mt_bench
@@ -97,3 +103,4 @@ mt_bench_ja:
     top_p: null
     temperature: 0
     frequency_penalty: null
+    reasoning_effort: null
