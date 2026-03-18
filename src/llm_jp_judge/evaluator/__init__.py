@@ -5,6 +5,7 @@ from .culture import CultureEvaluator
 from .mt_bench import MTBenchEvaluator
 from .quality import QualityEvaluator
 from .safety import SafetyEvaluator
+from .safety_borderline import SafetyBorderlineEvaluator
 from .safety_boundary import SafetyBoundaryEvaluator
 
 
@@ -24,6 +25,8 @@ def load_evaluator(
         return SafetyEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "culture":
         return CultureEvaluator(client, dashboard, metadata=metadata, **kwargs)
+    elif metric == "safety_borderline":
+        return SafetyBorderlineEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "safety_boundary":
         return SafetyBoundaryEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "mt_bench":
