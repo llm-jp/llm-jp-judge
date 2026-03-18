@@ -10,6 +10,7 @@ quality_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 safety_ja:
   name: "safety_ja"
   dataset:
@@ -22,6 +23,7 @@ safety_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 culture_ja:
   name: "culture_ja"
   dataset:
@@ -34,6 +36,7 @@ culture_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 safety_borderline_ja:
   name: "safety_borderline_ja"
   dataset:
@@ -46,6 +49,7 @@ safety_borderline_ja:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
+    reasoning_effort: null
 safety_boundary_ja:
   name: "safety_boundary_ja"
   dataset:
@@ -58,6 +62,7 @@ safety_boundary_ja:
     top_p: 0.9
     temperature: 0.7
     frequency_penalty: 0.0
+    reasoning_effort: null
 mt_bench_en:
   name: "mt_bench_en"
   dataset:
@@ -70,6 +75,7 @@ mt_bench_en:
     top_p: null
     temperature: 0.7
     frequency_penalty: null
+    reasoning_effort: null
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
       temperature: 0.7
@@ -99,6 +105,7 @@ mt_bench_ja:
     top_p: null
     temperature: 0.7
     frequency_penalty: null
+    reasoning_effort: null
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
       temperature: 0.7
