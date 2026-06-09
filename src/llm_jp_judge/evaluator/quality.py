@@ -43,7 +43,7 @@ class QualityEvaluator(BaseEvaluator):
             "evaluation errors",
         ]
         for raw_output in raw_outputs:
-            if raw_output.pattern is None:
+            if raw_output.pattern[0] is None:
                 scores = {metric: None for metric in metrics}
             else:
                 assert isinstance(raw_output.pattern[0], dict)
