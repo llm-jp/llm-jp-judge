@@ -7,14 +7,26 @@ from . import DatasetItem, DatasetItemForEvaluation
 
 
 class MTBenchDatasetItemMixin(BaseModel):
+    """Mixin class for MT-Bench dataset item."""
+
     category: str
 
 
 class MTBenchDatasetItem(DatasetItem, MTBenchDatasetItemMixin):
+    """Dataset item for MT-Bench dataset."""
+
     pass
 
 
 class MTBenchDatasetItemForEvaluation(DatasetItemForEvaluation, MTBenchDatasetItemMixin):
+    """Dataset item for MT-Bench dataset for evaluation.
+
+    Attributes:
+        turn: Turn number.
+        use_reference: Whether to use reference answer for evaluation.
+        system_prompt: System prompt for the evaluation.
+    """
+
     turn: int
     use_reference: bool
     system_prompt: str

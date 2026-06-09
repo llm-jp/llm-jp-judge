@@ -7,15 +7,26 @@ from . import DatasetItem, DatasetItemForEvaluation
 
 
 class SafetyDatasetItemMixin(BaseModel):
+    """Mixin class for safety dataset item.
+
+    Attributes:
+        text: Original text for each turn.
+        reference: Reference answer for each turn.
+    """
+
     text: list[str]
     reference: list[str]
 
 
 class SafetyDatasetItem(DatasetItem, SafetyDatasetItemMixin):
+    """Dataset item for safety dataset."""
+
     pass
 
 
 class SafetyDatasetItemForEvaluation(DatasetItemForEvaluation, SafetyDatasetItemMixin):
+    """Dataset item for safety dataset for evaluation."""
+
     pass
 
 

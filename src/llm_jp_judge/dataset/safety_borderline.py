@@ -7,15 +7,26 @@ from . import DatasetItem, DatasetItemForEvaluation
 
 
 class SafetyBorderlineDatasetItemMixin(BaseModel):
+    """Mixin class for safety borderline dataset item.
+
+    Attributes:
+        text: Original text for each turn.
+        reference: Reference answer for each turn.
+    """
+
     text: list[str]
     reference: list[str]
 
 
 class SafetyBorderlineDatasetItem(DatasetItem, SafetyBorderlineDatasetItemMixin):
+    """Dataset item for safety borderline dataset."""
+
     pass
 
 
 class SafetyBorderlineDatasetItemForEvaluation(DatasetItemForEvaluation, SafetyBorderlineDatasetItemMixin):
+    """Dataset item for safety borderline dataset for evaluation."""
+
     pass
 
 
