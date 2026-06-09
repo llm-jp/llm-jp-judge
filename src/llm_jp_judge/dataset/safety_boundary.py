@@ -12,7 +12,7 @@ class SafetyBoundaryDatasetItemMixin(BaseModel):
 
     Attributes:
         text: Original text for each turn.
-        type: Type of the input (e.g., "question", "statement").
+        type: Prompt type (e.g., "P1", "P2").
         safety: Safety label (e.g., "safe", "unsafe").
         eval_aspect: Criteria for evaluation (to be embedded in prompt).
         ng_aspect: Criteria for evaluating unsafe responses (to be embedded in prompt).
