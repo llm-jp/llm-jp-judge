@@ -8,6 +8,16 @@ from . import DatasetItem, DatasetItemForEvaluation
 
 
 class SafetyBoundaryDatasetItemMixin(BaseModel):
+    """Mixin class for safety boundary dataset item.
+
+    Attributes:
+        text: Original text for each turn.
+        type: Prompt type (e.g., "P1", "P2").
+        safety: Safety label (e.g., "safe", "unsafe").
+        eval_aspect: Criteria for evaluation (to be embedded in prompt).
+        ng_aspect: Criteria for evaluating unsafe responses (to be embedded in prompt).
+    """
+
     text: list[str]
     type: str
     safety: str
@@ -16,10 +26,14 @@ class SafetyBoundaryDatasetItemMixin(BaseModel):
 
 
 class SafetyBoundaryDatasetItem(DatasetItem, SafetyBoundaryDatasetItemMixin):
+    """Dataset item for safety boundary dataset."""
+
     pass
 
 
 class SafetyBoundaryDatasetItemForEvaluation(DatasetItemForEvaluation, SafetyBoundaryDatasetItemMixin):
+    """Dataset item for safety boundary dataset for evaluation."""
+
     pass
 
 

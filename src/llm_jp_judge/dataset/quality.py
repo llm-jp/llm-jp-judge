@@ -7,14 +7,24 @@ from . import DatasetItem, DatasetItemForEvaluation
 
 
 class QualityDatasetItemMixin(BaseModel):
+    """Mixin class for quality dataset item.
+
+    Attributes:
+        text: Original text for each turn.
+    """
+
     text: list[str]
 
 
 class QualityDatasetItem(DatasetItem, QualityDatasetItemMixin):
+    """Dataset item for quality dataset."""
+
     pass
 
 
 class QualityDatasetItemForEvaluation(DatasetItemForEvaluation, QualityDatasetItemMixin):
+    """Dataset item for quality dataset for evaluation."""
+
     pass
 
 

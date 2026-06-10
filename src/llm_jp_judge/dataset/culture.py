@@ -7,14 +7,24 @@ from . import DatasetItem, DatasetItemForEvaluation
 
 
 class CultureDatasetItemMixin(BaseModel):
+    """Mixin class for culture dataset item.
+
+    Attributes:
+        reference: Reference answer for each turn.
+    """
+
     reference: list[str]
 
 
 class CultureDatasetItem(DatasetItem, CultureDatasetItemMixin):
+    """Dataset item for culture dataset."""
+
     pass
 
 
 class CultureDatasetItemForEvaluation(DatasetItemForEvaluation, CultureDatasetItemMixin):
+    """Dataset item for culture dataset for evaluation."""
+
     pass
 
 
