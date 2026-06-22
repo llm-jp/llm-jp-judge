@@ -58,7 +58,7 @@ class QualityEvaluator(BaseEvaluator):
                     json.dumps(raw_output.error_messages[0], ensure_ascii=False),
                 ]
             )
-        self.dashboard.log_table("quality_raw_output_table", columns=header, data=table)
+        self.dashboard.log_table(f"{self.name}_raw_output_table", columns=header, data=table)
 
     def __call__(self, responses: Sequence[QualityDatasetItem]) -> tuple[dict[str, float | None], dict[str, float]]:  # type: ignore[override]
         data: list[QualityDatasetItemForEvaluation] = []
