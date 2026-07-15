@@ -1,6 +1,6 @@
-quality:
-  name: "quality"
-  dataset: 
+quality_ja:
+  name: "quality_ja"
+  dataset:
     path: null
     size: null # Use the first 'size' number of data entries
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
@@ -10,8 +10,9 @@ quality:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-safety:
-  name: "safety"
+    reasoning_effort: null
+safety_ja:
+  name: "safety_ja"
   dataset:
     path: null
     size: null
@@ -22,10 +23,50 @@ safety:
     top_p: 0.95
     temperature: 1.0
     frequency_penalty: 0.0
-mt_bench:
-  name: "mt_bench"
+    reasoning_effort: null
+culture_ja:
+  name: "culture_ja"
   dataset:
-    path: ./src/llm_jp_judge/data/mt_bench/question/question-v0.jsonl
+    path: null
+    size: null
+  system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+    reasoning_effort: null
+safety_borderline_ja:
+  name: "safety_borderline_ja"
+  dataset:
+    path: null
+    size: null
+  system_prompt: ""
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+    reasoning_effort: null
+safety_boundary_ja:
+  name: "safety_boundary_ja"
+  dataset:
+    path: null
+    size: null
+  system_prompt: null
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.9
+    temperature: 0.7
+    frequency_penalty: 0.0
+    reasoning_effort: null
+mt_bench_en:
+  name: "mt_bench_en"
+  dataset:
+    path: ./src/llm_jp_judge/data/mt_bench_en/question/question-v0.jsonl
     size: null
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
@@ -34,6 +75,7 @@ mt_bench:
     top_p: null
     temperature: 0.7
     frequency_penalty: null
+    reasoning_effort: null
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
       temperature: 0.7
@@ -51,10 +93,10 @@ mt_bench:
       temperature: 0.1
     humanities:
       temperature: 0.1
-ja_mt_bench:
-  name: "ja_mt_bench"
+mt_bench_ja:
+  name: "mt_bench_ja"
   dataset:
-    path: ./src/llm_jp_judge/data/ja_mt_bench/question/question_full-v3.jsonl
+    path: ./src/llm_jp_judge/data/mt_bench_ja/question/question_full-v3.jsonl
     size: null
   system_prompt: "以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。"
   sampling_params:
@@ -63,6 +105,7 @@ ja_mt_bench:
     top_p: null
     temperature: 0.7
     frequency_penalty: null
+    reasoning_effort: null
   category_sampling_params: # Override the default sampling parameters for each category
     writing:
       temperature: 0.7
@@ -80,4 +123,3 @@ ja_mt_bench:
       temperature: 0.1
     humanities:
       temperature: 0.1
-    

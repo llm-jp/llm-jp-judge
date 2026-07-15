@@ -5,3 +5,6 @@ max_retries: 3
 async_request_interval: 10 # 非同期のリクエスト間隔(秒)
 disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
 
+aws_access_key: null  # null の場合、環境変数 AWS_ACCESS_KEY_ID から読み込まれます。
+aws_secret_key: null  # null の場合、環境変数 AWS_SECRET_ACCESS_KEY から読み込まれます。
+aws_region: null  # null の場合、環境変数 AWS_REGION から読み込まれるか、既定値の us-east-1 が使用されます。

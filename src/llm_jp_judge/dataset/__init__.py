@@ -1,19 +1,37 @@
-from .safety import load_safety
-from .quality import load_quality
-from .mt_bench import load_mt_bench
+from pydantic import BaseModel
 
 
-def load_dataset(name, path, size=None):
-    if name == "quality":
-        dataset = load_quality(path)
-    elif name == "safety":
-        dataset = load_safety(path)
-    elif name in ["mt_bench", "ja_mt_bench"]:
-        dataset = load_mt_bench(path)
-    else:
-        raise ValueError(f"Unknown dataset: {name}")
+class DatasetItem(BaseModel):
+    """Base class for dataset item.
 
-    if size is None:
-        return dataset
+    Attributes:
+        ID: Unique identifier of the item.
+        prompt: Prompt for each turn.
+        response: Model response for each turn.
+        error_messages: Error messages for each turn.
+        pattern: Extracted pattern for each turn.
+        original_index: Original index of the item.
+    """
 
-    return dataset[:size]
+    ID: int | str
+    prompt: list[str]
+    response: list[str | None] = []
+    error_messages: list[list[str]] = []
+    pattern: list[str | dict[str, int] | None] = []
+    original_index: int | None = None
+
+
+class DatasetItemForEvaluation(DatasetItem):
+    """Base class for dataset item for evaluation.
+
+    Attributes:
+        generate_prompt: Prompt for each turn used in generation phase.
+        generate_response: Model response for each turn used in generation phase.
+        generate_errors: Error messages for each turn used in generation phase.
+        metric: Metric used for evaluation.
+    """
+
+    generate_prompt: list[str] = []
+    generate_response: list[str | None] = []
+    generate_errors: list[list[str]] = []
+    metric: str | None = None

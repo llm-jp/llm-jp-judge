@@ -4,3 +4,7 @@ model_name: gpt-4o-2024-08-06
 max_retries: 3
 async_request_interval: 0.5 # 非同期のリクエスト間隔(秒)
 disable_system_prompt: false # システムプロンプトが無効になります。システムプロンプトが与えられた場合、ユーザープロンプトの先頭に結合されます。
+
+azure_endpoint: null  # null の場合、環境変数 AZURE_OPENAI_ENDPOINT から読み込まれます。
+api_version: null  # null の場合、環境変数 OPENAI_API_VERSION から読み込まれます。
+api_key: null  # null の場合、環境変数 AZURE_OPENAI_API_KEY から読み込まれます。
