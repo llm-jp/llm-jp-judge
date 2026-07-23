@@ -29,7 +29,7 @@ uv sync --locked --extra vllm
       ```bash
       bash scripts/download_llm_jp_instructions_v1.0.sh
       ```
-- [AnswerCarefully](https://huggingface.co/datasets/llm-jp/llm-jp-instructions) v2.0 (安全性評価用データセット), borderline-v1.0 (安全性ボーダーライン評価用データセット)
+- [AnswerCarefully](https://huggingface.co/datasets/llm-jp/AnswerCarefully) v2.0 (安全性評価用データセット), borderline-v1.0 (安全性ボーダーライン評価用データセット)
   1. huggingface-cliへのログイン
       ```bash
       huggingface-cli login
