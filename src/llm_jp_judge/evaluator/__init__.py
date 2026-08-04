@@ -7,6 +7,7 @@ from .quality import QualityEvaluator
 from .safety import SafetyEvaluator
 from .safety_borderline import SafetyBorderlineEvaluator
 from .safety_boundary import SafetyBoundaryEvaluator
+from .safety_regional import SafetyRegionalEvaluator
 
 
 def load_evaluator(
@@ -23,6 +24,8 @@ def load_evaluator(
         return QualityEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "safety":
         return SafetyEvaluator(client, dashboard, metadata=metadata, **kwargs)
+    elif metric == "safety_regional":
+        return SafetyRegionalEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "culture":
         return CultureEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "safety_borderline":

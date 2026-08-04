@@ -29,7 +29,7 @@ uv sync --locked --extra vllm
       ```bash
       bash scripts/download_llm_jp_instructions_v1.0.sh
       ```
-- [AnswerCarefully](https://huggingface.co/datasets/llm-jp/llm-jp-instructions) v2.0 (安全性評価用データセット), borderline-v1.0 (安全性ボーダーライン評価用データセット)
+- [AnswerCarefully](https://huggingface.co/datasets/llm-jp/AnswerCarefully) v2.0/v3.0 (安全性評価用データセット), borderline-v1.0 (安全性ボーダーライン評価用データセット)
   1. huggingface-cliへのログイン
       ```bash
       huggingface-cli login
@@ -38,6 +38,7 @@ uv sync --locked --extra vllm
   3. ダウンロード
       ```bash
       bash scripts/download_ac_v2.0.sh
+      bash scripts/download_ac_v3.0.sh
       bash scripts/download_ac_borderline_v1.0.sh
       ```
 - [llm-jp-instructions-jculture v1.0](https://huggingface.co/datasets/llm-jp/llm-jp-instructions-jculture) (日本文化評価用データセット)
@@ -94,6 +95,7 @@ uv run python -m src.llm_jp_judge.generate \
     client.base_url=http://localhost:8000/v1 \
     benchmark.quality_ja.dataset.path=./data/cache/llm-jp/llm-jp-instructions/v1.0/test.json \
     benchmark.safety_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json \
+    benchmark.safety_regional_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/v3.0/test.json \
     benchmark.culture_ja.dataset.path=./data/cache/llm-jp/llm-jp-instructions-jculture/v1.0/test.json \
     benchmark.safety_borderline_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/borderline_v1.0/test.json \
     benchmark.safety_boundary_ja.dataset.path=./data/cache/safety-boundary-test/data/test.csv
