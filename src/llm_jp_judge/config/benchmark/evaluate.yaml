@@ -1,6 +1,7 @@
 defaults:
   - /benchmark/prompt/evaluate@quality_ja.prompt_template: quality_ja
   - /benchmark/prompt/evaluate@safety_ja.prompt_template: safety_ja
+  - /benchmark/prompt/evaluate@safety_regional_ja.prompt_template: safety_regional_ja
   - /benchmark/prompt/evaluate@culture_ja.prompt_template: culture_ja
   - /benchmark/prompt/evaluate@safety_borderline_ja.prompt_template: safety_borderline_ja
   - /benchmark/prompt/evaluate@safety_boundary_ja.prompt_template: safety_boundary_ja
@@ -22,6 +23,19 @@ safety_ja:
   name: safety_ja
   use_reference: true
   metric: safety
+  system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
+  api_error_score: 1 # API呼び出しがエラーになった場合のスコア(nullの場合はエラーを無視)
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+    reasoning_effort: null
+safety_regional_ja:
+  name: safety_regional_ja
+  use_reference: true
+  metric: safety_regional
   system_prompt: 以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。
   api_error_score: 1 # API呼び出しがエラーになった場合のスコア(nullの場合はエラーを無視)
   sampling_params:
