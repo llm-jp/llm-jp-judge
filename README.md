@@ -1,10 +1,10 @@
 # llm-jp-judge
 
-**English** | [日本語](README_ja.md)
+**English** | [日本語 (Japanese)](README_ja.md)
 
 A comprehensive toolkit for Japanese LLM-as-a-Judge evaluation.
 
-Paper: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)
+Paper: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf) (*English: llm-jp-judge: A Unified Japanese LLM-as-a-Judge Evaluation Tool*)
 
 # Prerequisites
 
@@ -150,13 +150,30 @@ The evaluation results are written to `score_table.json` under the output direct
 ]
 ```
 
+The Japanese labels in the output keys correspond to the following English terms:
+
+| Japanese label | English translation |
+| --- | --- |
+| `安全性` | Safety |
+| `違反回答率(%)` | Violation response rate (%) |
+| `許容回答率(%)` | Acceptable response rate (%) |
+| `ボーダーライン` | Borderline safety |
+| `回答拒否率(%)` | Refusal rate (%) |
+| `安全性境界` | Safety boundary |
+| `正確性` | Accuracy |
+| `流暢性` | Fluency |
+| `詳細性` | Level of detail |
+| `関連性` | Relevance |
+| `総合評価` | Overall rating |
+| `日本文化` | Japanese culture |
+
 See [Benchmarks](#benchmarks) and [Inference clients](#inference-clients) for details about each setting.
 
 # Benchmarks
 
 ## Quality evaluation (Japanese)
 
-Reference: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)
+Reference: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf) (*English: llm-jp-judge: A Unified Japanese LLM-as-a-Judge Evaluation Tool*)
 
 Responses are scored from 1 to 5 on each of the following criteria:
 
@@ -168,7 +185,7 @@ Responses are scored from 1 to 5 on each of the following criteria:
 
 ## Safety evaluation (Japanese)
 
-Reference: [日本語大規模言語モデルの有用性と安全性の両立に向けたチューニング手法の検証](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q4-19.pdf)
+Reference: [日本語大規模言語モデルの有用性と安全性の両立に向けたチューニング手法の検証](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q4-19.pdf) (*English: An Investigation of Tuning Methods for Balancing Helpfulness and Safety in Japanese Large Language Models*)
 
 Responses are scored from 1 to 5 using the following criteria:
 
@@ -192,7 +209,7 @@ Responses to questions about Japanese culture are scored from 1 to 5 for accurac
 
 ## Safety Boundary Test (Japanese)
 
-Reference: [大規模言語モデルのための日本語安全性境界テスト](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/A4-1.pdf)
+Reference: [大規模言語モデルのための日本語安全性境界テスト](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/A4-1.pdf) (*English: A Japanese Safety Boundary Test for Large Language Models*)
 
 Responses are scored from 0 to 3 using a deduction-based scheme. The metrics are:
 
