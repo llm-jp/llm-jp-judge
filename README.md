@@ -1,10 +1,10 @@
 # llm-jp-judge
 
-**English** | [日本語](README_ja.md)
+**English** | [日本語 (Japanese)](README_ja.md)
 
 A comprehensive toolkit for Japanese LLM-as-a-Judge evaluation.
 
-Paper: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)
+Paper: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf) (*English: llm-jp-judge: A Unified Japanese LLM-as-a-Judge Evaluation Tool*)
 
 # Prerequisites
 
@@ -118,34 +118,34 @@ uv run python -m src.llm_jp_judge.evaluate \
     client.async_request_interval=0.5
 ```
 
-The evaluation results are written to `score_table.json` under the output directory (`output.dir`), for example `./output/llm-jp-3-1.8b-instruct/evaluation/score_table.json`.
+The evaluation results are written to `score_table.json` under the output directory (`output.dir`), for example `./output/llm-jp-3-1.8b-instruct/evaluation/score_table.json`. The annotated example below uses JSON with Comments (JSONC) to explain the Japanese labels; the generated file is standard JSON without comments.
 
-```json
+```jsonc
 [
     {
         "generation_model": "llm-jp/llm-jp-3-1.8b-instruct",
         "evaluation_model": "gpt-4o-2024-08-06",
         "mt_bench_en": 3.3125,
-        "safety_ja:安全性": 2.4702380952380953,
-        "safety_ja:違反回答率(%)": 61.011904761904766,
-        "safety_ja:許容回答率(%)": 25.297619047619047,
-        "safety_borderline_ja:ボーダーライン": 1.7230769230769232,
-        "safety_borderline_ja:安全性": 2.923076923076923,
-        "safety_borderline_ja:回答拒否率(%)": 80.0,
-        "safety_borderline_ja:違反回答率(%)": 30.76923076923077,
-        "safety_borderline_ja:許容回答率(%)": 23.076923076923077,
+        "safety_ja:安全性": 2.4702380952380953, // Safety
+        "safety_ja:違反回答率(%)": 61.011904761904766, // Violation response rate (%)
+        "safety_ja:許容回答率(%)": 25.297619047619047, // Acceptable response rate (%)
+        "safety_borderline_ja:ボーダーライン": 1.7230769230769232, // Borderline safety
+        "safety_borderline_ja:安全性": 2.923076923076923, // Safety
+        "safety_borderline_ja:回答拒否率(%)": 80.0, // Refusal rate (%)
+        "safety_borderline_ja:違反回答率(%)": 30.76923076923077, // Violation response rate (%)
+        "safety_borderline_ja:許容回答率(%)": 23.076923076923077, // Acceptable response rate (%)
         "mt_bench_ja": 4.525,
-        "safety_boundary_ja:安全性境界": 1.8166666666666667,
+        "safety_boundary_ja:安全性境界": 1.8166666666666667, // Safety boundary
         "safety_boundary_ja:safe": 1.9661016949152543,
         "safety_boundary_ja:unsafe": 1.7,
-        "quality_ja:正確性": 2.905,
-        "quality_ja:流暢性": 4.23,
-        "quality_ja:詳細性": 3.1775,
-        "quality_ja:関連性": 3.6475,
-        "quality_ja:総合評価": 3.2625,
-        "culture_ja:日本文化": 1.5,
-        "culture_ja:違反回答率(%)": 95.5,
-        "culture_ja:許容回答率(%)": 1.5
+        "quality_ja:正確性": 2.905, // Accuracy
+        "quality_ja:流暢性": 4.23, // Fluency
+        "quality_ja:詳細性": 3.1775, // Level of detail
+        "quality_ja:関連性": 3.6475, // Relevance
+        "quality_ja:総合評価": 3.2625, // Overall rating
+        "culture_ja:日本文化": 1.5, // Japanese culture
+        "culture_ja:違反回答率(%)": 95.5, // Violation response rate (%)
+        "culture_ja:許容回答率(%)": 1.5 // Acceptable response rate (%)
     }
 ]
 ```
@@ -156,7 +156,7 @@ See [Benchmarks](#benchmarks) and [Inference clients](#inference-clients) for de
 
 ## Quality evaluation (Japanese)
 
-Reference: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf)
+Reference: [llm-jp-judge: 日本語LLM-as-a-Judge評価ツール](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q2-4.pdf) (*English: llm-jp-judge: A Unified Japanese LLM-as-a-Judge Evaluation Tool*)
 
 Responses are scored from 1 to 5 on each of the following criteria:
 
@@ -168,7 +168,7 @@ Responses are scored from 1 to 5 on each of the following criteria:
 
 ## Safety evaluation (Japanese)
 
-Reference: [日本語大規模言語モデルの有用性と安全性の両立に向けたチューニング手法の検証](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q4-19.pdf)
+Reference: [日本語大規模言語モデルの有用性と安全性の両立に向けたチューニング手法の検証](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/Q4-19.pdf) (*English: An Investigation of Tuning Methods for Balancing Helpfulness and Safety in Japanese Large Language Models*)
 
 Responses are scored from 1 to 5 using the following criteria:
 
@@ -192,7 +192,7 @@ Responses to questions about Japanese culture are scored from 1 to 5 for accurac
 
 ## Safety Boundary Test (Japanese)
 
-Reference: [大規模言語モデルのための日本語安全性境界テスト](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/A4-1.pdf)
+Reference: [大規模言語モデルのための日本語安全性境界テスト](https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/A4-1.pdf) (*English: A Japanese Safety Boundary Test for Large Language Models*)
 
 Responses are scored from 0 to 3 using a deduction-based scheme. The metrics are:
 
