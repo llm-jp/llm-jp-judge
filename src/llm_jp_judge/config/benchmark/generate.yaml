@@ -123,3 +123,29 @@ mt_bench_ja:
       temperature: 0.1
     humanities:
       temperature: 0.1
+multichallenge_en:
+  name: "multichallenge_en"
+  dataset:
+    path: null
+    size: null
+  system_prompt: null
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+    reasoning_effort: null
+multichallenge_ja:
+  name: "multichallenge_ja"
+  dataset:
+    path: null
+    size: null
+  system_prompt: null
+  sampling_params:
+    max_tokens: 1024
+    seed: 1234
+    top_p: 0.95
+    temperature: 1.0
+    frequency_penalty: 0.0
+    reasoning_effort: null
