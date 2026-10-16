@@ -3,6 +3,7 @@ from ..dashboard.base import BaseDashboard
 from .base import BaseEvaluator
 from .culture import CultureEvaluator
 from .mt_bench import MTBenchEvaluator
+from .multichallenge import MultiChallengeEvaluator
 from .quality import QualityEvaluator
 from .safety import SafetyEvaluator
 from .safety_borderline import SafetyBorderlineEvaluator
@@ -31,5 +32,7 @@ def load_evaluator(
         return SafetyBoundaryEvaluator(client, dashboard, metadata=metadata, **kwargs)
     elif metric == "mt_bench":
         return MTBenchEvaluator(client, dashboard, metadata=metadata, **kwargs)
+    elif metric == "multichallenge":
+        return MultiChallengeEvaluator(client, dashboard, metadata=metadata, **kwargs)
     else:
         raise ValueError(f"Invalid evaluator name: {metric}")
