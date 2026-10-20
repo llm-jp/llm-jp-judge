@@ -39,6 +39,7 @@ class MultiChallengeEvaluator(BaseEvaluator):
                 prompt=[prompt],
                 axis=res.axis,
                 target_question=res.target_question,
+                requires_external_knowledge=res.requires_external_knowledge,
                 generate_prompt=res.prompt,
                 generate_response=res.response,
                 generate_errors=res.error_messages,
@@ -62,6 +63,11 @@ class MultiChallengeEvaluator(BaseEvaluator):
             score = float(raw_output.pattern[0] == "YES")
             scores["全体スコア"].append(score)
             scores[AXIS_NAME_MAPPING[raw_output.axis]].append(score)
+            if raw_output.requires_external_knowledge is not None:
+                if raw_output.requires_external_knowledge:
+                    scores["外部知識必要"].append(score)
+                else:
+                    scores["外部知識不要"].append(score)
 
         self.log_raw_outputs(raw_outputs)
 

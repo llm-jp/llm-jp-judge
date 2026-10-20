@@ -11,6 +11,7 @@ class MultiChallengeDatasetItemMixin(BaseModel):
 
     axis: str
     target_question: str
+    requires_external_knowledge: bool | None
 
 
 class MultiChallengeDatasetItem(DatasetItem, MultiChallengeDatasetItemMixin):
@@ -49,6 +50,7 @@ def load_multichallenge(path: str) -> list[MultiChallengeDatasetItem]:
                 pattern=[None] * len(response),
                 axis=d["axis"],
                 target_question=d["target_question"],
+                requires_external_knowledge=None,
             )
             data.append(item)
 
@@ -78,6 +80,7 @@ def load_multichallenge_ja(path: str) -> list[MultiChallengeDatasetItem]:
                 response=response,
                 axis=d["AXIS"],
                 target_question=d["TARGET_QUESTION"],
+                requires_external_knowledge=d["REQUIRES_EXTERNAL_KNOWLEDGE"],
             )
             data.append(item)
 
