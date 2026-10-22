@@ -1,0 +1,16 @@
+regex: (YES|NO)
+prompt_template: |-
+  あなたは、モデルの回答が特定の基準を満たしているかどうかを評価する役割を担っています。
+  基準は常に「YES」または「NO」の2択評価となります。
+
+  モデルの回答は以下の通りです：
+  <MODEL_RESPONSE>
+  {response}
+  </MODEL_RESPONSE>
+
+  モデルの回答が満たすべき基準は以下の通りです。**厳格に**評価してください：
+  <CRITERIA>
+  {target_question}
+  </CRITERIA>
+
+  まずあなたの推論（評価理由）を出力し、その後に最終判定として「YES」または「NO」のいずれかを出力してください。

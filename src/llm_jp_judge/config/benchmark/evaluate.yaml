@@ -6,6 +6,8 @@ defaults:
   - /benchmark/prompt/evaluate@safety_boundary_ja.prompt_template: safety_boundary_ja
   - /benchmark/prompt/evaluate@mt_bench_en.prompt_template: mt_bench_en_prompt_v0
   - /benchmark/prompt/evaluate@mt_bench_ja.prompt_template: mt_bench_ja_prompt_v1
+  - /benchmark/prompt/evaluate@multichallenge_en.prompt_template: multichallenge_en
+  - /benchmark/prompt/evaluate@multichallenge_ja.prompt_template: multichallenge_ja
 
 quality_ja:
   name: quality_ja
@@ -104,3 +106,15 @@ mt_bench_ja:
     temperature: 0
     frequency_penalty: null
     reasoning_effort: null
+multichallenge_en:
+  name: multichallenge_en
+  metric: multichallenge
+  system_prompt: null
+  sampling_params:
+    temperature: 0.0
+multichallenge_ja:
+  name: multichallenge_ja
+  metric: multichallenge
+  system_prompt: null
+  sampling_params:
+    temperature: 0.0
