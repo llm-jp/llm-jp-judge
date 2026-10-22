@@ -111,20 +111,10 @@ multichallenge_en:
   metric: multichallenge
   system_prompt: null
   sampling_params:
-    max_tokens: 1024
-    seed: 1234
-    top_p: 0.95
-    temperature: 1.0
-    frequency_penalty: 0.0
-    reasoning_effort: null
+    temperature: 0.0
 multichallenge_ja:
   name: multichallenge_ja
   metric: multichallenge
   system_prompt: null
   sampling_params:
-    max_tokens: 1024
-    seed: 1234
-    top_p: 0.95
-    temperature: 1.0
-    frequency_penalty: 0.0
-    reasoning_effort: null
+    temperature: 0.0
