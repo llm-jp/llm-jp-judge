@@ -23,6 +23,9 @@ dependencies = [
 vllm = [
     "vllm>=0.15.1",
 ]
+attestation = [
+    "dilithium-py>=1.5.1",
+]
 dev = [
     "mypy>=1.19.1",
     "ruff>=0.15.4",
