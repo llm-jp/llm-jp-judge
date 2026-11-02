@@ -74,6 +74,15 @@ def main(cfg: DictConfig):
         output_dir = hydra.utils.to_absolute_path(cfg.output.dir)
         dashboard.save_json(output_dir)
 
+        if cfg.output.get("attest", False):
+            from .pq_attestation import create_attestation
+
+            attestation = create_attestation(output_dir)
+            logging.info(
+                f"Wrote Quantova post-quantum attestation ({attestation['algorithm']}) "
+                f"over {len(attestation['files'])} result file(s)"
+            )
+
     dashboard.close()
 
 
