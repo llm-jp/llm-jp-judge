@@ -132,10 +132,12 @@ class OpenAI(BaseClient):
 
         await asyncio.sleep(wait)
 
-        d.response, d.pattern, d.error_messages = [], [], []
         for turn in range(len(d.prompt)):
             retry_count = 0
             sleep = 0.0
+
+            if turn < len(d.response):
+                continue
 
             d.response.append(None)
             d.pattern.append(None)

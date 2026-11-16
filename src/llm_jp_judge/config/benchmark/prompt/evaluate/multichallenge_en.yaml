@@ -1,0 +1,16 @@
+regex: (YES|NO)
+prompt_template: |-
+  You are tasked with evaluating a model response to see if it meets a specific criteria.
+  The criteria will always be YES/NO evaluation.
+
+  The model response is as follows:
+  <MODEL_RESPONSE>
+  {response}
+  </MODEL_RESPONSE>
+
+  The criteria that the model response must meet is as follows. Be VERY STRICT!:
+  <CRITERIA>
+  {target_question}
+  </CRITERIA>
+
+  Print your reasoning followed by your verdict, either "YES" or "NO".
