@@ -63,6 +63,18 @@ Download the datasets listed below. You can skip this step if you already have l
      bash scripts/download_sbi_safety_boundary.sh
      ```
 
+- [MultiChallenge](https://huggingface.co/datasets/ScaleAI/MultiChallenge)
+  1. Download the dataset:
+      ```bash
+      bash scripts/download_multichallenge.sh
+      ```
+
+- [J-MultiChallenge](https://huggingface.co/datasets/sbintuitions/J-MultiChallenge)
+  1. Download the dataset:
+      ```bash
+      bash scripts/download_j_multichallenge.sh
+      ```
+
 ## Environment variables
 
 Add the API settings needed for generation or evaluation to a `.env` file.
@@ -107,7 +119,9 @@ uv run python -m src.llm_jp_judge.generate \
     benchmark.safety_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/v2.0/test.json \
     benchmark.culture_ja.dataset.path=./data/cache/llm-jp/llm-jp-instructions-jculture/v1.0/test.json \
     benchmark.safety_borderline_ja.dataset.path=./data/cache/llm-jp/AnswerCarefully/borderline_v1.0/test.json \
-    benchmark.safety_boundary_ja.dataset.path=./data/cache/safety-boundary-test/data/test.csv
+    benchmark.safety_boundary_ja.dataset.path=./data/cache/safety-boundary-test/data/test.csv \
+    benchmark.multichallenge_en.dataset.path=./data/cache/ScaleAI/MultiChallenge/test/test.json \
+    benchmark.multichallenge_ja.dataset.path=./data/cache/sbintuitions/J-MultiChallenge/test/test.json
 
 # Evaluate responses
 uv run python -m src.llm_jp_judge.evaluate \
@@ -125,27 +139,39 @@ The evaluation results are written to `score_table.json` under the output direct
     {
         "generation_model": "llm-jp/llm-jp-3-1.8b-instruct",
         "evaluation_model": "gpt-4o-2024-08-06",
-        "mt_bench_en": 3.3125,
-        "safety_ja:安全性": 2.4702380952380953,
-        "safety_ja:違反回答率(%)": 61.011904761904766,
-        "safety_ja:許容回答率(%)": 25.297619047619047,
-        "safety_borderline_ja:ボーダーライン": 1.7230769230769232,
-        "safety_borderline_ja:安全性": 2.923076923076923,
-        "safety_borderline_ja:回答拒否率(%)": 80.0,
-        "safety_borderline_ja:違反回答率(%)": 30.76923076923077,
-        "safety_borderline_ja:許容回答率(%)": 23.076923076923077,
-        "mt_bench_ja": 4.525,
-        "safety_boundary_ja:安全性境界": 1.8166666666666667,
-        "safety_boundary_ja:safe": 1.9661016949152543,
-        "safety_boundary_ja:unsafe": 1.7,
-        "quality_ja:正確性": 2.905,
-        "quality_ja:流暢性": 4.23,
-        "quality_ja:詳細性": 3.1775,
-        "quality_ja:関連性": 3.6475,
-        "quality_ja:総合評価": 3.2625,
-        "culture_ja:日本文化": 1.5,
-        "culture_ja:違反回答率(%)": 95.5,
-        "culture_ja:許容回答率(%)": 1.5
+        "multichallenge_ja:全体スコア": 0.09926470588235294,
+        "multichallenge_ja:記憶推論": 0.10714285714285714,
+        "multichallenge_ja:外部知識必要": 0.09433962264150944,
+        "multichallenge_ja:自己一貫性": 0.1,
+        "multichallenge_ja:外部知識不要": 0.1004566210045662,
+        "multichallenge_ja:指示保持": 0.11594202898550725,
+        "multichallenge_ja:版編集": 0.04878048780487805,
+        "multichallenge_en:全体スコア": 0.045112781954887216,
+        "multichallenge_en:記憶推論": 0.03669724770642202,
+        "multichallenge_en:自己一貫性": 0.041666666666666664,
+        "multichallenge_en:指示保持": 0.07246376811594203,
+        "multichallenge_en:版編集": 0.025,
+        "safety_ja:安全性": 2.380952380952381,
+        "safety_ja:違反回答率(%)": 59.82142857142857,
+        "safety_ja:許容回答率(%)": 22.916666666666664,
+        "mt_bench_ja": 4.64375,
+        "safety_boundary_ja:安全性境界": 1.5416666666666667,
+        "safety_boundary_ja:safe": 1.5357142857142858,
+        "safety_boundary_ja:unsafe": 1.6779661016949152,
+        "culture_ja:日本文化": 1.48,
+        "culture_ja:違反回答率(%)": 94.0,
+        "culture_ja:許容回答率(%)": 1.5,
+        "mt_bench_en": 3.325,
+        "quality_ja:正確性": 2.9725,
+        "quality_ja:流暢性": 4.285,
+        "quality_ja:詳細性": 3.2825,
+        "quality_ja:関連性": 3.6625,
+        "quality_ja:総合評価": 3.3575,
+        "safety_borderline_ja:ボーダーライン": 1.703125,
+        "safety_borderline_ja:安全性": 2.876923076923077,
+        "safety_borderline_ja:回答拒否率(%)": 81.25,
+        "safety_borderline_ja:違反回答率(%)": 32.30769230769231,
+        "safety_borderline_ja:許容回答率(%)": 26.153846153846157
     }
 ]
 ```
@@ -221,6 +247,14 @@ The dataset is bundled with this repository, so you do not need to specify a dat
 uv run python -m src.llm_jp_judge.generate \
     benchmark.mt_bench_ja.dataset.path=null
 ```
+
+## MultiChallenge (English)
+
+Reference: [ScaleAI/MultiChallenge](https://huggingface.co/datasets/ScaleAI/MultiChallenge)
+
+## MultiChallenge (Japanese)
+
+Reference: [sbintuitions/J-MultiChallenge](https://huggingface.co/datasets/sbintuitions/J-MultiChallenge)
 
 # Inference clients
 
