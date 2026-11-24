@@ -1,6 +1,11 @@
 import logging
 import os
+import shutil
 from collections import defaultdict
+from copy import deepcopy
+from glob import glob
+from pathlib import Path
+from tempfile import TemporaryDirectory, mkdtemp
 from typing import Sequence
 
 import hydra
@@ -11,7 +16,7 @@ from .client.base import BaseClient
 from .dataset import DatasetItem
 from .dataset.mt_bench import MTBenchDatasetItem
 from .dataset.utils import load_dataset
-from .utils.data import save_json, save_jsonl
+from .utils.data import load_json, save_json, save_jsonl
 
 
 def generate(cfg: DictConfig, client: BaseClient, benchmark_cfg: DictConfig):
@@ -88,24 +93,79 @@ def save_metadata(cfg: DictConfig):
     save_json(output_path, metadata)
 
 
-@hydra.main(config_path="./config", config_name="generate")
-def main(cfg: DictConfig):
-    any_specified = any(benchmark_cfg.dataset.path for benchmark_cfg in cfg.benchmark.values())
-    if not any_specified:
-        logging.error("Must specify at least one dataset.path")
-        return
+def publish_model_switch(output: Path, staged: Path, existing: set[str]) -> None:
+    # evaluate reads every top-level JSONL under one label. Withdraw the old set before switching labels.
+    previous = Path(mkdtemp(prefix=".previous-model-", dir=output))
+    metadata = output / "metadata.json"
+    old_metadata = previous / metadata.name
+    new_metadata = staged / metadata.name
+    undo: list[tuple[Path, Path]] = []
+    try:
+        if metadata.exists():
+            shutil.copy2(metadata, old_metadata)
+        for name in sorted(existing):
+            (output / name).replace(previous / name)
+            undo.append((previous / name, output / name))
 
+        new_metadata.replace(metadata)
+        undo.append((old_metadata, metadata) if old_metadata.exists() else (metadata, new_metadata))
+        for response in sorted(staged.glob("*.jsonl")):
+            destination = output / response.name
+            response.replace(destination)
+            undo.append((destination, response))
+    except BaseException:
+        try:
+            for source, destination in reversed(undo):
+                source.replace(destination)
+        except OSError as error:
+            raise RuntimeError(f"Could not roll back model switch. Remaining originals are in {previous}") from error
+        shutil.rmtree(previous)
+        raise
+    shutil.rmtree(previous)
+
+
+def generate_benchmarks(cfg: DictConfig, benchmarks: list[DictConfig]) -> None:
     logging.info(f"Loading client: {cfg.client.model_name}")
     client = load_client(**cfg.client)
-
-    for benchmark_cfg in cfg.benchmark.values():
-        if not benchmark_cfg.dataset.path:
-            continue
-
+    for benchmark_cfg in benchmarks:
         logging.info(f"Running generate on benchmark: {benchmark_cfg.name}")
         generate(cfg, client, benchmark_cfg)
 
-    save_metadata(cfg)
+
+@hydra.main(config_path="./config", config_name="generate")
+def main(cfg: DictConfig):
+    benchmarks = [b for b in cfg.benchmark.values() if b.dataset.path]
+    if not benchmarks:
+        logging.error("Must specify at least one dataset.path")
+        return
+
+    output = Path(hydra.utils.to_absolute_path(cfg.output.dir))
+    existing = set(glob("*.jsonl", root_dir=output))
+    metadata = output / "metadata.json"
+    owner = load_json(str(metadata)).get("model_name") if metadata.is_file() else None
+    if not existing or (owner is not None and owner == cfg.client.model_name):
+        if not existing:
+            save_metadata(cfg)
+        generate_benchmarks(cfg, benchmarks)
+        if existing:
+            save_metadata(cfg)
+        return
+
+    if not cfg.output.overwrite:
+        raise ValueError(
+            f"Cannot reuse responses in {output}: recorded model {owner!r}, requested {cfg.client.model_name!r}. "
+            "Use a different output directory or regenerate with output.overwrite=true."
+        )
+    remaining = existing - {f"{b.name}.jsonl" for b in benchmarks}
+    if remaining:
+        raise ValueError(f"Select the remaining benchmarks to change models: {', '.join(sorted(remaining))}")
+
+    with TemporaryDirectory(dir=output) as tmp:
+        staged = deepcopy(cfg)
+        staged.output.dir = tmp
+        generate_benchmarks(staged, benchmarks)
+        save_metadata(staged)
+        publish_model_switch(output, Path(tmp), existing)
 
 
 if __name__ == "__main__":
